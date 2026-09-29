@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Account created" art: beige arch, hanger with the striped sweater, sparkles, stripes at the base. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="640dp"
+    android:height="700dp"
+    android:viewportWidth="640"
+    android:viewportHeight="700">
+
+    <!-- arch -->
+    <path android:fillColor="@color/card_beige" android:pathData="M0,700V320A320,320 0,0 1,640 320V700Z" />
+
+    <!-- stripes at the base -->
+    <path android:fillColor="@color/stripe_blue" android:pathData="M0,640h640v14h-640z" />
+    <path android:fillColor="@color/stripe_brown" android:pathData="M0,672h640v14h-640z" />
+    <path android:fillColor="@color/line" android:pathData="M30,690h580v10h-580z" />
+
+    <!-- sparkles -->
+    <path android:fillColor="@color/stripe_brown" android:pathData="M95,218 Q98.96,236.04 117,240 Q98.96,243.96 95,262 Q91.04,243.96 73,240 Q91.04,236.04 95,218 Z" />
+    <path android:fillColor="@color/stripe_blue" android:pathData="M560,136 Q562.52,147.48 574,150 Q562.52,152.52 560,164 Q557.48,152.52 546,150 Q557.48,147.48 560,136 Z" />
+    <path android:fillColor="@color/sparkle_tan" android:pathData="M590,504 Q592.88,517.12 606,520 Q592.88,522.88 590,536 Q587.12,522.88 574,520 Q587.12,517.12 590,504 Z" />
+
+    <!-- sweater, scaled up and hung under the hanger bar -->
+    <group android:scaleX="1.3" android:scaleY="1.3" android:translateX="-24.5" android:translateY="80">
+        <group>
+            <clip-path android:pathData="M200,158 Q265,178 330,158 L378,178 Q402,220 412,366 L376,374 L364,262 L370,402 L164,406 L168,262 L154,378 L118,388 Q126,218 152,178 Z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,150h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,156h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,162h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,168h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,174h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,180h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,186h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,192h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,198h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,204h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,210h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,216h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,222h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,228h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,234h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,240h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,246h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,252h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,258h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,264h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,270h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,276h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,282h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,288h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,294h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,300h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,306h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,312h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,318h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,324h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,330h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,336h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,342h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,348h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,354h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,360h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,366h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,372h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,378h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,384h330v6h-330z" />
+                <path android:fillColor="@color/stripe_brown" android:pathData="M100,390h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,396h330v6h-330z" />
+                <path android:fillColor="@color/stripe_blue" android:pathData="M100,402h330v6h-330z" />
+                <path android:fillColor="@color/stripe_cream" android:pathData="M100,408h330v6h-330z" />
+        </group>
+        <path android:strokeColor="@color/stripe_outline" android:strokeWidth="2.5" android:strokeLineJoin="round"
+            android:pathData="M200,158 Q265,178 330,158 L378,178 Q402,220 412,366 L376,374 L364,262 L370,402 L164,406 L168,262 L154,378 L118,388 Q126,218 152,178 Z" />
+        <path android:strokeColor="@color/stripe_outline" android:strokeWidth="2.5" android:pathData="M265,172v44" />
+    </group>
+
+    <!-- hanger -->
+    <path android:strokeColor="@color/ink" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M320,214V192A24,24 0,1 0,296 168" />
+    <path android:strokeColor="@color/ink" android:strokeWidth="9" android:strokeLineJoin="round"
+        android:pathData="M320,214L170,296H470Z" />
+</vector>
