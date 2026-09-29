@@ -54,9 +54,9 @@ PRD ref: `prd.md > The Core Journey`.
 
 | Layer | Choice | Why (learner decision unless marked) | Docs |
 |---|---|---|---|
-| Android app | **Java + XML layouts**, Android Studio, minSdk 26, targetSdk current | Same as the learner's current project. | https://developer.android.com/guide |
+| Android app | **Java + XML layouts**, Android Studio, minSdk 26, compileSdk 37, **targetSdk 36** (Android 17 blocks apps targeting 37 from reaching the laptop backend without a runtime permission) | Same as the learner's current project. | https://developer.android.com/guide |
 | Android libs | Retrofit 2 + Gson (HTTP), Glide (images), Material Components (BottomNavigationView, BottomSheet, TabLayout), ViewPager2 (per-slot swipe), Photo Picker (`ActivityResultContracts.PickVisualMedia`, no storage permission) | *Derived:* standard, well-documented Java-friendly choices. | https://square.github.io/retrofit/ · https://bumptech.github.io/glide/ · https://developer.android.com/training/data-storage/shared/photopicker |
-| Backend | **Spring Boot 3.x**, Java 21, Gradle | Learner's long-term stack. *Derived:* Gradle to match Android; Maven is fine if the learner prefers. | https://docs.spring.io/spring-boot/ |
+| Backend | **Spring Boot 4.1.1**, Java 21, Gradle | Learner's long-term stack. *Derived:* Gradle to match Android; Maven is fine if the learner prefers. | https://docs.spring.io/spring-boot/ |
 | Backend libs | Spring Web, Spring Data JPA, PostgreSQL driver, Validation | *Derived:* the minimal Spring set for REST + DB. | https://spring.io/guides/gs/accessing-data-jpa |
 | Database | **PostgreSQL 16** in Docker | Learner's choice, same as the long-term app. | https://www.postgresql.org/docs/16/ |
 | Background removal | **rembg** (`danielgatis/rembg` image) in Docker | Learner's choice: free, local, no key, no limits. | https://github.com/danielgatis/rembg |
@@ -68,7 +68,7 @@ PRD ref: `prd.md > The Core Journey`.
 - **Gemini free-tier rate limits** (https://ai.google.dev/gemini-api/docs/rate-limits). Each upload makes 1 call and each Generate makes 1 call.
 - **Google Gen AI Java SDK**: current version, how the client picks up the API key, and the exact method names for image input and JSON-schema output.
 - **rembg HTTP server**: the exact endpoint and form-field name (believed to be `POST /api/remove`, multipart field `file`), plus the server start command.
-- **Spring Boot 3.x**: latest patch version on https://start.spring.io.
+- ~~Spring Boot 3.x~~ → verified: start.spring.io offers only 4.x; **4.1.1** chosen by the learner.
 
 ## Where It Runs and How Someone Tries It
 
@@ -90,9 +90,15 @@ Everything runs locally. No deployment (optional for the hackathon, not chosen).
 **Submission:** a public GitHub repo (without `.env`, `learner-profile.md` or uploaded images) plus the demo video. Handled in `6-ship`.
 
 ## Look and Feel
-Carries forward `prd.md > Look and Feel`.
+Carries forward `prd.md > Look and Feel`. **Source of truth: the learner's screen design (`Mixyn App Screens.pdf`, kept outside the repo)**, supplied at the start of the build; it replaces the original sketch below where they differ.
 
-Keep layouts **basic** (learner decision: minimal UI, time goes to the backend). Apply the identity cheaply through the theme:
+As built:
+- **Colors** (`res/values/colors.xml`): `mocha #7B6453` (primary buttons, splash, avatar), `ink #1F1B17` (text, central +, dark buttons), `ink_muted #8A837B`, `sand_bg #F4F1ED`, `surface #FBFAF7`, `line #E3DDD5`, `error #4F0005` (Pantone 4975C "Red Inferno": wrong-input border + message, and Log out).
+- **Type:** *Instrument Serif* for the logo and titles, *Inter* (sans-serif) for everything else; both OFL, bundled in `res/font/`.
+- **Rules (learner request):** all texts in `strings.xml`, all colors in `colors.xml`, one spacing scale in `dimens.xml` (4/8/12/16/24/32/48 dp), styles in `styles.xml`. Reusable components: `MixynBottomBar`, `MixynLogoHeader` ("Mixyn ☰", "Profile"), `MixynBackHeader` (← + title + subtitle), `MixynTextField` (label + field + show/hide password + error), and one button base with color variants (Primary / Outline / Dark / Soft).
+- **Removed from the design for the PoC:** Continue with Apple/Google, Forgot password, Terms checkbox. **Collections** tab is visible but "coming soon".
+
+Original sketch (superseded where the design differs):
 
 - **Colors** (`res/values/colors.xml`):
   `sand_bg #F3EEE6` (window background) · `card_white #FFFFFF` (cards, canvas) · `ink #2B2926` (text, primary buttons, central +) · `ink_muted #7A736B` (secondary text, disabled tabs) · `line #E3DBD0` (dividers, placeholder outlines).
@@ -110,10 +116,11 @@ Keep layouts **basic** (learner decision: minimal UI, time goes to the backend).
 
 #### Auth and Users API
 `AuthController` + `AuthService` + `User` and `Session` entities. Real email + password accounts.
-- `POST /api/auth/register` `{name, email, password, city}` → `201 {user, token}`. Email is trimmed, lower-cased and must be unique → `409 {"error":"email_taken"}` (the app suggests Log In). Password min 6 chars → `400`. The password is stored only as a **BCrypt hash** (`spring-security-crypto`'s `BCryptPasswordEncoder`; no full Spring Security).
+- `POST /api/auth/register` `{name, email, password, city, country, latitude, longitude}` → `201 {user, token}`. Email is trimmed, lower-cased and must be unique → `409 {"error":"email_taken"}` (the app suggests Log In). Password min 8 chars → `400`. The city must come from the autocomplete (coordinates required). The password is stored only as a **BCrypt hash** (`spring-security-crypto`'s `BCryptPasswordEncoder`; no full Spring Security).
 - `POST /api/auth/login` `{email, password}` → `200 {user, token}` or `401 {"error":"invalid_credentials"}` (same response for unknown email and wrong password).
 - `POST /api/auth/logout` → deletes the current token → `204`.
-- `GET /api/me` → `200 {id, name, email, city}` or `401`. Used on splash to confirm the stored session still works.
+- `GET /api/me` → `200 {id, name, email, city, country}` or `401`. Used on splash to confirm the stored session still works.
+- `GET /api/cities?q=Lvi` (public) → up to 8 `{name, region, country, latitude, longitude}`. `CityService` proxies the free **Open-Meteo Geocoding API** (no key), keeps only populated places, removes duplicates, and searches in Ukrainian when the query is Cyrillic. Failure → `502 city_search_failed`.
 - **Token:** a random 32-byte value (Base64URL) stored in `sessions`; the app sends it as `Authorization: Bearer <token>`.
 - **Ownership:** `AuthInterceptor` resolves the token to a user on every `/api/**` call except register/login/health (`401` if missing/unknown). For `/api/users/{userId}/**` the path id must equal the token's user, and item/outfit ids are checked against that user → otherwise `403`/`404`. This is what makes "each user sees only their own clothes" a guarantee, not a UI convention.
 PRD ref: `prd.md > Account and Session`.
@@ -173,7 +180,7 @@ PRD ref: `prd.md > Account and Session`.
 `ApiClient` (Retrofit, base URL `http://10.0.2.2:8080/`, 90 s read timeout for uploads) + a `MixynApi` interface + DTOs. Cleartext HTTP to `10.0.2.2` is allowed only through `res/xml/network_security_config.xml`.
 
 #### Splash, Welcome and Auth Screens
-`SplashActivity` (logo, ~1 s, then routes on the session) → `WelcomeActivity` (logo, "Mixyn", description, Create Account / Log In) → `AuthActivity` (one layout in two modes: create = name + email + password + city; log in = email + password; friendly inline errors for wrong credentials and an already-used email, with a "Log In instead" link). After creating, it shows a "Welcome to Mixyn, {name}!" dialog and then opens Main.
+`SplashActivity` (logo, ~1 s, then routes on the session) → `WelcomeActivity` (logo, "Mixyn", description, Create Account / Log In) → `AuthActivity` (one layout in two modes: create = name + email + password + city; log in = email + password; friendly inline errors for wrong credentials and an already-used email, with a "Log In instead" link). After creating, `AccountCreatedActivity` shows a full "Account created" screen (design page 4a: arch art, "Welcome to Mixyn, {name}.", Snap / Mix / Relax, **Let's go** and **I'll look around first**) and then opens Main; from slice 2, **Let's go** opens Add clothes.
 PRD ref: `prd.md > Account and Session`, `prd.md > Screens and Layout`.
 
 #### Main Screen and Navigation
@@ -196,7 +203,7 @@ PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md >
 
 PostgreSQL, created by JPA (`spring.jpa.hibernate.ddl-auto=update`, a PoC simplification).
 
-**users**: `id bigserial PK`, `name varchar(50)`, `email varchar(254) unique` (stored lower-case), `password_hash varchar(72)` (BCrypt), `city varchar(80)`, `created_at timestamptz`.
+**users**: `id bigserial PK`, `name varchar(50)`, `email varchar(254) unique` (stored lower-case), `password_hash varchar(72)` (BCrypt), `city varchar(80)`, `country varchar(80)`, `latitude`, `longitude` (for weather later), `created_at timestamptz`.
 
 **sessions**: `token varchar(64) PK`, `user_id → users.id`, `created_at timestamptz`. (No expiry in the PoC.)
 
@@ -280,6 +287,10 @@ Mixyn/
 - **Call:** believed to be `POST http://rembg:7000/api/remove` with multipart field `file` → `image/png` bytes. Verify early with a `curl` and one sample photo.
 - **Cost:** free, local, no key. The first call downloads the u2net model.
 - **Docs:** https://github.com/danielgatis/rembg#usage-as-a-server
+
+### Open-Meteo Geocoding (city autocomplete)
+- `GET https://geocoding-api.open-meteo.com/v1/search?name=…&count=15&language=en|uk`, called only by the backend. Free, no key. The same provider can supply weather later.
+- Results need ≥ 3 characters; very short queries return nothing.
 
 ### PostgreSQL
 - The `postgres:16` image, with credentials from `.env` (`POSTGRES_DB=mixyn`, `POSTGRES_USER`, `POSTGRES_PASSWORD`; local-only values).

@@ -9,7 +9,7 @@ Build mode: learn
 
 ## Slices
 
-- [ ] **1. You can create an account, log out, and log back in**
+- [x] **1. You can create an account, log out, and log back in**
   Becomes usable: The Android app opens on Splash → Welcome; Create Account (Name, Email, Password, City) saves a real user in Postgres with a hashed password and lands on the main screen (bottom nav + empty-closet state); Profile shows your details and Log out; Log In with email + password brings you back; reopening the app skips Welcome.
   Why now: Every later feature belongs to a user, so accounts come first — and this slice carries all the bootstrapping (Docker Compose with Postgres, Spring Boot project, Android project, Japandi theme, network config), proving the whole Android → backend → database path on day one.
   PRD ref: `prd.md > The Core Journey` (steps 1–4, 12–13), `prd.md > Account and Session`, `prd.md > Screens and Layout`, `prd.md > Look and Feel`
@@ -93,3 +93,8 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Spec aligned to real email + password accounts (BCrypt, session token, Profile with Log out) — `spec.md` described a name-only mock login that contradicted the approved `scope.md` and `prd.md`; the learner confirmed real accounts at the start of `5-build`.
+- Spring Boot 4.1.1 instead of 3.x — start.spring.io no longer offers 3.x (its open-source support has ended); the learner chose 4.1.1.
+- City autocomplete on Create account (Open-Meteo Geocoding via `GET /api/cities`), city required and stored with country + coordinates — learner request during slice 1; small added cost (one public endpoint, no key).
+- The learner's screen design (`Mixyn App Screens.pdf`) became the Look and Feel source: mocha primary color, Instrument Serif + Inter, reusable components and a single spacing scale; password minimum raised to 8 to match it; Apple/Google sign-in, Forgot password and Terms removed; Collections shown as "coming soon".
+- Android `targetSdk` 36 instead of 37 — the build found that Android 17 silently drops connections from apps targeting 37 to the local network (the backend at 10.0.2.2) unless they request a new runtime permission.
+- "Account created" is a separate screen instead of a dialog — learner request, from the updated design (page 4a).
