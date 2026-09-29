@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_m"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingBottom="@dimen/space_l">
+
+        <com.mixyn.app.ui.components.MixynLogoHeader
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:headerTitle="@string/profile_title" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/avatar_size"
+                android:layout_height="@dimen/avatar_size"
+                android:background="@drawable/bg_avatar"
+                android:contentDescription="@null"
+                android:padding="@dimen/space_l"
+                android:src="@drawable/ic_profile"
+                app:tint="@color/on_dark" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
+
+                <TextView
+                    android:id="@+id/profile_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xxs"
+                    android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingBottom="@dimen/space_xs">
+
+            <TextView
+                android:id="@+id/profile_city"
+                style="@style/Widget.Mixyn.ListRow"
+                android:text="@string/profile_city"
+                app:drawableStartCompat="@drawable/ic_location" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/stroke"
+                android:layout_marginStart="@dimen/space_m"
+                android:layout_marginEnd="@dimen/space_m"
+                android:background="@color/line" />
+
+            <TextView
+                android:id="@+id/profile_logout"
+                style="@style/Widget.Mixyn.ListRow"
+                android:text="@string/profile_log_out"
+                android:textColor="@color/logout"
+                app:drawableStartCompat="@drawable/ic_logout"
+                app:drawableTint="@color/logout" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

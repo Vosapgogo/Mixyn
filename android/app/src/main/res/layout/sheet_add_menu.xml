@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_s"
+    android:paddingBottom="@dimen/space_l">
+
+    <View
+        android:layout_width="@dimen/space_xxl"
+        android:layout_height="@dimen/space_xxs"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/space_m"
+        android:background="@drawable/bg_sheet_handle" />
+
+    <TextView
+        android:id="@+id/menu_add_clothes"
+        style="@style/Widget.Mixyn.ListRow"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:text="@string/menu_add_clothes"
+        app:drawableEndCompat="@drawable/ic_chevron_right"
+        app:drawableStartCompat="@drawable/ic_shirt" />
+
+    <TextView
+        android:id="@+id/menu_create_outfit"
+        style="@style/Widget.Mixyn.ListRow"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:text="@string/menu_create_outfit"
+        app:drawableEndCompat="@drawable/ic_chevron_right"
+        app:drawableStartCompat="@drawable/ic_outfit" />
+
+    <!-- Visible but disabled in the PoC -->
+    <TextView
+        android:id="@+id/menu_outfitcheck"
+        style="@style/Widget.Mixyn.ListRow"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:text="@string/menu_outfitcheck"
+        android:textColor="@color/ink_muted"
+        app:drawableStartCompat="@drawable/ic_camera"
+        app:drawableTint="@color/ink_muted" />
+</LinearLayout>

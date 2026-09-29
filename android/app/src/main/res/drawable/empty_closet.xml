@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Open wardrobe with three empty hangers and two closed drawers (empty-closet state). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="220dp"
+    android:viewportWidth="240"
+    android:viewportHeight="220">
+    <!-- floor shadow -->
+    <path android:fillColor="@color/line" android:pathData="M40,204a80,8 0,1 0,160 0a80,8 0,1 0,-160 0z" />
+    <!-- feet -->
+    <path android:fillColor="@color/ink" android:pathData="M80,190h10v8h-10zM150,190h10v8h-10z" />
+    <!-- cabinet body -->
+    <path android:fillColor="@color/mocha_light" android:strokeColor="@color/ink" android:strokeWidth="2"
+        android:pathData="M70,30h100v160h-100z" />
+    <!-- top cap -->
+    <path android:fillColor="@color/surface" android:strokeColor="@color/ink" android:strokeWidth="2"
+        android:pathData="M64,22h112v8h-112z" />
+    <!-- rail -->
+    <path android:strokeColor="@color/ink" android:strokeWidth="2" android:pathData="M80,48h80" />
+    <!-- hangers -->
+    <path android:strokeColor="@color/mocha" android:strokeWidth="1.6" android:strokeLineJoin="round"
+        android:pathData="M96,48v4M84,64l12,-12l12,12zM120,48v4M108,64l12,-12l12,12zM144,48v4M132,64l12,-12l12,12z" />
+    <!-- drawers -->
+    <path android:fillColor="@color/surface" android:strokeColor="@color/ink" android:strokeWidth="2"
+        android:pathData="M76,140h88v20h-88zM76,162h88v22h-88z" />
+    <path android:strokeColor="@color/ink" android:strokeWidth="2" android:pathData="M112,150h16M112,173h16" />
+    <!-- open doors -->
+    <path android:fillColor="@color/surface" android:strokeColor="@color/ink" android:strokeWidth="2"
+        android:strokeLineJoin="round" android:pathData="M70,30L32,42V178L70,190Z" />
+    <path android:fillColor="@color/surface" android:strokeColor="@color/ink" android:strokeWidth="2"
+        android:strokeLineJoin="round" android:pathData="M170,30L208,42V178L170,190Z" />
+    <!-- door details -->
+    <path android:strokeColor="@color/card_blue" android:strokeWidth="2" android:pathData="M40,70h16M40,75h16M40,80h16" />
+    <path android:fillColor="@color/ink" android:pathData="M60,110m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0" />
+    <path android:fillColor="@color/ink" android:pathData="M180,110m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0" />
+</vector>
