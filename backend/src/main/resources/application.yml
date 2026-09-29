@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: mixyn
+  config:
+    # Local runs (./gradlew bootRun) read the project's .env; Docker passes the same values as env vars.
+    import: optional:file:../.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:mixyn}
+    username: ${POSTGRES_USER:mixyn}
+    password: ${POSTGRES_PASSWORD:mixyn}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
