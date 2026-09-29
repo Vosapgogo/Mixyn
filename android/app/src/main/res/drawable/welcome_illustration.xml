@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Welcome illustration: three overlapping cards with a striped sweater, dark trousers and white sneakers.
+     One drawable so the proportions stay the same on every screen size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="944dp"
+    android:height="920dp"
+    android:viewportWidth="944"
+    android:viewportHeight="920">
+
+    <!-- Blue card (back) -->
+    <group android:pivotX="680" android:pivotY="335" android:rotation="4">
+        <path android:fillColor="@color/card_blue"
+            android:pathData="M530,70h300a60,60 0,0 1,60 60v410a60,60 0,0 1,-60 60h-300a60,60 0,0 1,-60 -60v-410a60,60 0,0 1,60 -60z" />
+    </group>
+
+    <!-- Beige card -->
+    <group android:pivotX="255" android:pivotY="280" android:rotation="-4">
+        <path android:fillColor="@color/card_beige"
+            android:pathData="M90,20h330a60,60 0,0 1,60 60v410a60,60 0,0 1,-60 60h-330a60,60 0,0 1,-60 -60v-410a60,60 0,0 1,60 -60z" />
+        <!-- Striped sweater -->
+        <group>
+            <clip-path android:pathData="M200,158 Q265,178 330,158 L378,178 Q402,220 412,366 L376,374 L364,262 L370,402 L164,406 L168,262 L154,378 L118,388 Q126,218 152,178 Z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,150h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,160h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,170h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,180h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,190h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,200h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,210h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,220h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,230h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,240h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,250h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,260h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,270h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,280h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,290h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,300h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,310h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,320h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,330h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,340h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,350h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,360h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,370h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,380h330v10h-330z" />
+            <path android:fillColor="@color/stripe_brown" android:pathData="M100,390h330v10h-330z" />
+            <path android:fillColor="@color/stripe_cream" android:pathData="M100,400h330v10h-330z" />
+            <path android:fillColor="@color/stripe_blue" android:pathData="M100,410h330v10h-330z" />
+        </group>
+        <path android:strokeColor="@color/stripe_outline" android:strokeWidth="3" android:strokeLineJoin="round"
+            android:pathData="M200,158 Q265,178 330,158 L378,178 Q402,220 412,366 L376,374 L364,262 L370,402 L164,406 L168,262 L154,378 L118,388 Q126,218 152,178 Z" />
+        <path android:strokeColor="@color/stripe_outline" android:strokeWidth="3" android:pathData="M265,172v44" />
+    </group>
+
+    <!-- Dark trousers on the blue card -->
+    <group android:pivotX="680" android:pivotY="335" android:rotation="4">
+        <path android:fillColor="@color/trouser" android:strokeColor="@color/ink" android:strokeWidth="5"
+            android:strokeLineJoin="round"
+            android:pathData="M618,210L742,214L740,456L688,456L680,300L650,452L598,446Z" />
+        <path android:strokeColor="@color/card_beige" android:strokeWidth="6" android:pathData="M616,238L741,242" />
+    </group>
+
+    <!-- White card (front) with sneakers -->
+    <group android:pivotX="455" android:pivotY="710" android:rotation="-1">
+        <path android:fillColor="@color/surface" android:strokeColor="@color/line" android:strokeWidth="3"
+            android:pathData="M280,515h350a60,60 0,0 1,60 60v270a60,60 0,0 1,-60 60h-350a60,60 0,0 1,-60 -60v-270a60,60 0,0 1,60 -60z" />
+        <path android:fillColor="@color/surface" android:strokeColor="@color/ink" android:strokeWidth="5"
+            android:strokeLineJoin="round"
+            android:pathData="M328,686L382,690Q420,722 472,736L576,752L578,796L322,802Z" />
+        <path android:strokeColor="@color/ink" android:strokeWidth="5" android:pathData="M324,776L577,772" />
+        <path android:strokeColor="@color/ink" android:strokeWidth="4" android:strokeLineCap="round"
+            android:pathData="M404,704L420,730M428,716L442,742" />
+    </group>
+</vector>
