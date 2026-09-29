@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixyn Product Requirements</title>
+<style>
+:root{
+  --bg:#f4efe7; --card:#ffffff; --ink:#2a2724; --muted:#76706a; --line:#e3dbd0;
+  --soft:#ebe4d9; --ok:#4f6b52; --ok-soft:#e3ebe0; --warn:#8a6a1c; --warn-soft:#f4ead3;
+  --cut:#8b3a2e; --cut-soft:#f3e1dc;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1a1714; --card:#24201c; --ink:#efe8df; --muted:#a79e94; --line:#3a342e;
+    --soft:#2d2823; --ok:#9cc3a0; --ok-soft:#24301f; --warn:#e0c078; --warn-soft:#342b17;
+    --cut:#e39c8e; --cut-soft:#3a231f;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
+main{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+.status{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--ok-soft);color:var(--ok);padding:3px 10px;border-radius:99px}
+h1{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.05;margin:14px 0 6px}
+.lede{font-size:19px;color:var(--muted);margin:0 0 12px}
+.expand{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:24px 0}
+.expand b{font-family:var(--serif);font-weight:500;font-size:18px}
+h2{font-family:var(--serif);font-weight:500;font-size:26px;margin:48px 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--sans)}
+/* stepper */
+.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.stepper button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  padding:6px 12px;border-radius:99px;cursor:pointer}
+.stepper button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.panel{display:none}
+.panel.on{display:block}
+.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 4px}
+.src{font-size:12px;color:var(--muted);margin-bottom:12px}
+.src code{background:var(--soft);padding:1px 6px;border-radius:6px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:680px){.cols{grid-template-columns:1fr} h1{font-size:36px}}
+.label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+ul.ac{list-style:none;padding:0;margin:0}
+ul.ac li{padding:6px 0 6px 28px;position:relative;border-bottom:1px dashed var(--line);font-size:15px}
+ul.ac li:last-child{border-bottom:0}
+ul.ac li::before{content:"";position:absolute;left:2px;top:11px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:4px}
+ul.st{margin:0;padding-left:18px;font-size:15px}
+ul.st li{margin:4px 0}
+.assume{font-size:12px;background:var(--warn-soft);color:var(--warn);padding:1px 7px;border-radius:99px;margin-right:4px}
+.navbtns{display:flex;justify-content:space-between;margin-top:16px}
+.navbtns button{font:inherit;font-size:14px;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 0}
+.navbtns button:disabled{opacity:.3;cursor:default}
+/* look & feel */
+.swatches{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.sw{width:88px}
+.sw i{display:block;height:54px;border-radius:10px;border:1px solid var(--line)}
+.sw span{font-size:12px;color:var(--muted)}
+.typo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.typo div{border:1px solid var(--line);border-radius:10px;padding:12px}
+.typo .s{font-family:var(--serif);font-size:26px}
+/* boundary */
+details{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;overflow:hidden}
+summary{cursor:pointer;padding:14px 18px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:400;font-size:20px}
+details[open] summary::after{content:"–"}
+details ul{margin:0;padding:0 22px 16px 40px}
+details li{margin:5px 0}
+.pill{font-size:12px;padding:2px 10px;border-radius:99px;font-weight:600}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-cut{background:var(--cut-soft);color:var(--cut)}
+.note{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <span class="status">Approved</span>
+  <h1>Mixyn</h1>
+  <p class="lede">Product requirements for an AI stylist that builds outfits from the clothes you actually own, for anyone who wants to shop less and wear more of what they have.</p>
+
+  <div class="expand">
+    <b>Scope said: “real accounts from the start” and “AI outfit generation.”</b><br>
+    Now we know exactly what they mean: a real email-and-password account whose wardrobe lives in a database, an AI that fills in only
+    category and color, a four-slot canvas you can swipe piece by piece, and a stylist that falls back gracefully
+    instead of failing.
+  </div>
+
+  <h2>The journey</h2>
+  <div class="card">
+    <svg viewBox="0 0 860 330" role="img" aria-label="Journey: Splash, then Welcome and Create Account or Log In on first visit or straight to Wardrobe on return. From Wardrobe, Add clothes leads to processing and item card, back to wardrobe. Create outfit opens the canvas with random outfit, swipe, or Generate with AI, then Save to the Outfits tab.">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+      <g font-size="13">
+      <!-- row 1 -->
+      <rect x="10" y="20" width="110" height="52" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="65" y="51" text-anchor="middle" fill="var(--ink)" font-weight="600">Splash</text>
+      <rect x="170" y="20" width="130" height="52" rx="10" fill="var(--card)" stroke="var(--line)"/>
+      <text x="235" y="44" text-anchor="middle" fill="var(--ink)" font-weight="600">Welcome</text>
+      <text x="235" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">first visit only</text>
+      <rect x="350" y="20" width="150" height="52" rx="10" fill="var(--card)" stroke="var(--line)"/>
+      <text x="425" y="44" text-anchor="middle" fill="var(--ink)" font-weight="600">Sign up / Log in</text>
+      <text x="425" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">email + password · saved to DB</text>
+      <line x1="120" y1="46" x2="166" y2="46" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <line x1="300" y1="46" x2="346" y2="46" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <!-- wardrobe hub -->
+      <rect x="330" y="130" width="190" height="70" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="425" y="160" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="15">Wardrobe</text>
+      <text x="425" y="180" text-anchor="middle" fill="var(--muted)" font-size="11">Clothes · Outfits tabs</text>
+      <line x1="425" y1="72" x2="425" y2="126" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <path d="M65 72 C65 165 200 165 326 165" fill="none" stroke="var(--muted)" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+      <text x="120" y="150" fill="var(--muted)" font-size="11">returning user</text>
+      <!-- add clothes branch -->
+      <rect x="10" y="250" width="140" height="56" rx="10" fill="var(--card)" stroke="var(--line)"/>
+      <text x="80" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">Add clothes</text>
+      <text x="80" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">gallery photo</text>
+      <rect x="175" y="250" width="140" height="56" rx="10" fill="var(--card)" stroke="var(--line)"/>
+      <text x="245" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">Processing</text>
+      <text x="245" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">background removed</text>
+      <line x1="150" y1="278" x2="171" y2="278" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <path d="M330 190 C200 200 80 210 80 246" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <text x="150" y="220" fill="var(--muted)" font-size="11">+ menu</text>
+      <path d="M315 278 C360 278 380 240 400 204" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <text x="340" y="252" fill="var(--muted)" font-size="11">item card</text>
+      <!-- outfit branch -->
+      <rect x="560" y="120" width="160" height="90" rx="12" fill="var(--card)" stroke="var(--line)"/>
+      <text x="640" y="146" text-anchor="middle" fill="var(--ink)" font-weight="600">Outfit canvas</text>
+      <text x="640" y="166" text-anchor="middle" fill="var(--muted)" font-size="11">random start</text>
+      <text x="640" y="182" text-anchor="middle" fill="var(--muted)" font-size="11">swipe a piece</text>
+      <text x="640" y="198" text-anchor="middle" fill="var(--ink)" font-size="11" font-weight="600">Generate with AI + hint</text>
+      <line x1="520" y1="165" x2="556" y2="165" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <rect x="720" y="250" width="130" height="56" rx="10" fill="var(--ok-soft)" stroke="var(--ok)"/>
+      <text x="785" y="274" text-anchor="middle" fill="var(--ok)" font-weight="700">Save</text>
+      <text x="785" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">→ Outfits tab</text>
+      <path d="M680 210 C690 240 710 260 716 270" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <path d="M720 290 C600 320 470 300 440 204" fill="none" stroke="var(--muted)" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+  </div>
+
+  <h2>Screen by screen</h2>
+  <div class="card">
+    <div class="stepper" role="tablist" id="stepper"></div>
+    <div id="panels">
+
+      <section class="panel" data-name="Account">
+        <h3>Account &amp; session</h3>
+        <div class="src">develops <code>scope.md › The POC Boundary</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li>Splash on every launch.</li>
+              <li>Welcome: logo, “Mixyn,” description, Create Account / Log In.</li>
+              <li>Create Account: Name, Email, Password, City.</li>
+              <li>Log In: Email + Password.</li>
+              <li>Welcome/success message, then the wardrobe.</li>
+              <li>Profile: name, email, city, and <b>Log out</b>.</li>
+            </ul>
+            <div class="label">States</div>
+            <ul class="st"><li>Returning user: Splash → Wardrobe, skipping Welcome.</li>
+              <li>Wrong password or email already taken: a friendly error on the form.</li>
+              <li><span class="assume">assumption</span>No connection: “Can't connect right now, try again.”</li></ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>First launch shows Splash → Welcome.</li>
+              <li>Create Account saves a real user in the database, then shows the wardrobe.</li>
+              <li>Passwords are never stored in plain text.</li>
+              <li>Log out, then Log In with email + password, brings back the same clothes and outfits.</li>
+              <li>Each user sees only their own data.</li>
+              <li>Reopening skips Welcome.</li>
+              <li>City is stored with the user.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-name="Add clothes">
+        <h3>Adding clothes</h3>
+        <div class="src">develops <code>scope.md › The POC Boundary</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li>Empty closet: open white wardrobe, three empty hangers, closed drawers. “Your closet is empty.”</li>
+              <li>Central <b>+</b> → Add clothes → pick from gallery.</li>
+              <li>Processing → “Background removed · 1/1 completed” → View item.</li>
+            </ul>
+            <div class="label">States</div>
+            <ul class="st"><li><span class="assume">assumption</span>Unprocessable photo: a friendly error with retry, and nothing half-saved.</li></ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>Empty state shows the illustration, copy, and + Add clothes.</li>
+              <li>+ menu offers Add clothes and Create outfit; OutfitCHECK shows disabled with “coming soon.”</li><li>Calendar and Friends tabs show disabled with “coming soon.”</li>
+              <li>Processing screen shows progress, then View item.</li>
+              <li>Item appears with its original background fully removed.</li>
+              <li>Item shows in the Clothes grid afterward and is saved to the database.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-name="Item card">
+        <h3>AI item details</h3>
+        <div class="src">develops <code>scope.md › The Unique Kernel</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li>Large item image on white.</li>
+              <li>Name (“Add a name…” + Edit).</li>
+              <li><b>Category</b> and <b>Color</b> filled in by the AI.</li>
+              <li>Tags and Season: optional, manual.</li>
+            </ul>
+            <div class="label">Categories</div>
+            <ul class="st"><li>Tops · Bottoms · Shoes · Outerwear</li></ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>Category is auto-filled with one of the four.</li>
+              <li>Color is auto-filled (swatch + name).</li>
+              <li>Correcting category or color sticks.</li>
+              <li>Empty name/tags/season is fine.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-name="Canvas">
+        <h3>Outfit canvas &amp; carousel</h3>
+        <div class="src">develops <code>scope.md › The Core Loop</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li>White canvas: Top / Bottom / Shoes stacked like a silhouette.</li>
+              <li>Outerwear overlaps the Top.</li>
+              <li>A random outfit is already loaded.</li>
+              <li>Swipe any piece: only that piece changes.</li>
+            </ul>
+            <div class="label">States</div>
+            <ul class="st"><li>Missing category: faded outline + “Add shoes to complete the look.”</li>
+              <li><span class="assume">assumption</span>If a category has only one item, swiping stays on it, with no error.</li></ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>Opening shows a random Top, Bottom, and Shoes.</li>
+              <li>Outerwear shows as an overlapping layer.</li>
+              <li>Swiping pants changes only the pants.</li>
+              <li>An empty category shows the placeholder with +.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-name="AI stylist">
+        <h3>AI stylist <span class="note">(the “aha” beat)</span></h3>
+        <div class="src">develops <code>scope.md › The Unique Kernel</code> · <code>What “Working” Looks Like</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li>Optional hint field: “burgundy,” “this oversized shirt.”</li>
+              <li>Generate with AI replaces the canvas with a full look.</li>
+            </ul>
+            <div class="label">States</div>
+            <ul class="st">
+              <li>No match: toast “We couldn't find anything burgundy. Here is another stylish option!” and a look anyway.</li>
+              <li>Missing category: the same placeholder as the canvas.</li>
+              <li><span class="assume">assumption</span>May include outerwear if you own some.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>An empty hint produces a full look from your own items.</li>
+              <li>A color hint favors matching items; an item hint builds around that item.</li>
+              <li>An unmatched hint shows the toast plus a fallback look.</li>
+              <li>It never uses an item you don't own.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-name="Save">
+        <h3>Saving outfits</h3>
+        <div class="src">develops <code>scope.md › The Core Loop</code></div>
+        <div class="cols">
+          <div>
+            <div class="label">What you see</div>
+            <ul class="st">
+              <li><b>Save</b> at the bottom of the canvas.</li>
+              <li>The outfit appears in the Outfits tab.</li>
+            </ul>
+            <div class="label">Not yet</div>
+            <ul class="st"><li>“Wear it today,” Calendar, and Collections are deferred.</li></ul>
+          </div>
+          <div>
+            <div class="label">You'll know it works when</div>
+            <ul class="ac">
+              <li>Save stores a manual or AI-generated outfit.</li>
+              <li>The Outfits tab shows its pieces.</li>
+              <li>It's still there after reopening the app and after logging out and back in.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="navbtns"><button id="prev">← Previous</button><button id="next">Next →</button></div>
+  </div>
+
+  <h2>Look &amp; feel</h2>
+  <div class="card">
+    <p style="margin-top:0"><b>Japandi</b>: minimalist, clean, and functional, but warm, cozy, and calming. It should feel like a digital fashion magazine, not a heavy tech app. Think COS or Zara structure with the warmth of Pinterest minimalists.</p>
+    <div class="swatches">
+      <div class="sw"><i style="background:#efe7da"></i><span>warm sand bg</span></div>
+      <div class="sw"><i style="background:#ffffff"></i><span>white cards</span></div>
+      <div class="sw"><i style="background:#2b2926"></i><span>charcoal ink</span></div>
+      <div class="sw"><i style="background:#c19a6b"></i><span>camel*</span></div>
+      <div class="sw"><i style="background:#8f8a5c"></i><span>khaki*</span></div>
+      <div class="sw"><i style="background:#5b7291"></i><span>denim*</span></div>
+      <div class="sw"><i style="background:#a0522d"></i><span>rust*</span></div>
+    </div>
+    <p class="note">* Accents come from the clothes, not the app.</p>
+    <div class="typo">
+      <div><div class="s">Your closet is empty</div><span class="note">Serif: logo &amp; headers</span></div>
+      <div><div style="font-size:15px">Add your first piece. Snap a photo and we'll clean up the background for you.</div><span class="note">Sans-serif: UI &amp; body</span></div>
+    </div>
+  </div>
+
+  <h2>Boundary</h2>
+  <details open><summary><span class="pill p-ok">Building</span> What we're building</summary>
+    <ul>
+      <li>Splash, Welcome, and real Create Account / Log In (email + password) with a persistent session and Log out</li>
+      <li>Database storing users, clothes, and outfits, each tied to its owner</li>
+      <li>Wardrobe with Clothes and Outfits tabs, including the illustrated empty state</li>
+      <li>Gallery upload with real AI background removal</li>
+      <li>Item card with AI Category + Color (editable); optional Name, Tags, Season</li>
+      <li>Canvas: random start, per-piece swipe, outerwear layer, placeholders</li>
+      <li>AI stylist with optional hint and graceful fallback</li>
+      <li>Save → Outfits tab, persisting across sessions</li>
+      <li>Deferred tabs visible but disabled (“coming soon”); Profile has account info and Log out</li>
+      <li>Japandi styling</li>
+    </ul></details>
+  <details><summary><span class="pill p-warn">Deferred</span> Not in this proof of concept</summary>
+    <ul>
+      <li>Password reset, email verification, Google/Apple sign-in</li>
+      <li>Live weather: city is stored for later</li>
+      <li>Hats and Bags: hats need weather; bags don't show off layering</li>
+      <li>Camera capture: gallery is enough for the demo</li>
+      <li>“Wear it today,” Calendar, streaks, Collections</li>
+      <li>OutfitCHECK, Friends, sharing, ratings, leaderboard</li>
+      <li>AI auto-filling Tags, Season, Name</li>
+    </ul></details>
+  <details><summary><span class="pill p-cut">Non-goals</span> Things Mixyn won't do</summary>
+    <ul>
+      <li>No public feed or public profiles</li>
+      <li>No “one month later” time-skip demo</li>
+      <li>No shopping or recommending new clothes: you style only what you own</li>
+      <li>No production deployment requirement</li>
+    </ul></details>
+
+  <h2>Open questions</h2>
+  <div class="card">
+    <ul class="st">
+      <li><b>Outerwear in AI looks:</b> <span class="assume">assumption</span>optional, added if you own some.</li>
+      <li><b>Home tab = Wardrobe:</b> <span class="assume">assumption</span>yes.</li>
+    </ul>
+  </div>
+
+  <p class="note" style="margin-top:32px">Companion to <code>devpost/prd.md</code>. The Markdown file is the source of truth.</p>
+</main>
+<script>
+(function(){
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  var bar=document.getElementById('stepper'), i=0, btns=[];
+  panels.forEach(function(p,k){
+    var b=document.createElement('button');
+    b.textContent=(k+1)+' · '+p.dataset.name; b.setAttribute('role','tab');
+    b.onclick=function(){show(k)}; bar.appendChild(b); btns.push(b);
+  });
+  var prev=document.getElementById('prev'), next=document.getElementById('next');
+  function show(k){ i=k;
+    panels.forEach(function(p,j){p.classList.toggle('on',j===k)});
+    btns.forEach(function(b,j){b.setAttribute('aria-selected',j===k)});
+    prev.disabled=k===0; next.disabled=k===panels.length-1; }
+  prev.onclick=function(){if(i>0)show(i-1)}; next.onclick=function(){if(i<panels.length-1)show(i+1)};
+  show(0);
+})();
+</script>
+</body>
+</html>

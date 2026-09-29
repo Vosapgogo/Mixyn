@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixyn Technical Spec</title>
+<style>
+:root{
+  --bg:#f4efe7; --card:#ffffff; --ink:#2a2724; --muted:#76706a; --line:#e3dbd0; --soft:#ebe4d9;
+  --ok:#4f6b52; --ok-soft:#e3ebe0; --warn:#8a6a1c; --warn-soft:#f4ead3; --ai:#5b5a8f; --ai-soft:#e7e6f3;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1a1714; --card:#24201c; --ink:#efe8df; --muted:#a79e94; --line:#3a342e; --soft:#2d2823;
+    --ok:#9cc3a0; --ok-soft:#24301f; --warn:#e0c078; --warn-soft:#342b17; --ai:#b3b1e6; --ai-soft:#2a2940;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
+main{max-width:920px;margin:0 auto;padding:40px 16px 80px}
+.status{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--ok-soft);color:var(--ok);padding:3px 10px;border-radius:99px}
+h1{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.05;margin:14px 0 6px}
+.lede{font-size:19px;color:var(--muted);margin:0 0 12px}
+h2{font-family:var(--serif);font-weight:500;font-size:26px;margin:48px 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.plain p{margin:0 0 10px}
+.plain p:last-child{margin:0}
+.key{border-left:4px solid var(--ai);background:var(--ai-soft);padding:14px 18px;border-radius:10px;margin-top:14px}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--sans)}
+code,.mono{font-family:var(--mono);font-size:13px}
+code{background:var(--soft);padding:1px 6px;border-radius:6px}
+/* stepper */
+.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.stepper button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  padding:6px 12px;border-radius:99px;cursor:pointer}
+.stepper button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.panel{display:none}.panel.on{display:block}
+.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 4px}
+.src{font-size:12px;color:var(--muted);margin-bottom:12px}
+.flow{list-style:none;padding:0;margin:0;counter-reset:f}
+.flow li{counter-increment:f;position:relative;padding:8px 0 8px 36px;border-bottom:1px dashed var(--line);font-size:15px}
+.flow li:last-child{border-bottom:0}
+.flow li::before{content:counter(f);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:50%;
+  background:var(--soft);font-size:12px;display:grid;place-items:center;font-weight:600}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.t{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);font-family:var(--mono)}
+.t.a{background:var(--soft)} .t.b{background:var(--ok-soft);border-color:transparent} .t.g{background:var(--ai-soft);border-color:transparent}
+.navbtns{display:flex;justify-content:space-between;margin-top:16px}
+.navbtns button{font:inherit;font-size:14px;background:none;border:0;color:var(--muted);cursor:pointer}
+.navbtns button:disabled{opacity:.3;cursor:default}
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.scroll{overflow-x:auto}
+/* details */
+details{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;overflow:hidden}
+summary{cursor:pointer;padding:14px 18px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:400;font-size:20px}
+details[open] summary::after{content:"–"}
+.dbody{padding:0 18px 16px}
+.dbody ul{margin:6px 0 0;padding-left:20px}
+.dbody li{margin:4px 0;font-size:15px}
+.pill{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:600;font-family:var(--mono)}
+.p-a{background:var(--soft)} .p-b{background:var(--ok-soft);color:var(--ok)} .p-g{background:var(--ai-soft);color:var(--ai)}
+pre{background:var(--soft);border-radius:10px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:680px){.grid2{grid-template-columns:1fr} h1{font-size:36px}}
+.verify li{margin:6px 0}
+.note{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <span class="status">Approved</span>
+  <h1>Mixyn</h1>
+  <p class="lede">Technical spec: how the approved PRD gets built.</p>
+
+  <h2>How it works, in plain language</h2>
+  <div class="card plain">
+    <p><b>The Android app</b> is what you see and tap. It does no AI itself, holds no secrets, and only remembers <i>who you are</i>.</p>
+    <p><b>The Spring Boot backend</b> is the brain. It cleans photos, asks the AI what each item is, saves everything, and answers the app.</p>
+    <p><b>PostgreSQL</b> is the backend's spreadsheet (users, items, outfits). The photos themselves are files in a folder.</p>
+    <p><b>rembg</b> cuts out backgrounds in its own container. <b>Gemini</b> tags items and acts as the stylist.</p>
+    <div class="key"><b>The key rule:</b> the backend never trusts the AI blindly. Every item the stylist picks is checked against <i>your</i> wardrobe and the right category before it reaches the screen.</div>
+  </div>
+
+  <h2>Architecture</h2>
+  <div class="card">
+    <svg viewBox="0 0 860 360" role="img" aria-label="Android app talks over HTTP to Spring Boot at 10.0.2.2:8080. Spring Boot reads and writes PostgreSQL and an images folder, calls the rembg container for background removal, and calls the Gemini API over HTTPS for tagging and styling. Postgres, rembg, backend and the images volume run in Docker Compose on the laptop; Gemini is in the cloud.">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+      <!-- docker boundary -->
+      <rect x="250" y="20" width="420" height="320" rx="16" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="266" y="42" font-size="12" fill="var(--muted)">docker compose · your laptop</text>
+      <!-- android -->
+      <rect x="10" y="130" width="190" height="100" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="105" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">Android app</text>
+      <text x="105" y="182" text-anchor="middle" font-size="12" fill="var(--muted)">Java · XML · emulator</text>
+      <text x="105" y="200" text-anchor="middle" font-size="12" fill="var(--muted)">SharedPreferences: userId</text>
+      <line x1="200" y1="180" x2="306" y2="180" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+      <text x="253" y="170" text-anchor="middle" font-size="11" fill="var(--muted)">HTTP</text>
+      <text x="253" y="198" text-anchor="middle" font-size="10" fill="var(--muted)">10.0.2.2:8080</text>
+      <!-- backend -->
+      <rect x="310" y="120" width="190" height="120" rx="14" fill="var(--ok-soft)" stroke="var(--ok)" stroke-width="1.5"/>
+      <text x="405" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ok)">Spring Boot</text>
+      <text x="405" y="172" text-anchor="middle" font-size="12" fill="var(--muted)">REST API · JPA</text>
+      <text x="405" y="190" text-anchor="middle" font-size="12" fill="var(--muted)">TaggingService</text>
+      <text x="405" y="208" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">StylistService ✓ validates</text>
+      <!-- postgres -->
+      <rect x="530" y="60" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="592" y="88" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">PostgreSQL</text>
+      <text x="592" y="108" text-anchor="middle" font-size="11" fill="var(--muted)">users · items · outfits</text>
+      <!-- images -->
+      <rect x="530" y="148" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="592" y="176" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">/data/images</text>
+      <text x="592" y="196" text-anchor="middle" font-size="11" fill="var(--muted)">PNG cutouts</text>
+      <!-- rembg -->
+      <rect x="530" y="236" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="592" y="264" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">rembg</text>
+      <text x="592" y="284" text-anchor="middle" font-size="11" fill="var(--muted)">background removal</text>
+      <path d="M500 150 C515 120 515 95 526 92" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="500" y1="180" x2="526" y2="180" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+      <path d="M500 212 C515 240 515 265 526 268" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+      <!-- gemini -->
+      <rect x="700" y="130" width="150" height="100" rx="14" fill="var(--ai-soft)" stroke="var(--ai)" stroke-width="1.5"/>
+      <text x="775" y="160" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ai)">Gemini API</text>
+      <text x="775" y="180" text-anchor="middle" font-size="12" fill="var(--muted)">current Flash model</text>
+      <text x="775" y="198" text-anchor="middle" font-size="12" fill="var(--muted)">tagging · stylist</text>
+      <text x="775" y="216" text-anchor="middle" font-size="11" fill="var(--muted)">cloud · API key</text>
+      <path d="M500 130 C560 20 680 30 760 126" fill="none" stroke="var(--ai)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+      <text x="640" y="42" font-size="11" fill="var(--ai)">HTTPS · JSON schema</text>
+    </svg>
+  </div>
+
+  <h2>The core journey through the system</h2>
+  <div class="card">
+    <div class="stepper" role="tablist" id="stepper"></div>
+    <div id="panels">
+      <section class="panel" data-name="Open &amp; sign up">
+        <h3>Open the app &amp; sign up</h3>
+        <div class="src">implements <code>prd.md › Account and Session</code></div>
+        <ol class="flow">
+          <li><code>SplashActivity</code> checks <code>SessionStore</code> for a saved <code>userId</code>. If it finds one, it goes straight to the wardrobe.</li>
+          <li>With no session: <code>WelcomeActivity</code> → <code>AuthActivity</code> (name + city).</li>
+          <li><code>POST /api/users</code> inserts a row in <b>users</b> and returns <code>{id, name, city}</code>. A taken name returns <code>409</code>.</li>
+          <li>The app saves the id, shows “Welcome to Mixyn, {name}!”, then opens <code>MainActivity</code>.</li>
+        </ol>
+        <div class="tagrow"><span class="t a">ui/splash</span><span class="t a">ui/auth</span><span class="t a">session/SessionStore</span><span class="t b">user/UserController</span></div>
+      </section>
+      <section class="panel" data-name="Upload">
+        <h3>Add a piece of clothing</h3>
+        <div class="src">implements <code>prd.md › Adding Clothes</code> · <code>AI Item Details</code></div>
+        <ol class="flow">
+          <li>Central <b>+</b> → <code>AddMenuSheet</code> → Photo Picker → <code>AddItemActivity</code> shows “Removing background…”.</li>
+          <li><code>POST /api/users/{id}/items</code> sends the photo as multipart.</li>
+          <li><code>RembgClient</code> → rembg container → transparent PNG.</li>
+          <li><code>ImageStorage</code> saves <code>/data/images/{uuid}.png</code>.</li>
+          <li><code>TaggingService</code> → Gemini (image + prompt) → <code>{category, colorName, colorHex}</code>.</li>
+          <li>A row is saved in <b>items</b> and the item JSON is returned → “Background removed · 1/1 completed” → <b>View item</b>.</li>
+        </ol>
+        <div class="tagrow"><span class="t a">ui/additem</span><span class="t b">item/ItemService</span><span class="t b">ai/RembgClient</span><span class="t g">ai/TaggingService</span><span class="t b">storage/ImageStorage</span></div>
+      </section>
+      <section class="panel" data-name="Item card">
+        <h3>Item card &amp; corrections</h3>
+        <div class="src">implements <code>prd.md › AI Item Details</code></div>
+        <ol class="flow">
+          <li><code>ItemDetailActivity</code> loads the image with Glide from <code>GET /images/{file}</code>.</li>
+          <li>It shows Category, Color, Name, Tags, Season.</li>
+          <li>Each change sends <code>PATCH /api/items/{id}</code>. This is how the user fixes the AI's guess.</li>
+          <li>If tagging failed, the category is blank: “choose a category.” Uncategorized items stay off the canvas.</li>
+        </ol>
+        <div class="tagrow"><span class="t a">ui/item</span><span class="t b">item/ItemController</span></div>
+      </section>
+      <section class="panel" data-name="Canvas">
+        <h3>Outfit canvas &amp; swiping</h3>
+        <div class="src">implements <code>prd.md › Outfit Canvas and Carousel</code></div>
+        <ol class="flow">
+          <li><code>OutfitCanvasActivity</code> loads items once and groups them by category.</li>
+          <li>It picks a <b>random index per slot on the phone</b>, with no server call.</li>
+          <li>Each slot is a horizontal <code>ViewPager2</code>, so swiping one slot changes only that piece.</li>
+          <li>Outerwear overlaps the top. An empty category shows a dashed placeholder with “Add shoes to complete the look.”</li>
+        </ol>
+        <div class="tagrow"><span class="t a">ui/canvas/OutfitCanvasActivity</span><span class="t a">SlotPagerAdapter</span><span class="t a">PlaceholderView</span></div>
+      </section>
+      <section class="panel" data-name="Generate with AI">
+        <h3>Generate with AI</h3>
+        <div class="src">implements <code>prd.md › AI Stylist</code></div>
+        <ol class="flow">
+          <li><code>POST /api/users/{id}/outfits/generate {hint}</code></li>
+          <li><code>StylistService</code> builds a text list: <code>id | category | color | name | tags</code>.</li>
+          <li>Gemini returns <code>{topId, bottomId, shoesId, outerwearId, hintMatched}</code>.</li>
+          <li><b>Validate:</b> each id must be yours and in the right category. Invalid slots get a random valid item; empty categories get <code>null</code>.</li>
+          <li>If there's no match: “We couldn't find anything {hint}. Here is another stylish option!”</li>
+          <li>The app scrolls each slot to the returned item and shows the toast if needed.</li>
+        </ol>
+        <div class="tagrow"><span class="t g">outfit/StylistService</span><span class="t b">outfit/OutfitController</span><span class="t b">StylistServiceTest</span></div>
+      </section>
+      <section class="panel" data-name="Save">
+        <h3>Save the outfit</h3>
+        <div class="src">implements <code>prd.md › Saving Outfits</code></div>
+        <ol class="flow">
+          <li><b>Save</b> → <code>POST /api/users/{id}/outfits {topId, bottomId, shoesId, outerwearId, source, hint}</code>.</li>
+          <li>Ownership is checked, and a row goes into <b>outfits</b>.</li>
+          <li><code>OutfitsFragment</code> lists them via <code>GET /api/users/{id}/outfits</code>, newest first.</li>
+          <li>They're still there after reopening: Postgres lives in the <code>pgdata</code> volume.</li>
+        </ol>
+        <div class="tagrow"><span class="t a">ui/main/OutfitsFragment</span><span class="t b">outfit/OutfitController</span></div>
+      </section>
+    </div>
+    <div class="navbtns"><button id="prev">← Previous</button><button id="next">Next →</button></div>
+    <p class="note" style="margin:10px 0 0">Tags: <span class="t a">android</span> <span class="t b">backend</span> <span class="t g">backend → Gemini</span></p>
+  </div>
+
+  <h2>Stack</h2>
+  <div class="card scroll">
+    <table class="tbl">
+      <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+      <tr><td>Android</td><td>Java + XML, Retrofit, Glide, ViewPager2, Material</td><td>Same as your current project</td></tr>
+      <tr><td>Backend</td><td>Spring Boot 3.x, Java 21, Gradle, JPA</td><td>Your long-term stack</td></tr>
+      <tr><td>Database</td><td>PostgreSQL 16 (Docker)</td><td>Same as the long-term app</td></tr>
+      <tr><td>Background removal</td><td>rembg (Docker)</td><td>Free, local, no key, no limits</td></tr>
+      <tr><td>Tagging + stylist</td><td>Gemini, current Flash, Google Gen AI Java SDK</td><td>Your choice; 1.5 Flash is likely retired</td></tr>
+      <tr><td>Run</td><td>Docker Compose + Android emulator</td><td>Everything local; record the emulator</td></tr>
+    </table>
+  </div>
+
+  <h2>Components</h2>
+  <details><summary><span class="pill p-b">backend</span> REST endpoints</summary><div class="dbody scroll">
+    <table class="tbl">
+      <tr><th>Endpoint</th><th>Does</th><th>PRD</th></tr>
+      <tr><td class="mono">POST /api/users</td><td>Create user (name + city); 409 if the name is taken</td><td>Account and Session</td></tr>
+      <tr><td class="mono">GET /api/users/by-name/{name}</td><td>Mock log in</td><td>Account and Session</td></tr>
+      <tr><td class="mono">GET /api/users/{id}</td><td>Confirm the stored session</td><td>Account and Session</td></tr>
+      <tr><td class="mono">POST /api/users/{id}/items</td><td>Upload → rembg → store → tag → save</td><td>Adding Clothes</td></tr>
+      <tr><td class="mono">GET /api/users/{id}/items</td><td>Wardrobe list</td><td>Adding Clothes</td></tr>
+      <tr><td class="mono">PATCH /api/items/{id}</td><td>Correct category/color, add name/tags/season</td><td>AI Item Details</td></tr>
+      <tr><td class="mono">GET /images/{file}</td><td>Serve the PNG cutout</td><td>Adding Clothes</td></tr>
+      <tr><td class="mono">POST /api/users/{id}/outfits/generate</td><td>AI stylist + validation</td><td>AI Stylist</td></tr>
+      <tr><td class="mono">POST /api/users/{id}/outfits</td><td>Save an outfit</td><td>Saving Outfits</td></tr>
+      <tr><td class="mono">GET /api/users/{id}/outfits</td><td>List saved outfits</td><td>Saving Outfits</td></tr>
+      <tr><td class="mono">GET /api/health</td><td>Server-up check</td><td>—</td></tr>
+    </table></div></details>
+  <details><summary><span class="pill p-g">AI</span> Gemini calls &amp; validation</summary><div class="dbody">
+    <div class="grid2">
+      <div><b>Tagging</b> (image + prompt)<pre>{ "category": "TOP|BOTTOM|SHOES|OUTERWEAR",
+  "colorName": "Khaki",
+  "colorHex": "#8F8A5C" }</pre>
+        <p class="note">On failure, the item is still saved with a blank category, and the user picks one.</p></div>
+      <div><b>Stylist</b> (text list + hint)<pre>{ "topId": 12, "bottomId": 7,
+  "shoesId": 3, "outerwearId": null,
+  "hintMatched": true }</pre>
+        <p class="note">Every id is checked for ownership and category. Bad or missing slots get a random valid item.</p></div>
+    </div></div></details>
+  <details><summary><span class="pill p-a">android</span> Screens</summary><div class="dbody"><ul>
+    <li><code>SplashActivity</code>, <code>WelcomeActivity</code>, <code>AuthActivity</code> (create / log-in modes)</li>
+    <li><code>MainActivity</code>: bottom nav (Home, Calendar⌀, +, Friends⌀, Profile⌀), where ⌀ = disabled, “Coming soon”</li>
+    <li><code>WardrobeFragment</code> with tabs <code>ClothesFragment</code> (grid or empty closet) and <code>OutfitsFragment</code></li>
+    <li><code>AddMenuSheet</code>: Add clothes, Create outfit, OutfitCHECK⌀</li>
+    <li><code>AddItemActivity</code>, <code>ItemDetailActivity</code>, <code>OutfitCanvasActivity</code></li>
+  </ul></div></details>
+  <details><summary><span class="pill p-a">design</span> Look &amp; feel in the theme</summary><div class="dbody"><ul>
+    <li>Colors: <code>sand_bg #F3EEE6</code>, <code>card_white #FFFFFF</code>, <code>ink #2B2926</code>, <code>ink_muted #7A736B</code>, <code>line #E3DBD0</code>. No brand accent.</li>
+    <li>A serif (Cormorant Garamond / Playfair Display) for the logo and titles, and a sans-serif (Inter or system) for the UI</li>
+    <li>White 12dp-radius cards, black pill buttons, a big black round +, and a vector empty-closet drawing</li>
+    <li>Layouts stay basic, and the identity comes from the theme</li>
+  </ul></div></details>
+
+  <h2>Data: where it lives</h2>
+  <div class="card scroll">
+    <table class="tbl">
+      <tr><th>Data</th><th>Lives in</th><th>After reopening</th></tr>
+      <tr><td>Who you are</td><td>SharedPreferences</td><td>Kept, so Welcome is skipped</td></tr>
+      <tr><td>Users, items, outfits</td><td>Postgres (<code>pgdata</code> volume)</td><td>Kept</td></tr>
+      <tr><td>Item photos</td><td><code>/data/images</code> (<code>images</code> volume)</td><td>Kept</td></tr>
+      <tr><td>Current canvas &amp; hint</td><td>Memory</td><td>Gone; a fresh random outfit (by design)</td></tr>
+    </table>
+  </div>
+
+  <h2>File structure</h2>
+  <div class="card"><pre>Mixyn/
+├── docker-compose.yml     # db, rembg, backend + volumes
+├── .env.example           # GEMINI_API_KEY=, GEMINI_MODEL=, DB creds
+├── README.md
+├── backend/               # Spring Boot (Gradle, Java 21)
+│   └── src/main/java/com/mixyn/
+│       ├── config/  common/  storage/
+│       ├── user/    # User, UserController
+│       ├── item/    # Item, ItemService, ItemController
+│       ├── outfit/  # Outfit, StylistService, OutfitController
+│       └── ai/      # RembgClient, TaggingService
+│   └── src/test/…/outfit/StylistServiceTest.java
+├── android/app/src/main/
+│   ├── java/com/mixyn/app/
+│   │   ├── api/  session/
+│   │   └── ui/ splash/ welcome/ auth/ main/ additem/ item/ canvas/
+│   └── res/ layout/ values/ font/ drawable/ menu/ xml/
+└── devpost/</pre></div>
+
+  <h2>Run it &amp; record it</h2>
+  <div class="card">
+    <ol class="flow">
+      <li><code>cp .env.example .env</code>, then add your Gemini key (never commit it)</li>
+      <li><code>docker compose up --build</code> starts Postgres :5432, rembg :7000, and the backend :8080</li>
+      <li><code>curl localhost:8080/api/health</code> should return <code>{"status":"ok"}</code></li>
+      <li>Open <code>android/</code> in Android Studio → emulator → Run (the app calls <code>10.0.2.2:8080</code>)</li>
+      <li>Do one warm-up upload (rembg downloads its model on the first use), then record the demo</li>
+    </ol>
+  </div>
+
+  <h2>When things break</h2>
+  <details><summary>rembg fails or the photo is unreadable</summary><div class="dbody">Nothing is saved; the processing screen shows “We couldn't process this photo” + Try again.</div></details>
+  <details><summary>Gemini tagging fails</summary><div class="dbody">The item is saved anyway with a blank category, and the card asks you to choose. The upload never fails because of tagging.</div></details>
+  <details><summary>Gemini stylist fails or returns bad ids</summary><div class="dbody">Bad slots are filled with random valid items. On total failure: “The stylist is taking a break — here's a random look instead.” The canvas is never blank.</div></details>
+  <details><summary>The emulator can't reach the backend</summary><div class="dbody">“Can't reach Mixyn — is the server running?” Check that you're using <code>10.0.2.2</code> and that the network security config is present.</div></details>
+
+  <h2>Verify early in the build</h2>
+  <div class="card"><ul class="verify">
+    <li>The current <b>Gemini Flash model id</b>, the free-tier limits, and the Java SDK calls for image input + JSON schema</li>
+    <li>The <b>rembg</b> server command, endpoint, and field name (one curl test)</li>
+    <li>The latest <b>Spring Boot 3.x</b> version</li>
+  </ul>
+  <p class="note">Learning focus: treating AI output as <i>untrusted input</i>, meaning a schema, then validation against the database, then a fallback. The evidence will be <code>StylistServiceTest</code> plus a no-match hint still producing a full look.</p></div>
+
+  <p class="note" style="margin-top:32px">Companion to <code>devpost/spec.md</code>. The Markdown file is the source of truth.</p>
+</main>
+<script>
+(function(){
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  var bar=document.getElementById('stepper'), i=0, btns=[];
+  panels.forEach(function(p,k){
+    var b=document.createElement('button');
+    b.innerHTML=(k+1)+' · '+p.dataset.name; b.setAttribute('role','tab');
+    b.onclick=function(){show(k)}; bar.appendChild(b); btns.push(b);
+  });
+  var prev=document.getElementById('prev'), next=document.getElementById('next');
+  function show(k){ i=k;
+    panels.forEach(function(p,j){p.classList.toggle('on',j===k)});
+    btns.forEach(function(b,j){b.setAttribute('aria-selected',j===k)});
+    prev.disabled=k===0; next.disabled=k===panels.length-1; }
+  prev.onclick=function(){if(i>0)show(i-1)}; next.onclick=function(){if(i<panels.length-1)show(i+1)};
+  show(0);
+})();
+</script>
+</body>
+</html>

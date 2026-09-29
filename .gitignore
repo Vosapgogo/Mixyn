@@ -1,0 +1,13 @@
+# Personal learning context (kept out of commits by default)
+/devpost/learner-profile.md
+
+# Local credentials
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+# Screen recordings / demo videos (upload separately, not to the repo)
+*.mov
+*.mp4
