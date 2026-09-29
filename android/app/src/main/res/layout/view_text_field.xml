@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MixynTextField: label + rounded input (+ show/hide for passwords) + error line. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="vertical"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <TextView
+        android:id="@+id/field_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_xs"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+            android:id="@+id/field_input"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/field_height"
+            android:background="@drawable/bg_field"
+            android:completionThreshold="2"
+            android:dropDownVerticalOffset="@dimen/space_xxs"
+            android:fontFamily="@font/inter"
+            android:paddingStart="@dimen/space_m"
+            android:paddingEnd="@dimen/space_m"
+            android:popupBackground="@drawable/bg_card"
+            android:textColor="@color/ink"
+            android:textColorHint="@color/ink_muted"
+            android:textSize="@dimen/text_body" />
+
+        <ImageButton
+            android:id="@+id/field_toggle"
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="@dimen/space_xxs"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/show_password"
+            android:src="@drawable/ic_eye"
+            android:visibility="gone"
+            app:tint="@color/ink_muted"
+            xmlns:app="http://schemas.android.com/apk/res-auto" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/field_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:textAppearance="@style/TextAppearance.Mixyn.Error"
+        android:visibility="gone" />
+</merge>

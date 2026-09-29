@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MixynLogoHeader: serif title on the left ("Mixyn", "Profile") and one icon action on the right. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="horizontal"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
+
+    <ImageButton
+        android:id="@+id/header_action"
+        android:layout_width="@dimen/icon_button_size"
+        android:layout_height="@dimen/icon_button_size"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="@dimen/space_s"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:tint="@color/ink" />
+</merge>

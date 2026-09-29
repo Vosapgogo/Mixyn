@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- XML attributes for Mixyn's reusable components: screens change only these. -->
+<resources>
+    <declare-styleable name="MixynTextField">
+        <attr name="label" format="string" />
+        <attr name="hint" format="string" />
+        <attr name="fieldType" format="enum">
+            <enum name="text" value="0" />
+            <enum name="name" value="1" />
+            <enum name="email" value="2" />
+            <enum name="password" value="3" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="MixynBackHeader">
+        <attr name="title" format="string" />
+        <attr name="subtitle" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="MixynLogoHeader">
+        <attr name="headerTitle" format="string" />
+        <attr name="actionIcon" format="reference" />
+        <attr name="actionDescription" format="string" />
+    </declare-styleable>
+</resources>

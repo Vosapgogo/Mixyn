@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MixynBottomBar: Home, Calendar, big black +, Friends, Profile. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="horizontal"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <TextView android:id="@+id/nav_home" style="@style/Widget.Mixyn.BottomBarItem"
+        android:drawableTop="@drawable/ic_home" android:text="@string/nav_home" />
+
+    <TextView android:id="@+id/nav_calendar" style="@style/Widget.Mixyn.BottomBarItem"
+        android:drawableTop="@drawable/ic_calendar" android:text="@string/nav_calendar" />
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <ImageButton
+            android:id="@+id/nav_add"
+            android:layout_width="@dimen/bottom_bar_plus_size"
+            android:layout_height="@dimen/bottom_bar_plus_size"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_plus_button"
+            android:contentDescription="@string/nav_add"
+            android:padding="@dimen/space_m"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_plus"
+            android:tint="@color/on_dark" />
+    </FrameLayout>
+
+    <TextView android:id="@+id/nav_friends" style="@style/Widget.Mixyn.BottomBarItem"
+        android:drawableTop="@drawable/ic_friends" android:text="@string/nav_friends" />
+
+    <TextView android:id="@+id/nav_profile" style="@style/Widget.Mixyn.BottomBarItem"
+        android:drawableTop="@drawable/ic_profile" android:text="@string/nav_profile" />
+</merge>
