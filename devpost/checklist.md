@@ -7,6 +7,8 @@ status: approved
 
 Build mode: learn
 
+Commits: many small commits per slice — one per new feature, backend and Android separately (learner request). A slice's `Commit:` line names its last commit.
+
 ## Slices
 
 - [x] **1. You can create an account, log out, and log back in**
