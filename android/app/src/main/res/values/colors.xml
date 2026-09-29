@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mixyn palette (from the design). Use these names everywhere; never hard-code a color in a layout. -->
+<resources>
+    <!-- Brand -->
+    <color name="mocha">#7B6453</color>            <!-- primary buttons, splash, avatar -->
+    <color name="mocha_light">#EFE8E1</color>      <!-- soft fills, selected chips -->
+    <color name="ink">#1F1B17</color>              <!-- text, central +, dark buttons -->
+    <color name="ink_muted">#8A837B</color>        <!-- secondary text, disabled tabs -->
+
+    <!-- Surfaces -->
+    <color name="sand_bg">#F4F1ED</color>          <!-- window background -->
+    <color name="surface">#FBFAF7</color>          <!-- fields, cards, bottom bar, sheets -->
+    <color name="line">#E3DDD5</color>             <!-- field and card outlines, dividers -->
+    <color name="on_dark">#FFFFFF</color>          <!-- text on mocha / ink -->
+    <color name="splash_text">#F4EEE6</color>
+
+    <!-- Illustration cards on Welcome -->
+    <color name="card_beige">#E7DFD4</color>
+    <color name="card_blue">#C9D2DB</color>
+    <color name="stripe_brown">#8C6E5A</color>
+    <color name="stripe_blue">#A3B6CA</color>
+    <color name="stripe_cream">#F2ECE3</color>
+    <color name="stripe_outline">#9C9A95</color>
+    <color name="trouser">#3B3830</color>
+    <color name="sparkle_tan">#C9A27A</color>
+    <color name="card_blush">#EADFDB</color>
+
+    <!-- States -->
+    <color name="error">#4F0005</color>            <!-- Pantone 4975C "Red Inferno": wrong input (border + message) -->
+    <color name="logout">@color/error</color>      <!-- Log out row: same Red Inferno as errors -->
+</resources>

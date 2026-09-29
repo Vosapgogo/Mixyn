@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- All user-facing text lives here. -->
+<resources>
+    <string name="app_name">Mixyn</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Your closet, styled.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_chip">Styled for you</string>
+    <string name="welcome_title">Wear what you own.\nStyled by AI.</string>
+    <string name="welcome_body">Snap your clothes, swipe to mix and match, or let the AI stylist build a full look in one tap.</string>
+    <string name="action_create_account">Create account</string>
+    <string name="action_have_account">I already have an account</string>
+
+    <!-- Log in -->
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Log in to see today\'s look.</string>
+    <string name="action_log_in">Log in</string>
+    <string name="login_switch_prompt">New to Mixyn?</string>
+
+    <!-- Create account -->
+    <string name="register_title">Create your closet</string>
+    <string name="register_subtitle">Takes a minute. Your wardrobe stays private.</string>
+    <string name="register_switch_prompt">Already have an account?</string>
+
+    <!-- Account created -->
+    <string name="account_created_chip">Account created</string>
+    <string name="account_created_title">Welcome to Mixyn,\n%1$s.</string>
+    <string name="account_created_body">Your closet is ready. Add your first piece now, or whenever you feel like it.</string>
+    <string name="feature_snap">Snap</string>
+    <string name="feature_snap_hint">your clothes</string>
+    <string name="feature_mix">Mix</string>
+    <string name="feature_mix_hint">swipe your fits</string>
+    <string name="feature_relax">Relax</string>
+    <string name="feature_relax_hint">AI styles you</string>
+    <string name="action_lets_go">Let\'s go</string>
+    <string name="action_look_around">I\'ll look around first</string>
+
+    <!-- Form fields -->
+    <string name="field_name">Name</string>
+    <string name="field_name_hint">What should we call you?</string>
+    <string name="field_email">Email</string>
+    <string name="field_email_hint">you@example.com</string>
+    <string name="field_password">Password</string>
+    <string name="field_password_hint_login">Your password</string>
+    <string name="field_password_hint_register">At least 8 characters</string>
+    <string name="field_city">City</string>
+    <string name="field_city_hint">Start typing your city</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+
+    <!-- Form errors -->
+    <string name="error_name_required">Tell us what to call you</string>
+    <string name="error_email_invalid">Enter a valid email</string>
+    <string name="error_password_short">Use at least 8 characters</string>
+    <string name="error_password_required">Enter your password</string>
+    <string name="error_city_required">Choose your city from the list</string>
+    <string name="error_invalid_credentials">Email or password is incorrect</string>
+    <string name="error_email_taken">An account with this email already exists.</string>
+    <string name="error_email_taken_action">Log in instead</string>
+    <string name="error_network">Can\'t reach Mixyn — is the server running?</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_cities">Can\'t load cities right now</string>
+
+    <!-- Bottom bar -->
+    <string name="nav_home">Home</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_add">Add</string>
+    <string name="nav_friends">Friends</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Wardrobe -->
+    <string name="tab_clothes">Clothes</string>
+    <string name="tab_outfits">Outfits</string>
+    <string name="tab_collections">Collections</string>
+    <string name="menu">Menu</string>
+    <string name="empty_closet_title">Your closet is empty</string>
+    <string name="empty_closet_body">Add your first piece. Snap a photo and we\'ll clean up the background for you.</string>
+    <string name="action_add_clothes">Add clothes</string>
+    <string name="empty_outfits_title">No outfits yet</string>
+    <string name="empty_outfits_body">Create an outfit and save it — it will show up here.</string>
+
+    <!-- + menu -->
+    <string name="menu_add_clothes">Add clothes</string>
+    <string name="menu_create_outfit">Create outfit</string>
+    <string name="menu_outfitcheck">OutfitCHECK</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_city">City for weather</string>
+    <string name="profile_log_out">Log out</string>
+    <string name="profile_email_city">%1$s · %2$s</string>
+
+    <!-- Shared -->
+    <string name="coming_soon">Coming soon</string>
+    <string name="coming_next_step">Coming in the next build step</string>
+    <string name="back">Back</string>
+</resources>

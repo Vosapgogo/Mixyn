@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One spacing scale for the whole app. Layouts use only these values. -->
+<resources>
+    <!-- Spacing scale (4-based) -->
+    <dimen name="space_xxs">4dp</dimen>
+    <dimen name="space_xs">8dp</dimen>
+    <dimen name="space_s">12dp</dimen>
+    <dimen name="space_m">16dp</dimen>
+    <dimen name="space_l">24dp</dimen>
+    <dimen name="space_xl">32dp</dimen>
+    <dimen name="space_xxl">48dp</dimen>
+
+    <!-- Screen side margin (design: 24dp) -->
+    <dimen name="screen_margin">@dimen/space_l</dimen>
+
+    <!-- Corner radii -->
+    <dimen name="radius_field">16dp</dimen>
+    <dimen name="radius_card">24dp</dimen>
+    <dimen name="radius_pill">28dp</dimen>
+
+    <!-- Component sizes -->
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="field_height">56dp</dimen>
+    <dimen name="icon_button_size">48dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="bottom_bar_height">72dp</dimen>
+    <dimen name="bottom_bar_plus_size">56dp</dimen>
+    <dimen name="avatar_size">88dp</dimen>
+    <dimen name="feature_icon_size">56dp</dimen>
+    <dimen name="logo_tile_size">96dp</dimen>
+    <dimen name="stroke">1dp</dimen>
+    <dimen name="stroke_error">1.5dp</dimen>
+
+    <!-- Type scale -->
+    <dimen name="text_hero">64sp</dimen>
+    <dimen name="text_display">44sp</dimen>
+    <dimen name="text_title">36sp</dimen>
+    <dimen name="text_logo">32sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_label">14sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+</resources>

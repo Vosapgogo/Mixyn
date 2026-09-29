@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Mixyn" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/mocha</item>
+        <item name="colorOnPrimary">@color/on_dark</item>
+        <item name="colorSecondary">@color/ink</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorError">@color/error</item>
+        <item name="android:windowBackground">@color/sand_bg</item>
+        <item name="android:colorBackground">@color/sand_bg</item>
+        <!-- Fonts come from the TextAppearance.Mixyn.* styles; a theme-wide font would override them. -->
+        <item name="android:textViewStyle">@style/Widget.Mixyn.TextView</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="materialButtonStyle">@style/Widget.Mixyn.Button.Primary</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Mixyn.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Mixyn.BottomSheet</item>
+    </style>
+
+    <style name="Theme.Mixyn.Splash">
+        <item name="android:windowBackground">@color/mocha</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <style name="ThemeOverlay.Mixyn.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Mixyn.BottomSheet</item>
+    </style>
+
+    <style name="Widget.Mixyn.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/surface</item>
+        <item name="shapeAppearance">@style/Mixyn.SheetShape</item>
+    </style>
+
+    <style name="Mixyn.SheetShape" parent="">
+        <item name="cornerSizeTopLeft">@dimen/radius_card</item>
+        <item name="cornerSizeTopRight">@dimen/radius_card</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+</resources>

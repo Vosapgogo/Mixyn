@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text and component styles. Screens pick a style; they don't set fonts, sizes or colors themselves. -->
+<resources>
+
+    <!-- ===== Text ===== -->
+    <!-- Default for any TextView without its own appearance -->
+    <style name="Widget.Mixyn.TextView" parent="android:Widget.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Body</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Hero" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_hero</item>
+        <item name="android:textColor">@color/splash_text</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Display" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:lineSpacingMultiplier">0.95</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Title" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Logo" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_logo</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Body" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/ink_muted</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.BodyStrong" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Label" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Caption" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/ink_muted</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Error" parent="TextAppearance.Mixyn.Caption">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:textColor">@color/error</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Button" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ===== Buttons: one base shape, color variants only ===== -->
+    <style name="Widget.Mixyn.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">@dimen/space_l</item>
+        <item name="android:paddingEnd">@dimen/space_l</item>
+        <item name="cornerRadius">@dimen/radius_pill</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Button</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/space_xs</item>
+        <item name="iconSize">20dp</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Main action: Create account, Log in, Add clothes -->
+    <style name="Widget.Mixyn.Button.Primary">
+        <item name="backgroundTint">@color/mocha</item>
+        <item name="android:textColor">@color/on_dark</item>
+        <item name="iconTint">@color/on_dark</item>
+    </style>
+
+    <!-- Second choice next to a primary: "I already have an account" -->
+    <style name="Widget.Mixyn.Button.Outline">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="strokeColor">@color/ink</item>
+        <item name="strokeWidth">@dimen/stroke</item>
+        <item name="iconTint">@color/ink</item>
+    </style>
+
+    <!-- Strong accent: Ask AI / Generate, Done -->
+    <style name="Widget.Mixyn.Button.Dark">
+        <item name="backgroundTint">@color/ink</item>
+        <item name="android:textColor">@color/on_dark</item>
+        <item name="iconTint">@color/on_dark</item>
+    </style>
+
+    <!-- Quiet action on a dark or busy background: View item -->
+    <style name="Widget.Mixyn.Button.Soft">
+        <item name="backgroundTint">@color/surface</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="iconTint">@color/ink</item>
+    </style>
+
+    <!-- Inline text link: "Create account" in "New to Mixyn? Create account" -->
+    <style name="Widget.Mixyn.TextLink" parent="Widget.AppCompat.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Label</item>
+        <item name="android:textColor">@color/mocha</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:paddingTop">@dimen/space_xs</item>
+        <item name="android:paddingBottom">@dimen/space_xs</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <!-- ===== Tabs (Clothes / Outfits / Collections) ===== -->
+    <style name="Widget.Mixyn.Tabs" parent="Widget.Material3.TabLayout">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="tabIndicatorColor">@color/ink</item>
+        <item name="tabIndicatorFullWidth">true</item>
+        <item name="tabSelectedTextColor">@color/ink</item>
+        <item name="tabTextColor">@color/ink_muted</item>
+        <item name="tabTextAppearance">@style/TextAppearance.Mixyn.Tab</item>
+        <item name="tabRippleColor">@android:color/transparent</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Tab" parent="TextAppearance.Mixyn.Label">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- One tab in MixynBottomBar: icon above label -->
+    <style name="Widget.Mixyn.BottomBarItem" parent="">
+        <item name="android:layout_width">0dp</item>
+        <!-- wrap_content: icon + label stay together, centered in the bar -->
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:drawablePadding">@dimen/space_xxs</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Caption</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
+
+    <!-- One of the three "Snap / Mix / Relax" features: round icon, bold label, muted hint -->
+    <style name="Widget.Mixyn.FeatureIcon" parent="">
+        <item name="android:layout_width">@dimen/feature_icon_size</item>
+        <item name="android:layout_height">@dimen/feature_icon_size</item>
+        <item name="android:padding">@dimen/space_m</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/ink</item>
+    </style>
+
+    <!-- Row in a list card (Profile, + menu) -->
+    <style name="Widget.Mixyn.ListRow" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+        <item name="android:drawablePadding">@dimen/space_m</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.BodyStrong</item>
+        <item name="drawableTint">@color/ink</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <!-- Alert dialog -->
+    <style name="ThemeOverlay.Mixyn.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface</item>
+        <!-- Material 3 dialogs use this container color (lilac by default) -->
+        <item name="colorSurfaceContainerHigh">@color/surface</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/Mixyn.DialogBody</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Mixyn.DialogButton</item>
+        <item name="colorPrimary">@color/mocha</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/Mixyn.DialogTitle</item>
+        <item name="shapeAppearanceOverlay">@style/Mixyn.DialogShape</item>
+    </style>
+
+    <style name="Mixyn.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_logo</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="Mixyn.DialogBody" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/ink_muted</item>
+    </style>
+
+    <style name="Mixyn.DialogButton" parent="Widget.Mixyn.Button.Primary">
+        <item name="android:layout_marginStart">@dimen/space_xs</item>
+    </style>
+
+    <style name="Mixyn.DialogShape" parent="">
+        <item name="cornerSize">@dimen/radius_card</item>
+    </style>
+</resources>
