@@ -24,13 +24,22 @@ import tools.jackson.databind.JsonNode;
 public class TaggingService {
 
     /** What the AI detected. Any field may be null when the AI was unsure or unavailable. */
-    public record Tags(Category category, String colorName, String colorHex) {
-        public static final Tags NONE = new Tags(null, null, null);
+    public record Tags(Subject subject, Category category, String colorName, String colorHex) {
+        public static final Tags NONE = new Tags(null, null, null, null);
+    }
+
+    /** What the photo shows. Only SINGLE_ITEM belongs in a wardrobe. */
+    public enum Subject {
+        SINGLE_ITEM, PERSON, MULTIPLE_ITEMS, NOT_CLOTHING
     }
 
     private static final String PROMPT = """
-            This is a photo of one clothing item with the background removed.
-            Classify it:
+            This photo should show exactly one clothing item, with the background removed.
+            First decide what it really shows, then classify it:
+            - subject: SINGLE_ITEM (one garment or one pair of shoes, not worn by anyone), \
+            PERSON (a person or a body part is visible, e.g. someone wearing the clothes, a selfie), \
+            MULTIPLE_ITEMS (two or more separate garments, e.g. a whole outfit laid out), \
+            NOT_CLOTHING (anything else).
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, dresses), \
             BOTTOM (trousers, jeans, skirts, shorts), SHOES (any footwear), \
             OUTERWEAR (coats, jackets, blazers, cardigans worn over a top).
@@ -41,11 +50,13 @@ public class TaggingService {
     private static final Schema SCHEMA = Schema.builder()
             .type(Type.Known.OBJECT)
             .properties(Map.of(
+                    "subject", Schema.builder().type(Type.Known.STRING)
+                            .enum_(List.of("SINGLE_ITEM", "PERSON", "MULTIPLE_ITEMS", "NOT_CLOTHING")).build(),
                     "category", Schema.builder().type(Type.Known.STRING)
                             .enum_(List.of("TOP", "BOTTOM", "SHOES", "OUTERWEAR")).build(),
                     "colorName", Schema.builder().type(Type.Known.STRING).build(),
                     "colorHex", Schema.builder().type(Type.Known.STRING).build()))
-            .required(List.of("category", "colorName", "colorHex"))
+            .required(List.of("subject", "category", "colorName", "colorHex"))
             .build();
 
     private final GeminiJson gemini;
@@ -65,6 +76,12 @@ public class TaggingService {
 
     /** The model's answer is untrusted input: keep only values that are really valid. */
     static Tags validate(JsonNode node) {
+        Subject subject = null;
+        try {
+            subject = Subject.valueOf(node.path("subject").asString(""));
+        } catch (IllegalArgumentException ignored) {
+            // unknown answer → don't block the upload
+        }
         Category category = null;
         try {
             category = Category.valueOf(node.path("category").asString(""));
@@ -73,7 +90,7 @@ public class TaggingService {
         }
         String name = node.path("colorName").asString("").trim();
         String hex = node.path("colorHex").asString("").trim();
-        return new Tags(category,
+        return new Tags(subject, category,
                 name.isEmpty() || name.length() > 30 ? null : capitalize(name),
                 hex.matches("#[0-9a-fA-F]{6}") ? hex.toUpperCase() : null);
     }
