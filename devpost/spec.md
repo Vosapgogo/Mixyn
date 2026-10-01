@@ -285,7 +285,8 @@ Mixyn/
 ### rembg
 - **Container:** `danielgatis/rembg`, run in server mode on port 7000 (start command to verify in the README; believed to be `s --host 0.0.0.0 --port 7000`).
 - **Call:** believed to be `POST http://rembg:7000/api/remove` with multipart field `file` → `image/png` bytes. Verify early with a `curl` and one sample photo.
-- **Cost:** free, local, no key. The first call downloads the u2net model.
+- **As verified:** built from `rembg/Dockerfile` (no arm64 build of the published image); `POST /api/remove`, multipart field `file`, plus `model=u2net`; host port **7010** (macOS uses 7000); reads JPEG, PNG and HEIC (via `pillow-heif`); ~2 s per small image once warm, ~0.8 GB memory.
+- **Cost:** free, local, no key. The u2net model is baked into the image, so there is no first-run download.
 - **Docs:** https://github.com/danielgatis/rembg#usage-as-a-server
 
 ### Open-Meteo Geocoding (city autocomplete)
