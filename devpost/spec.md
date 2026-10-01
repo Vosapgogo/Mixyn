@@ -129,6 +129,7 @@ PRD ref: `prd.md > Account and Session`.
 `ItemController` + `ItemService`.
 - `POST /api/users/{userId}/items` (multipart field `photo`, JPEG/PNG/HEIC up to 10 MB) → `201 Item`. Steps: rembg → store PNG → tag → save. See `prd.md > Adding Clothes`, `prd.md > AI Item Details`.
 - `GET /api/users/{userId}/items` → `200 [Item]`, newest first.
+- `POST /api/items/{itemId}/rotate` `{degrees: 90|180|270}` → `200 Item` with the stored PNG turned clockwise (slice 3, the item card's rotate option).
 - `PATCH /api/items/{itemId}` `{category?, colorName?, colorHex?, name?, tags?, season?}` → `200 Item`. This is how the user corrects AI results.
 - `Item` JSON: `{id, imageUrl, category, colorName, colorHex, name, tags[], season, createdAt}`, where `imageUrl` = `/images/{file}`.
 
@@ -140,12 +141,16 @@ PRD ref: `prd.md > Account and Session`.
 PRD ref: `prd.md > Adding Clothes`.
 
 #### Tagging Service
-`TaggingService` makes one Gemini call with the PNG plus a short prompt. JSON output is constrained to:
+`TaggingService` makes one Gemini call (through `GeminiJson`) with the cutout on a white background plus a short prompt. JSON output is constrained to:
 ```json
-{ "category": "TOP|BOTTOM|SHOES|OUTERWEAR", "colorName": "Khaki", "colorHex": "#8F8A5C" }
+{ "subject": "SINGLE_ITEM|PERSON|MULTIPLE_ITEMS|NOT_CLOTHING",
+  "category": "TOP|BOTTOM|SHOES|OUTERWEAR", "colorName": "Khaki", "colorHex": "#8F8A5C" }
 ```
-If the call fails or returns something invalid, the item is **still saved** with `category = null` and the item card shows "We couldn't detect this — choose a category". Items without a category don't appear on the canvas until one is set.
-PRD ref: `prd.md > AI Item Details`.
+- **Single-item check:** if `subject` is not `SINGLE_ITEM`, nothing is saved and the upload returns `400 {"error":"not_single_item"}` with a message for that case (person / several items / not clothing).
+- **AI unavailable:** if every model fails or times out, the item is **still saved** with `category = null` and no single-item check; the item card shows "Choose a category". Items without a category don't appear on the canvas until one is set.
+- **Reliability (`GeminiJson`):** `GEMINI_MODEL` is an ordered list (`gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash`). Each model gets one try with an 8 s timeout and no SDK retries; the next model is tried on error (free-tier `503 high demand`, `429 quota`) or timeout, within a 14 s total budget. Every answer is validated before use.
+- The AI does **not** rotate photos (tried, then removed at the learner's request: it missed some cases); rotation is a user action on the item card.
+PRD ref: `prd.md > AI Item Details`, `prd.md > Adding Clothes`.
 
 #### Stylist Service
 `StylistService.generate(userId, hint)`:
@@ -188,7 +193,7 @@ PRD ref: `prd.md > Account and Session`, `prd.md > Screens and Layout`.
 PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`.
 
 #### Add Item Flow
-`AddItemActivity` launches the Photo Picker, then shows the processing state (progress indicator + "Removing background…"), then "Background removed · 1/1 completed" + **View item**, or an error + **Try again**.
+`AddItemActivity` launches the Photo Picker (multi-select, but picking more than one shows "One photo at a time" and uploads nothing), shrinks the photo to max 1600 px JPEG on the phone, then shows the processing state (progress indicator + "Removing background…"), then "Background removed · 1/1 completed" + **View item**, or an error + **Try again**; a `not_single_item` answer shows "Only one item, please" + **Choose another photo**.
 PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 
 #### Item Detail

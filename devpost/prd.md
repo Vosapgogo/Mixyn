@@ -73,6 +73,8 @@ Source: `scope.md > The POC Boundary` ("Upload clothes with AI background remova
 - [ ] A processing screen shows progress, then "Background removed · 1/1 completed" and a **View item** button.
 - [ ] The item card shows the photo with its original background fully removed, on a clean light background.
 - [ ] The item appears in the Clothes tab grid afterward and is saved to the user's account in the database.
+- [ ] One photo is added at a time: choosing several in the gallery shows "One photo at a time" and uploads nothing.
+- [ ] A photo that isn't a single clothing item (a person wearing clothes, several items, not clothing) is not added; the screen explains "Only one item, please" and offers to choose another photo.
 
 ### AI Item Details
 Source: `scope.md > The Unique Kernel`.
@@ -80,6 +82,7 @@ Source: `scope.md > The Unique Kernel`.
 - [ ] After upload, **Color** is filled automatically (swatch + color name).
 - [ ] The user can change Category and Color if the AI got them wrong; the change sticks.
 - [ ] Name, Tags, and Season are optional manual fields; leaving them empty is fine.
+- [ ] The item card has a **rotate** option, so a photo that came out upside down or sideways can be turned upright by the user (the AI does not rotate photos).
 
 ### Outfit Canvas and Carousel
 Source: `scope.md > The Core Loop`.

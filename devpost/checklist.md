@@ -36,7 +36,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Why now: The AI will mislabel some items, and the canvas and stylist rely on correct categories — so correction must exist before outfits are built from them.
   PRD ref: `prd.md > The Core Journey` (step 6), `prd.md > AI Item Details`, `prd.md > Screens and Layout` (Item card)
   Spec ref: `spec.md > Components` (Items API — PATCH, Item Detail)
-  Build: `PATCH /api/items/{itemId}` with ownership check; Android `ItemDetailActivity` with name edit, category picker, color name/hex edit, tag chips, season selector; "We couldn't detect this — choose a category" when category is blank.
+  Build: `PATCH /api/items/{itemId}` with ownership check; `POST /api/items/{itemId}/rotate` (user-triggered rotate, learner request); Android `ItemDetailActivity` with a rotate option, name edit, category picker, color name/hex edit, tag chips, season selector; "We couldn't detect this — choose a category" when category is blank.
   Verify (mechanical): `curl` PATCH changes category/color/tags and a follow-up GET returns them; PATCH on another user's item → `403`/`404`; Android build succeeds.
   Learner check: Open an item, change its category or color, add a tag and season, go back and reopen — your changes should still be there.
   Commit: `Add editable item card`
@@ -103,3 +103,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - rembg runs from our own small image (`rembg/Dockerfile`) instead of `danielgatis/rembg` — that image has no arm64 build for Apple Silicon. The image pins the `u2net` model (baked in, so no first-run download) because rembg's newer default model is 1 GB, was killed for memory in a 4 GB Docker, and is non-commercial; requests must send `model=u2net`.
 - rembg is published on host port 7010, not 7000 — macOS already uses 7000 (AirPlay Receiver).
 - HEIC photos are supported on the server via `pillow-heif` in the rembg image — verified with a test HEIC before slice 2, so iPhone photos (and a future iOS app) work without client-side conversion.
+- Gemini calls go through an ordered list of fallback models with an 8 s timeout each — the build found the free tier unreliable for a single model (503 "high demand", 12-27 s answers, and a 429 daily quota on `gemini-3.5-flash` after ~30 test calls). Lite models go first because their free quota is larger.
+- Uploads are limited to one photo at a time with an explicit message, and photos that aren't a single clothing item (person, several items, not clothing) are rejected by the same Gemini call — learner requests during slice 2; no extra AI requests.
+- Rotation is a user action on the item card (slice 3), not an AI task — the learner asked for AI auto-rotation, saw it miss an upside-down pair of shoes in testing, and chose a manual option instead.
+- The stored cutout is cropped to the item and scaled to max 1024 px, and the phone shrinks photos to 1600 px before upload — keeps the grid tidy and uploads fast.
