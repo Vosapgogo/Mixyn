@@ -89,6 +89,30 @@ public class ImageStorage {
         }
     }
 
+    /** Turns a PNG clockwise by 90, 180 or 270 degrees (the user's "rotate" action on the item card). */
+    public byte[] rotate(byte[] png, int degrees) {
+        if (degrees % 360 == 0) {
+            return png;
+        }
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(png));
+            boolean sideways = degrees % 180 != 0;
+            int w = sideways ? source.getHeight() : source.getWidth();
+            int h = sideways ? source.getWidth() : source.getHeight();
+            BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = out.createGraphics();
+            g.translate(w / 2.0, h / 2.0);
+            g.rotate(Math.toRadians(degrees));
+            g.drawImage(source, -source.getWidth() / 2, -source.getHeight() / 2, null);
+            g.dispose();
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            ImageIO.write(out, "png", bytes);
+            return bytes.toByteArray();
+        } catch (IOException e) {
+            return png; // better an unrotated photo than a failed upload
+        }
+    }
+
     /** Saves the PNG and returns its file name, e.g. "3f2a….png". */
     public String save(byte[] png) {
         String fileName = UUID.randomUUID() + ".png";
