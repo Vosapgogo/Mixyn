@@ -2,17 +2,22 @@ package com.mixyn.app.api;
 
 import com.mixyn.app.api.dto.AuthResponse;
 import com.mixyn.app.api.dto.CityDto;
+import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.LoginRequest;
 import com.mixyn.app.api.dto.RegisterRequest;
 import com.mixyn.app.api.dto.UserDto;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /** Every backend endpoint the app calls. */
@@ -33,4 +38,12 @@ public interface MixynApi {
 
     @GET("api/cities")
     Call<List<CityDto>> cities(@Query("q") String query);
+
+    /** Uploads one photo; the backend removes the background and tags it. Can take several seconds. */
+    @Multipart
+    @POST("api/users/{userId}/items")
+    Call<ItemDto> uploadItem(@Path("userId") long userId, @Part MultipartBody.Part photo);
+
+    @GET("api/users/{userId}/items")
+    Call<List<ItemDto>> items(@Path("userId") long userId);
 }

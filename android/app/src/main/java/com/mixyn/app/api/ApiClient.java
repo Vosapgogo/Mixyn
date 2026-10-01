@@ -20,6 +20,11 @@ public final class ApiClient {
     private ApiClient() {
     }
 
+    /** Full address of an item photo, from the "/images/…" path the backend returns. */
+    public static String imageUrl(String path) {
+        return BuildConfig.API_BASE_URL + (path.startsWith("/") ? path.substring(1) : path);
+    }
+
     public static synchronized MixynApi get(Context context) {
         if (api == null) {
             SessionStore session = new SessionStore(context.getApplicationContext());
