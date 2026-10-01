@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.mixyn.app.R;
 import com.mixyn.app.session.SessionStore;
+import com.mixyn.app.ui.additem.AddItemActivity;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.main.MainActivity;
 
@@ -23,8 +24,11 @@ public class AccountCreatedActivity extends BaseActivity {
         String name = new SessionStore(this).getName();
         ((TextView) findViewById(R.id.created_title)).setText(getString(R.string.account_created_title, name));
 
-        // Both lead to the wardrobe for now; "Let's go" will open Add clothes once uploads exist (slice 2).
-        findViewById(R.id.created_go).setOnClickListener(v -> openWardrobe());
+        // "Let's go" opens the wardrobe with Add clothes on top of it; the other link just looks around.
+        findViewById(R.id.created_go).setOnClickListener(v -> {
+            openWardrobe();
+            AddItemActivity.start(this);
+        });
         findViewById(R.id.created_later).setOnClickListener(v -> openWardrobe());
 
         // The account already exists, so Back also continues to the wardrobe instead of the form.
