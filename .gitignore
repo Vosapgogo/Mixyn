@@ -11,3 +11,6 @@
 # Screen recordings / demo videos (upload separately, not to the repo)
 *.mov
 *.mp4
+
+# Uploaded item photos when the backend runs outside Docker
+/backend/data/

@@ -12,16 +12,29 @@ services:
       timeout: 3s
       retries: 20
 
+  # Background removal. Host port 7010 because macOS already uses 7000 (AirPlay Receiver).
+  rembg:
+    build: ./rembg
+    ports:
+      - "7010:7000"
+
   backend:
     build: ./backend
     env_file: .env
     environment:
       DB_HOST: db
+      REMBG_URL: http://rembg:7000
+      IMAGE_DIR: /data/images
     ports:
       - "8080:8080"
+    volumes:
+      - images:/data/images
     depends_on:
       db:
         condition: service_healthy
+      rembg:
+        condition: service_started
 
 volumes:
   pgdata:
+  images:
