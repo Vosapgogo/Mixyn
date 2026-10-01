@@ -12,6 +12,18 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+
+mixyn:
+  # Where cleaned item photos are stored (a Docker volume in Compose, a local folder with bootRun).
+  image-dir: ${IMAGE_DIR:./data/images}
+  rembg-url: ${REMBG_URL:http://localhost:7010}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:}
 
 server:
   port: 8080
