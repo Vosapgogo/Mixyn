@@ -81,6 +81,32 @@
     <string name="empty_outfits_title">No outfits yet</string>
     <string name="empty_outfits_body">Create an outfit and save it — it will show up here.</string>
 
+    <!-- Add clothes -->
+    <string name="add_item_processing">Removing background…</string>
+    <string name="add_item_processing_hint">This takes a few seconds</string>
+    <string name="add_item_done">Background removed</string>
+    <string name="add_item_done_count">1/1 completed</string>
+    <string name="add_item_detected">%1$s · %2$s</string>
+    <string name="add_item_view">View item</string>
+    <string name="add_item_error_title">We couldn\'t process this photo</string>
+    <string name="add_item_retry">Try again</string>
+    <string name="add_item_cancel">Cancel</string>
+    <string name="add_item_limit_title">One photo at a time</string>
+    <string name="add_item_limit_body">You can add a maximum of 1 photo to your wardrobe at once. Choose one and we\'ll clean it up.</string>
+    <string name="add_item_choose_one">Choose one photo</string>
+    <string name="add_item_not_single_title">Only one item, please</string>
+    <string name="add_item_choose_another">Choose another photo</string>
+    <string name="error_photo_unreadable">This photo can\'t be opened. Try another one.</string>
+    <string name="item_photo">Clothing item</string>
+
+    <!-- Categories -->
+    <string name="category_top">Top</string>
+    <string name="category_bottom">Bottom</string>
+    <string name="category_shoes">Shoes</string>
+    <string name="category_outerwear">Outerwear</string>
+    <string name="category_unknown">Choose a category</string>
+    <string name="color_unknown">No color yet</string>
+
     <!-- + menu -->
     <string name="menu_add_clothes">Add clothes</string>
     <string name="menu_create_outfit">Create outfit</string>

@@ -27,6 +27,8 @@
     <dimen name="bottom_bar_plus_size">56dp</dimen>
     <dimen name="avatar_size">88dp</dimen>
     <dimen name="feature_icon_size">56dp</dimen>
+    <dimen name="progress_height">4dp</dimen>
+    <dimen name="grid_columns_gap">@dimen/space_xs</dimen>
     <dimen name="logo_tile_size">96dp</dimen>
     <dimen name="stroke">1dp</dimen>
     <dimen name="stroke_error">1.5dp</dimen>

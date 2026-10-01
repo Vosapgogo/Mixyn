@@ -24,6 +24,13 @@
         <item name="android:windowLightNavigationBar">false</item>
     </style>
 
+    <!-- Dark screen while a photo is processed -->
+    <style name="Theme.Mixyn.Charcoal">
+        <item name="android:windowBackground">@color/charcoal_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
     <style name="ThemeOverlay.Mixyn.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Widget.Mixyn.BottomSheet</item>
     </style>

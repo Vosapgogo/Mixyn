@@ -13,6 +13,8 @@
     <color name="line">#E3DDD5</color>             <!-- field and card outlines, dividers -->
     <color name="on_dark">#FFFFFF</color>          <!-- text on mocha / ink -->
     <color name="splash_text">#F4EEE6</color>
+    <color name="charcoal_bg">#403D38</color>       <!-- dark "processing photo" screen -->
+    <color name="on_dark_muted">#C9C4BC</color>     <!-- secondary text on charcoal -->
 
     <!-- Illustration cards on Welcome -->
     <color name="card_beige">#E7DFD4</color>
