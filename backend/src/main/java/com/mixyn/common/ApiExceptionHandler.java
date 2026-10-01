@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -15,6 +16,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleApi(ApiException e) {
         return ResponseEntity.status(e.getStatus())
                 .body(Map.of("error", e.getCode(), "message", e.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleTooLarge(MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "invalid_image", "message", "This photo is too large (max 10 MB)"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
