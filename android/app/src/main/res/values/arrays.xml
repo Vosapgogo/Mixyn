@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fixed choice lists for the item card (tags, seasons). tag_names has a matching tag_colors array (same order).
+     The values sent to the backend are these English names, so they must match its allowed lists.
+     Item types and colors are not here: the app loads those lists from the backend. -->
+<resources>
+    <string-array name="tag_names">
+        <item>Casual</item>
+        <item>Night out</item>
+        <item>Streetwear</item>
+        <item>Date night</item>
+        <item>Work</item>
+        <item>Favorites</item>
+        <item>Sports</item>
+        <item>Cozy</item>
+    </string-array>
+    <array name="tag_colors">
+        <item>@color/tag_casual</item>
+        <item>@color/tag_night_out</item>
+        <item>@color/tag_streetwear</item>
+        <item>@color/tag_date_night</item>
+        <item>@color/tag_work</item>
+        <item>@color/tag_favorites</item>
+        <item>@color/tag_sports</item>
+        <item>@color/tag_cozy</item>
+    </array>
+
+    <string-array name="season_names">
+        <item>All</item>
+        <item>Spring</item>
+        <item>Summer</item>
+        <item>Autumn</item>
+        <item>Winter</item>
+    </string-array>
+</resources>
