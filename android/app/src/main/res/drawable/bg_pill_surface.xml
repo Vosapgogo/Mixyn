@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Light pill with a thin outline: the weather chip. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/surface" />
+    <stroke android:width="@dimen/stroke" android:color="@color/line" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

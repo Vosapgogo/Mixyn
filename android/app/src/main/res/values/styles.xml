@@ -189,6 +189,8 @@
     <!-- Square-ish action tile with the icon above the label: Left 90° / Right 90° / Mirror -->
     <style name="Widget.Mixyn.Button.Tile" parent="Widget.Mixyn.Button.Tonal">
         <item name="android:minHeight">@dimen/tile_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
         <item name="cornerRadius">@dimen/radius_field</item>
         <item name="iconGravity">top</item>
         <item name="iconPadding">@dimen/space_xxs</item>

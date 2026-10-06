@@ -21,6 +21,7 @@
     <!-- Component sizes -->
     <dimen name="button_height">56dp</dimen>
     <dimen name="field_height">56dp</dimen>
+    <dimen name="field_height_multiline">112dp</dimen>
     <dimen name="icon_button_size">48dp</dimen>
     <dimen name="icon_size">24dp</dimen>
     <dimen name="bottom_bar_height">72dp</dimen>

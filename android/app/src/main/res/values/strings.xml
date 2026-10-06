@@ -142,16 +142,25 @@
 
     <!-- Outfit canvas -->
     <string name="canvas_ask_ai">Ask AI</string>
+    <string name="canvas_next">Next</string>
+    <string name="canvas_weather">%1$d° · %2$s</string>
+    <string name="canvas_add_bag">Add bag</string>
+    <string name="canvas_accessory">Accessory</string>
     <string name="canvas_styling">Styling…</string>
     <string name="canvas_outerwear_add">Add a layer</string>
     <string name="canvas_outerwear_change">Change layer</string>
     <string name="canvas_empty_title">Nothing to style yet</string>
     <string name="canvas_empty_body">Add a few clothes first, then come back to build an outfit.</string>
     <string name="ask_ai_title">Ask the stylist</string>
-    <string name="ask_ai_body">Leave it empty for a surprise, or say what you feel like wearing.</string>
-    <string name="ask_ai_hint_label">I feel like…</string>
-    <string name="ask_ai_hint">burgundy, cozy, my black blazer…</string>
+    <string name="ask_ai_body">Leave it empty for a surprise, or tell the stylist where you\'re going or what you feel like wearing.</string>
+    <string name="ask_ai_hint_label">Occasion or mood</string>
+    <string name="ask_ai_hint">Describe it in your own words: dinner with friends, something cozy, in burgundy…</string>
     <string name="ask_ai_generate">Generate look</string>
+    <string name="ask_ai_memory">The stylist remembers what you asked before, so you can just say what to change.</string>
+    <string name="ask_ai_last">Last request: “%1$s”</string>
+    <string name="ask_ai_start_over">Start over</string>
+    <string name="ask_ai_surprise">surprise me</string>
+    <string name="ask_ai_hint_followup">make it warmer, other shoes, no blazer…</string>
 
     <!-- + menu -->
     <string name="menu_add_clothes">Add clothes</string>
