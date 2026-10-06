@@ -124,6 +124,22 @@ public class ImageStorage {
         return fileName;
     }
 
+    public byte[] read(String fileName) {
+        try {
+            return Files.readAllBytes(dir.resolve(fileName));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Can't read image " + fileName, e);
+        }
+    }
+
+    public void delete(String fileName) {
+        try {
+            Files.deleteIfExists(dir.resolve(fileName));
+        } catch (IOException ignored) {
+            // a leftover file is harmless
+        }
+    }
+
     private static ApiException invalidImage() {
         return new ApiException(HttpStatus.BAD_REQUEST, "invalid_image",
                 "We couldn't find a clothing item in this photo");
