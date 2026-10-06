@@ -15,7 +15,7 @@
         android:orientation="horizontal"
         android:paddingStart="@dimen/space_s"
         android:paddingTop="@dimen/space_xs"
-        android:paddingEnd="@dimen/space_m">
+        android:paddingEnd="@dimen/screen_margin">
 
         <ImageButton
             android:id="@+id/canvas_back"
@@ -42,7 +42,7 @@
             android:drawablePadding="@dimen/space_xs"
             android:gravity="center_vertical"
             android:paddingStart="@dimen/space_m"
-            android:paddingEnd="@dimen/space_m"
+            android:paddingEnd="@dimen/screen_margin"
             android:textAppearance="@style/TextAppearance.Mixyn.Label"
             android:visibility="gone"
             app:drawableStartCompat="@drawable/ic_cloud"
@@ -53,7 +53,7 @@
             style="@style/Widget.Mixyn.Button.Dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_xs"
+            android:layout_marginStart="@dimen/canvas_control_gap"
             android:minHeight="@dimen/icon_button_size"
             android:text="@string/canvas_next"
             app:icon="@drawable/ic_chevron_right"
@@ -184,7 +184,7 @@
             style="@style/Widget.Mixyn.Button.Tile"
             android:layout_width="0dp"
             android:layout_height="@dimen/tile_height"
-            android:layout_marginStart="@dimen/space_xs"
+            android:layout_marginStart="@dimen/canvas_control_gap"
             android:layout_weight="1"
             android:text="@string/canvas_accessory"
             app:icon="@drawable/ic_accessory" />
@@ -194,7 +194,7 @@
             style="@style/Widget.Mixyn.Button.Dark"
             android:layout_width="0dp"
             android:layout_height="@dimen/tile_height"
-            android:layout_marginStart="@dimen/space_xs"
+            android:layout_marginStart="@dimen/canvas_control_gap"
             android:layout_weight="2.3"
             android:enabled="false"
             android:text="@string/canvas_ask_ai"

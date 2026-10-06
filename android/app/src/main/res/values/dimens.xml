@@ -35,6 +35,8 @@
     <dimen name="swatch_overlap">-8dp</dimen>
     <dimen name="item_photo_height">320dp</dimen>
     <dimen name="tile_height">72dp</dimen>
+    <!-- Canvas: the gap between neighboring controls, the same in the header and in the bottom panel -->
+    <dimen name="canvas_control_gap">@dimen/space_s</dimen>
     <!-- Outfit canvas: how much the pieces overlap vertically, like clothes on a body -->
     <dimen name="canvas_overlap">-12dp</dimen>
     <dimen name="dash_length">4dp</dimen>
