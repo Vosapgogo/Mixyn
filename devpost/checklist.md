@@ -21,7 +21,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Learner check: Start the backend, run the app on the emulator, create an account, see the welcome message and empty closet, open Profile and Log out, log back in with your email and password, then close and reopen the app — it should go straight to your wardrobe. Try a wrong password too.
   Commit: `Add real accounts: register, log in, log out, session`
 
-- [ ] **2. You can add a clothing photo and see it cleaned and auto-tagged in your closet**
+- [x] **2. You can add a clothing photo and see it cleaned and auto-tagged in your closet**
   Becomes usable: + → Add clothes → pick a gallery photo → processing screen → "Background removed · 1/1 completed" → View item; the cutout appears in the Clothes grid with an AI-detected category and color.
   Why now: rembg and Gemini are the two unverified external services and the first half of the kernel ("your real wardrobe, digitized in seconds") — the riskiest part of the build, so it goes right after accounts. Verifies the Gemini model id, SDK calls and the rembg endpoint early.
   PRD ref: `prd.md > The Core Journey` (steps 5–7), `prd.md > Adding Clothes`, `prd.md > AI Item Details`, `prd.md > States and Boundaries` (Processing, Photo can't be processed)
@@ -36,7 +36,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Why now: The AI will mislabel some items, and the canvas and stylist rely on correct categories — so correction must exist before outfits are built from them.
   PRD ref: `prd.md > The Core Journey` (step 6), `prd.md > AI Item Details`, `prd.md > Screens and Layout` (Item card)
   Spec ref: `spec.md > Components` (Items API — PATCH, Item Detail)
-  Build: `PATCH /api/items/{itemId}` with ownership check; `POST /api/items/{itemId}/rotate` (user-triggered rotate, learner request); Android `ItemDetailActivity` with a rotate option, name edit, category picker, color name/hex edit, tag chips, season selector; "We couldn't detect this — choose a category" when category is blank.
+  Build: a fixed list of item types (Blazer, Jeans, Sneakers…), each belonging to one of the four categories: `GET /api/item-types?q=` for autocomplete, the AI picks the type from that list at upload (learner request); `PATCH /api/items/{itemId}` with ownership check; `POST /api/items/{itemId}/rotate` (user-triggered rotate, learner request); Android `ItemDetailActivity` with a rotate option, name edit, type picker with suggestions (sets the category), color name/hex edit, tag chips, season selector; "We couldn't detect this — choose a category" when category is blank.
   Verify (mechanical): `curl` PATCH changes category/color/tags and a follow-up GET returns them; PATCH on another user's item → `403`/`404`; Android build succeeds.
   Learner check: Open an item, change its category or color, add a tag and season, go back and reopen — your changes should still be there.
   Commit: `Add editable item card`
@@ -73,7 +73,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2 (your own photos uploaded, cleaned and tagged), when feedback can still shape the card, canvas and stylist
+- [x] Early usable behavior explored — after slice 2: the learner uploaded her own photos (blazer, trousers, sneakers, sweater) and reported everything works; her feedback during the slice added the one-photo limit, the single-item check, manual rotate and item types
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -107,3 +107,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Uploads are limited to one photo at a time with an explicit message, and photos that aren't a single clothing item (person, several items, not clothing) are rejected by the same Gemini call — learner requests during slice 2; no extra AI requests.
 - Rotation is a user action on the item card (slice 3), not an AI task — the learner asked for AI auto-rotation, saw it miss an upside-down pair of shoes in testing, and chose a manual option instead.
 - The stored cutout is cropped to the item and scaled to max 1024 px, and the phone shrinks photos to 1600 px before upload — keeps the grid tidy and uploads fast.
+- Items get a **type** from a fixed list kept on the backend (about 30 types, each mapped to Top / Bottom / Shoes / Outerwear); the AI must choose from the list and the user picks with autocomplete — learner request after slice 2. A store's category API (Stradivarius, Bershka) was considered and dropped: no public API exists, so the list is our own. Built in slice 3 with the item card.
