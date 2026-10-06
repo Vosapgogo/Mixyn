@@ -166,9 +166,12 @@ PRD ref: `prd.md > AI Item Details`, `prd.md > Adding Clothes`.
 Outerwear is optional: the prompt tells the stylist it *may* add one (resolves `prd.md > Open Questions` using the PRD's assumption).
 PRD ref: `prd.md > AI Stylist`.
 
+#### Weather
+`WeatherService.forUser(userId)` reads the user's saved coordinates and asks the free **Open-Meteo forecast API** (no key) for the current temperature, "feels like" and weather code, then maps them to `{temperature, feel: freezing|cold|cool|mild|warm|hot, sky, city}`. Cached 15 minutes per user; any failure means "no weather". `GET /api/me/weather` → that object or `502 weather_unavailable`. The stylist adds one line about the weather to its prompt when it is available.
+
 #### Outfits API
 `OutfitController`.
-- `POST /api/users/{userId}/outfits/generate` `{hint?}` → stylist result (above).
+- `POST /api/users/{userId}/outfits/generate` `{hint? (≤500 chars), history?: [{hint, look:{topId,bottomId,shoesId,outerwearId}}] (≤6), current?: {…ids}}` → stylist result (above). The backend keeps no conversation state: the app sends the session's memory each time, and it is only context for the model — the answer is validated the same way.
 - `POST /api/users/{userId}/outfits` `{topId, bottomId, shoesId, outerwearId, source: "MANUAL"|"AI", hint}` → `201 Outfit`. Ids are validated for ownership; slots may be null.
 - `GET /api/users/{userId}/outfits` → `200 [Outfit]` with nested items, newest first.
 PRD ref: `prd.md > Saving Outfits`.
@@ -205,7 +208,9 @@ PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
 `OutfitCanvasActivity` (design page 14): the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal `ViewPager2` over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Outerwear is an optional layer drawn over the top (not touchable, so swipes reach the top); a small "Add a layer / Change layer" button cycles none → each outerwear item → none. Items without a category are not shown.
-- **Ask AI** (dark button) opens `AskAiSheet`: an optional hint ("burgundy, cozy, my black blazer…") and **Generate look**. The result moves each slot to the chosen piece and shows the stylist's message, if any, as a toast.
+- Header: back, a weather chip ("13° · cool", from `GET /api/me/weather`; hidden if unavailable) and **Next** (leads to saving the look, slice 6). Bottom panel: **Add bag** and **Accessory** ("Coming soon") and **Ask AI**.
+- Outerwear is drawn as the left half of the jacket (`setClipBounds`), aligned with the top underneath; shoes are drawn at 70% so they sit below the trousers.
+- **Ask AI** opens `AskAiSheet`: a multi-line request (a word, an occasion or a full description) and **Generate look**. The canvas keeps the session's conversation (each request + the look it produced, max 6) and sends it, with the outfit currently on screen, in every request; from the second request the sheet shows "Last request…" and **Start over**. The result moves each slot to the chosen piece and shows the stylist's message, if any, as a toast.
 - Still to come: a random starting look and empty-category placeholders (slice 5), **Save** (slice 6).
 - Not in the PoC from the design: weather chip, Next, Add bag, Accessory.
 PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md > Saving Outfits`.

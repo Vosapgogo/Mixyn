@@ -36,9 +36,10 @@ A ~1-minute demo:
 - Upload clothes with AI background removal
 - Outfit Carousel: mix and match tops, bottoms, shoes (starts with a random combination)
 - AI outfit generation from the user's own items: one click, plus an optional hint field
+- Current weather for the user's city, shown on the outfit screen and taken into account by the AI stylist (added during the build at the learner's request)
 
 ## Later
-- Live weather integration by city (and the cold-weather jacket/hat overlay)
+- The cold-weather layering step (jacket / hat / scarf / gloves suggestions) and a weather forecast for planning ahead
 - AI auto-tagging of material and season (category and color are in the PoC — see `prd.md`)
 - Accessories step, themed collections ("office," "date")
 - Social: friends, sharing, OutfitCHECK photos, star ratings, monthly leaderboard
@@ -47,4 +48,4 @@ A ~1-minute demo:
 
 ## Explicitly Cut
 - **"One month later" time-skip demo** — depends on the calendar, social layer, and seeded history; none of it proves the styling engine.
-- **Social and weather in the PoC** — great for retention, but "they can be built later once the core styling engine works."
+- **Social in the PoC** — great for retention, but it "can be built later once the core styling engine works." (Weather was cut here too at first; a minimal version came back during the build.)

@@ -89,7 +89,7 @@ Source: `scope.md > The Unique Kernel`.
 ### Outfit Canvas and Carousel
 Source: `scope.md > The Core Loop`.
 - [ ] Opening Create outfit shows a random outfit from the user's wardrobe: one Top, one Bottom, one Shoes, stacked vertically.
-- [ ] Outerwear, when present, appears as a layer overlapping the Top.
+- [ ] Outerwear, when added, appears as half a jacket over the left side of the Top, so the top stays visible; a small button adds, changes or removes the layer.
 - [ ] Swiping left/right on a piece changes only that piece to another item of the same category; all other pieces stay.
 - [ ] If a category has no items, its slot shows a faded placeholder outline with a small **+** and "Add shoes to complete the look" (wording adapted to the category).
 
@@ -97,7 +97,10 @@ Source: `scope.md > The Core Loop`.
 Source: `scope.md > The Unique Kernel`, `scope.md > What "Working" Looks Like` (the "aha" beat).
 - [ ] **Generate with AI** with an empty hint replaces the canvas with a complete AI-picked look (Top, Bottom, Shoes) using only items in the user's wardrobe.
 - [ ] With a hint (e.g. "burgundy"), the generated look favors items matching that color or vibe; with a specific-item hint ("this oversized shirt"), the look is built around that item.
-- [ ] If nothing matches the hint, a friendly toast appears — "We couldn't find anything burgundy. Here is another stylish option!" — and a look from available items is shown anyway.
+- [ ] The request can be a full description or an occasion ("job interview", "first date", "gym"), in any language; the stylist uses each item's type, tags, colors and seasons to choose.
+- [ ] The stylist remembers the earlier requests of the current styling session, so a follow-up like "other shoes" or "warmer" changes only what was asked; **Start over** forgets them.
+- [ ] The outfit screen shows the current weather in the user's city ("13° · cool"), and the stylist dresses for it unless the request sets another context.
+- [ ] If nothing fits the request, a friendly toast appears — "Nothing in your closet quite fits “burgundy”. Here is another stylish option!" — and a look from available items is shown anyway.
 - [ ] The AI never places an item the user doesn't own.
 - [ ] Missing categories show the same placeholder as the carousel.
 
