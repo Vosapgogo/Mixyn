@@ -25,16 +25,46 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/ask_ai_body"
         android:layout_marginTop="@dimen/space_xs"
         android:text="@string/ask_ai_body"
         android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+
+    <!-- Shown from the second request on: what the stylist still remembers, and a way to forget it -->
+    <LinearLayout
+        android:id="@+id/ask_ai_memory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/ask_ai_last"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Mixyn.Label"
+            android:textColor="@color/ink_muted" />
+
+        <TextView
+            android:id="@+id/ask_ai_start_over"
+            style="@style/Widget.Mixyn.TextLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_s"
+            android:text="@string/ask_ai_start_over" />
+    </LinearLayout>
 
     <com.mixyn.app.ui.components.MixynTextField
         android:id="@+id/ask_ai_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/space_m"
-        app:fieldType="text"
+        app:fieldType="multiline"
         app:hint="@string/ask_ai_hint"
         app:label="@string/ask_ai_hint_label" />
 

@@ -9,6 +9,7 @@ import com.mixyn.app.api.dto.ItemTypeDto;
 import com.mixyn.app.api.dto.LoginRequest;
 import com.mixyn.app.api.dto.RegisterRequest;
 import com.mixyn.app.api.dto.UserDto;
+import com.mixyn.app.api.dto.WeatherDto;
 
 import java.util.List;
 import java.util.Map;
@@ -60,9 +61,16 @@ public interface MixynApi {
     @POST("api/items/{itemId}/photo")
     Call<ItemDto> editPhoto(@Path("itemId") long itemId, @Body Map<String, Object> edit);
 
-    /** Asks the AI stylist for a look from the user's own items; body is {"hint": "burgundy"} or {}. */
+    /**
+     * Asks the AI stylist for a look from the user's own items. Body: {"hint": "...", "history": [...],
+     * "current": {...}} — all optional; history and current give the stylist its memory of this session.
+     */
     @POST("api/users/{userId}/outfits/generate")
-    Call<GenerateResult> generateOutfit(@Path("userId") long userId, @Body Map<String, String> body);
+    Call<GenerateResult> generateOutfit(@Path("userId") long userId, @Body Map<String, Object> body);
+
+    /** Current weather in the logged-in user's city. */
+    @GET("api/me/weather")
+    Call<WeatherDto> weather();
 
     /** The fixed color palette. */
     @GET("api/item-colors")
