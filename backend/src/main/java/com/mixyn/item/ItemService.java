@@ -14,6 +14,7 @@ import com.mixyn.ai.TaggingService.Subject;
 import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.common.ApiException;
 import com.mixyn.item.ItemDtos.ItemUpdate;
+import com.mixyn.item.ItemDtos.PhotoEdit;
 import com.mixyn.storage.ImageStorage;
 
 @Service
@@ -22,6 +23,8 @@ public class ItemService {
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
     private static final Set<String> ALLOWED_TAGS = Set.of(
             "Casual", "Night out", "Streetwear", "Date night", "Work", "Favorites", "Sports", "Cozy");
+    private static final int MIN_SCALE = 50;
+    private static final int MAX_SCALE = 150;
     private static final Set<String> ALLOWED_SEASONS = Set.of("All", "Spring", "Summer", "Autumn", "Winter");
 
     private final ItemRepository items;
@@ -117,16 +120,29 @@ public class ItemService {
         return items.save(item);
     }
 
-    /** Turns the stored photo clockwise. The file gets a new name so apps don't show a cached old picture. */
-    public Item rotateItem(Long userId, Long itemId, int degrees) {
-        if (degrees != 90 && degrees != 180 && degrees != 270) {
-            throw invalid("Rotate by 90, 180 or 270 degrees");
+    /**
+     * "Edit photo": rotate and/or mirror the stored picture and set its display size.
+     * A changed picture gets a new file name so apps don't keep showing a cached old one.
+     */
+    public Item editPhoto(Long userId, Long itemId, PhotoEdit edit) {
+        if (edit.rotation() % 90 != 0 || edit.rotation() < 0 || edit.rotation() > 270) {
+            throw invalid("Rotate by 0, 90, 180 or 270 degrees");
+        }
+        if (edit.scale() < MIN_SCALE || edit.scale() > MAX_SCALE) {
+            throw invalid("Size must be between " + MIN_SCALE + "% and " + MAX_SCALE + "%");
         }
         Item item = ownItem(userId, itemId);
-        String oldFile = item.getImageFile();
-        item.setImageFile(storage.save(storage.rotate(storage.read(oldFile), degrees)));
+        item.setScale(edit.scale());
+        String oldFile = null;
+        if (edit.rotation() != 0 || edit.mirror()) {
+            oldFile = item.getImageFile();
+            byte[] png = storage.rotate(storage.read(oldFile), edit.rotation());
+            item.setImageFile(storage.save(edit.mirror() ? storage.mirror(png) : png));
+        }
         Item saved = items.save(item);
-        storage.delete(oldFile);
+        if (oldFile != null) {
+            storage.delete(oldFile);
+        }
         return saved;
     }
 

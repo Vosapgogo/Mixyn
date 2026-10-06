@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.mixyn.item.ItemDtos.ItemResponse;
 import com.mixyn.item.ItemDtos.ItemUpdate;
-import com.mixyn.item.ItemDtos.RotateRequest;
+import com.mixyn.item.ItemDtos.PhotoEdit;
 import com.mixyn.user.AuthInterceptor;
 
 /** AuthInterceptor has already checked that {userId} is the logged-in user. */
@@ -44,10 +44,10 @@ public class ItemController {
         return ItemResponse.from(itemService.updateItem(userId, itemId, update));
     }
 
-    @PostMapping("/api/items/{itemId}/rotate")
-    public ItemResponse rotate(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId,
-            @RequestBody RotateRequest request) {
-        return ItemResponse.from(itemService.rotateItem(userId, itemId, request.degrees()));
+    @PostMapping("/api/items/{itemId}/photo")
+    public ItemResponse editPhoto(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId,
+            @RequestBody PhotoEdit edit) {
+        return ItemResponse.from(itemService.editPhoto(userId, itemId, edit));
     }
 
     @GetMapping("/api/users/{userId}/items")

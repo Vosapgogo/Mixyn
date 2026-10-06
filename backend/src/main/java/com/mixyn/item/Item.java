@@ -51,6 +51,9 @@ public class Item {
     @Column(length = 20)
     private String season;
 
+    /** How large the item is drawn inside its frame, in percent (set in "Edit photo"). Null means 100. */
+    private Integer scale;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -92,6 +95,14 @@ public class Item {
 
     public Category getCategory() {
         return category;
+    }
+
+    public int getScale() {
+        return scale == null ? 100 : scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
     }
 
     public void setImageFile(String imageFile) {

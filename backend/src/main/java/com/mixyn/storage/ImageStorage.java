@@ -89,7 +89,7 @@ public class ImageStorage {
         }
     }
 
-    /** Turns a PNG clockwise by 90, 180 or 270 degrees (the user's "rotate" action on the item card). */
+    /** Turns a PNG clockwise by 90, 180 or 270 degrees ("Edit photo" on the item card). */
     public byte[] rotate(byte[] png, int degrees) {
         if (degrees % 360 == 0) {
             return png;
@@ -110,6 +110,22 @@ public class ImageStorage {
             return bytes.toByteArray();
         } catch (IOException e) {
             return png; // better an unrotated photo than a failed upload
+        }
+    }
+
+    /** Flips a PNG left to right. */
+    public byte[] mirror(byte[] png) {
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(png));
+            BufferedImage out = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = out.createGraphics();
+            g.drawImage(source, source.getWidth(), 0, -source.getWidth(), source.getHeight(), null);
+            g.dispose();
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            ImageIO.write(out, "png", bytes);
+            return bytes.toByteArray();
+        } catch (IOException e) {
+            return png;
         }
     }
 
