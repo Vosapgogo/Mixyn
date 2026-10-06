@@ -82,7 +82,10 @@ Source: `scope.md > The Unique Kernel`.
 - [ ] After upload, **Color** is filled automatically (swatch + color name).
 - [ ] The user can change Category and Color if the AI got them wrong; the change sticks.
 - [ ] Name, Tags, and Season are optional manual fields; leaving them empty is fine.
-- [ ] The item card has a **rotate** option, so a photo that came out upside down or sideways can be turned upright by the user (the AI does not rotate photos).
+- [ ] The item card's **Edit** button opens "Edit photo": size (50–150%), rotate left/right 90°, mirror, Reset and Done, with a live preview; the AI does not rotate photos.
+- [ ] Each item has a **type** from a fixed list (Blazer, Jeans, Sneakers…). The AI picks it at upload; the user changes it by typing the first letters and choosing a suggestion. The type decides the big category (Top / Bottom / Shoes / Outerwear), and the outfit canvas works by the big category, so every kind of outerwear shows up in the Outerwear slot.
+- [ ] An item can have up to **three colors** from a fixed palette, shown as dots with names ("Brown, White"). The AI picks them at upload; the user changes them with chips, like tags.
+- [ ] The card's **›** button moves to the next item in the wardrobe.
 
 ### Outfit Canvas and Carousel
 Source: `scope.md > The Core Loop`.

@@ -129,9 +129,10 @@ PRD ref: `prd.md > Account and Session`.
 `ItemController` + `ItemService`.
 - `POST /api/users/{userId}/items` (multipart field `photo`, JPEG/PNG/HEIC up to 10 MB) → `201 Item`. Steps: rembg → store PNG → tag → save. See `prd.md > Adding Clothes`, `prd.md > AI Item Details`.
 - `GET /api/users/{userId}/items` → `200 [Item]`, newest first.
-- `POST /api/items/{itemId}/rotate` `{degrees: 90|180|270}` → `200 Item` with the stored PNG turned clockwise (slice 3, the item card's rotate option).
-- `PATCH /api/items/{itemId}` `{category?, colorName?, colorHex?, name?, tags?, season?}` → `200 Item`. This is how the user corrects AI results.
-- `Item` JSON: `{id, imageUrl, category, colorName, colorHex, name, tags[], season, createdAt}`, where `imageUrl` = `/images/{file}`.
+- `PATCH /api/items/{itemId}` `{type?, colors?, name?, tags?, season?}` → `200 Item`. This is how the user corrects AI results. Only present fields change; every value must come from its fixed list (`type` from `ItemType`, up to 3 `colors` from `ItemColor`, the 8 tags, the 5 seasons) or the request is `400 validation_failed`. Another user's item is `404`.
+- `POST /api/items/{itemId}/photo` `{rotation: 0|90|180|270, mirror, scale: 50..150}` → `200 Item` ("Edit photo" → Done). The picture is mirrored, then turned, and saved under a new file name; `scale` is only stored and applied by the app when drawing.
+- `GET /api/item-types?q=` → `[{code, label, category}]` (29 types, names containing `q`, prefix matches first) and `GET /api/item-colors` → `[{code, label, hex}]` (18 colors). These fixed lists live in the backend enums `ItemType` and `ItemColor`; the AI's JSON schema and the app's pickers both use them, so nobody can invent a value.
+- `Item` JSON: `{id, imageUrl, type, typeLabel, category, colors[{code,label,hex}], colorName, colorHex, scale, name, tags[], season, createdAt}`, where `imageUrl` = `/images/{file}` and `colorName`/`colorHex` repeat the first color.
 
 #### Image Storage
 `ImageStorage` writes PNGs to `${IMAGE_DIR}` (`/data/images`, a Docker volume) as `{uuid}.png`. `WebConfig` serves them at `GET /images/**`.
@@ -144,7 +145,7 @@ PRD ref: `prd.md > Adding Clothes`.
 `TaggingService` makes one Gemini call (through `GeminiJson`) with the cutout on a white background plus a short prompt. JSON output is constrained to:
 ```json
 { "subject": "SINGLE_ITEM|PERSON|MULTIPLE_ITEMS|NOT_CLOTHING",
-  "category": "TOP|BOTTOM|SHOES|OUTERWEAR", "colorName": "Khaki", "colorHex": "#8F8A5C" }
+  "type": "BLAZER", "category": "TOP|BOTTOM|SHOES|OUTERWEAR", "colors": ["KHAKI", "BROWN"] }
 ```
 - **Single-item check:** if `subject` is not `SINGLE_ITEM`, nothing is saved and the upload returns `400 {"error":"not_single_item"}` with a message for that case (person / several items / not clothing).
 - **AI unavailable:** if every model fails or times out, the item is **still saved** with `category = null` and no single-item check; the item card shows "Choose a category". Items without a category don't appear on the canvas until one is set.
@@ -197,7 +198,9 @@ PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`.
 PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 
 #### Item Detail
-`ItemDetailActivity` shows the image, the name field (+ Edit), Category (a picker with the 4 values), Color (swatch + name; tap to edit the name, with the hex optional), Tags (chips: Casual, Night out, Streetwear, Date night, Work, Favorites, Sports, Cozy), and Season (All, Spring, Summer, Autumn, Winter). Each change sends a `PATCH`.
+`ItemDetailActivity` (design pages 9–11): back arrow, the photo with a **›** next-item button, the name ("Add a name…" + pencil → dialog) and an **Edit** pill, then a card with four rows — type + category, tags, colors (dots + names), season — and the bottom bar. Every change is sent at once and the card is redrawn from the answer.
+- **Edit** opens `EditPhotoSheet`: Size slider with −/+ (50–150%), Left 90° / Right 90° / Mirror, Reset, Done. Changes are previewed live on the photo (dashed frame) and saved only on Done.
+- Choices use one reusable `OptionsSheet`: a searchable list for types (type "bl" → Blouse, Blazer), multi-select chips for tags and for colors (max 3), single-select chips for season.
 PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
@@ -212,7 +215,7 @@ PostgreSQL, created by JPA (`spring.jpa.hibernate.ddl-auto=update`, a PoC simpli
 
 **sessions**: `token varchar(64) PK`, `user_id → users.id`, `created_at timestamptz`. (No expiry in the PoC.)
 
-**items**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (e.g. `3f2a….png`), `category varchar null` (TOP, BOTTOM, SHOES, OUTERWEAR), `color_name varchar null`, `color_hex varchar(7) null`, `name varchar null`, `tags varchar null` (comma-separated), `season varchar null`, `created_at timestamptz`.
+**items**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (e.g. `3f2a….png`), `type varchar null` (an `ItemType` code), `category varchar null` (TOP, BOTTOM, SHOES, OUTERWEAR; follows the type), `colors varchar null` (up to 3 `ItemColor` codes, comma-separated; `color_name` is a legacy fallback), `scale int null` (display size %, default 100), `name varchar null`, `tags varchar null` (comma-separated), `season varchar null`, `created_at timestamptz`.
 
 **outfits**: `id bigserial PK`, `user_id → users.id`, `top_item_id`, `bottom_item_id`, `shoes_item_id`, `outerwear_item_id` (all `→ items.id`, nullable), `source varchar` (MANUAL/AI), `hint varchar null`, `created_at timestamptz`.
 
