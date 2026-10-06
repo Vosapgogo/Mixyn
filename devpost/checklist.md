@@ -31,7 +31,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Learner check: Add 3–4 real clothing photos from the emulator gallery. Is the background cleanly removed? Did the AI get the category and color right? How does the processing screen feel?
   Commit: `Add clothing upload with background removal and AI tagging`
 
-- [ ] **3. You can open an item and correct or enrich its details**
+- [x] **3. You can open an item and correct or enrich its details**
   Becomes usable: Tapping an item opens its card: large image on white, name, Category, Color (swatch + name), Tags and Season; changes stick after reopening.
   Why now: The AI will mislabel some items, and the canvas and stylist rely on correct categories — so correction must exist before outfits are built from them.
   PRD ref: `prd.md > The Core Journey` (step 6), `prd.md > AI Item Details`, `prd.md > Screens and Layout` (Item card)
