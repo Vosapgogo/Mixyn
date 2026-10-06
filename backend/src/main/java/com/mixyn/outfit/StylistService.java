@@ -18,6 +18,8 @@ import com.mixyn.item.ItemColor;
 import com.mixyn.item.ItemRepository;
 import com.mixyn.outfit.OutfitDtos.LookIds;
 import com.mixyn.outfit.OutfitDtos.PastTurn;
+import com.mixyn.weather.WeatherService;
+import com.mixyn.weather.WeatherService.Weather;
 
 import tools.jackson.databind.JsonNode;
 
@@ -48,7 +50,7 @@ public class StylistService {
             user's own clothes. Pick exactly one TOP, one BOTTOM and one SHOES item by id (if that category \
             has items). You MAY add one OUTERWEAR item if it suits the look; otherwise use null.
 
-            %sUser's request now: %s
+            %s%sUser's request now: %s
 
             How to use the request:
             - It can be a color ("burgundy"), a mood or style ("cozy", "streetwear"), a specific piece \
@@ -59,6 +61,9 @@ public class StylistService {
             the type (a blazer and loafers are smarter than a hoodie and sneakers), the tags the user \
             gave (Work, Casual, Night out, Date night, Streetwear, Sports, Cozy, Favorites) and the seasons.
             - Always make the colors and styles of the chosen pieces go well together.
+            - If the weather is given, dress for it: warmer pieces and an outer layer when it is cold, \
+            lighter pieces when it is warm, sensible shoes in rain or snow. Use the seasons column too. \
+            A request that clearly sets another context (indoors, gym, a party) comes before the weather.
             - If there is no request, build a balanced everyday look.
             - If there is an earlier conversation, the new request continues it: keep in mind what the \
             user already asked for. When the new request changes only part of the outfit ("other shoes", \
@@ -88,11 +93,13 @@ public class StylistService {
 
     private final ItemRepository items;
     private final GeminiJson gemini;
+    private final WeatherService weather;
     private final Random random = new Random();
 
-    public StylistService(ItemRepository items, GeminiJson gemini) {
+    public StylistService(ItemRepository items, GeminiJson gemini, WeatherService weather) {
         this.items = items;
         this.gemini = gemini;
+        this.weather = weather;
     }
 
     public Look generate(Long userId, String hint, List<PastTurn> history, LookIds current) {
@@ -104,11 +111,18 @@ public class StylistService {
         if (wardrobe.isEmpty()) {
             return new Look(null, null, null, null, true, null, false);
         }
-        String prompt = PROMPT.formatted(describeConversation(history, current),
+        String prompt = PROMPT.formatted(describeWeather(weather.forUser(userId).orElse(null)),
+                describeConversation(history, current),
                 cleanHint.isEmpty() ? "(none)" : cleanHint, describe(wardrobe));
         Optional<JsonNode> answer = gemini.generate(prompt, null, SCHEMA);
         AiPick pick = answer.map(StylistService::parse).orElse(null);
         return buildLook(wardrobe, pick, cleanHint, random);
+    }
+
+    static String describeWeather(Weather now) {
+        return now == null ? ""
+                : "Weather where the user is right now: " + now.temperature() + "°C, " + now.sky()
+                        + " (feels " + now.feel() + ").\n\n";
     }
 
     private static String clean(String hint) {
