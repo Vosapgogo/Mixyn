@@ -1,12 +1,13 @@
 package com.mixyn.item;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The list the app shows when the user chooses an item's type (with search-as-you-type). */
+/** The fixed lists the app shows when the user chooses an item's type (with search-as-you-type) or colors. */
 @RestController
 public class ItemTypeController {
 
@@ -14,6 +15,17 @@ public class ItemTypeController {
         static ItemTypeResponse from(ItemType type) {
             return new ItemTypeResponse(type.name(), type.getLabel(), type.getCategory());
         }
+    }
+
+    public record ItemColorResponse(String code, String label, String hex) {
+        static ItemColorResponse from(ItemColor color) {
+            return new ItemColorResponse(color.name(), color.getLabel(), color.getHex());
+        }
+    }
+
+    @GetMapping("/api/item-colors")
+    public List<ItemColorResponse> colors() {
+        return Arrays.stream(ItemColor.values()).map(ItemColorResponse::from).toList();
     }
 
     @GetMapping("/api/item-types")

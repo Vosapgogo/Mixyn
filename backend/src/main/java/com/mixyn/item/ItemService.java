@@ -57,7 +57,7 @@ public class ItemService {
         long afterTagging = System.currentTimeMillis();
         rejectIfNotOneItem(tags.subject());
         String file = storage.save(cutout);
-        Item item = items.save(new Item(userId, file, tags.type(), tags.category(), tags.colorName(), tags.colorHex()));
+        Item item = items.save(new Item(userId, file, tags.type(), tags.category(), tags.colors()));
         log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, type {}, category {}",
                 item.getId(), afterRembg - start, afterTagging - afterRembg, item.getType(), item.getCategory());
         return item;
@@ -90,13 +90,13 @@ public class ItemService {
             }
             item.setType(type);
         }
-        if (update.colorName() != null || update.colorHex() != null) {
-            String name = update.colorName() == null ? item.getColorName() : update.colorName().trim();
-            String hex = update.colorHex() == null ? item.getColorHex() : update.colorHex().trim().toUpperCase();
-            if (name == null || name.isEmpty() || name.length() > 30 || (hex != null && !hex.matches("#[0-9A-F]{6}"))) {
-                throw invalid("That color isn't valid");
+        if (update.colors() != null) {
+            List<ItemColor> colors = ItemColor.fromCodes(update.colors());
+            // Every code must be a palette color, with no repeats and no more than the limit.
+            if (colors.size() != update.colors().size()) {
+                throw invalid("Choose up to " + ItemColor.MAX_PER_ITEM + " colors from the list");
             }
-            item.setColor(name, hex);
+            item.setColors(colors);
         }
         if (update.name() != null) {
             String name = update.name().trim();
@@ -136,8 +136,12 @@ public class ItemService {
         String oldFile = null;
         if (edit.rotation() != 0 || edit.mirror()) {
             oldFile = item.getImageFile();
-            byte[] png = storage.rotate(storage.read(oldFile), edit.rotation());
-            item.setImageFile(storage.save(edit.mirror() ? storage.mirror(png) : png));
+            // Mirror first, then turn: the same order the app uses for its live preview.
+            byte[] png = storage.read(oldFile);
+            if (edit.mirror()) {
+                png = storage.mirror(png);
+            }
+            item.setImageFile(storage.save(storage.rotate(png, edit.rotation())));
         }
         Item saved = items.save(item);
         if (oldFile != null) {

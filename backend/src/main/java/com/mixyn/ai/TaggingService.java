@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type;
 import com.mixyn.item.Category;
+import com.mixyn.item.ItemColor;
 import com.mixyn.item.ItemType;
 
 import tools.jackson.databind.JsonNode;
@@ -26,8 +28,8 @@ import tools.jackson.databind.JsonNode;
 public class TaggingService {
 
     /** What the AI detected. Any field may be null when the AI was unsure or unavailable. */
-    public record Tags(Subject subject, ItemType type, Category category, String colorName, String colorHex) {
-        public static final Tags NONE = new Tags(null, null, null, null, null);
+    public record Tags(Subject subject, ItemType type, Category category, List<ItemColor> colors) {
+        public static final Tags NONE = new Tags(null, null, null, List.of());
     }
 
     /** What the photo shows. Only SINGLE_ITEM belongs in a wardrobe. */
@@ -46,8 +48,9 @@ public class TaggingService {
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, dresses), \
             BOTTOM (trousers, jeans, skirts, shorts), SHOES (any footwear), \
             OUTERWEAR (coats, jackets, blazers, cardigans worn over a top).
-            - colorName: the main color as one or two plain English words, capitalized (e.g. "Khaki", "Light Blue").
-            - colorHex: that color as #RRGGBB.
+            - colors: the item's 1 to 3 most visible colors from the allowed list, the main color first. \
+            Use one color for a plain item; add more only for clearly multi-colored items (stripes, prints, \
+            color blocks). Ignore tiny details such as buttons, labels and stitching.
             """;
 
     private static final Schema SCHEMA = Schema.builder()
@@ -60,9 +63,11 @@ public class TaggingService {
                             .enum_(Arrays.stream(ItemType.values()).map(Enum::name).toList()).build(),
                     "category", Schema.builder().type(Type.Known.STRING)
                             .enum_(List.of("TOP", "BOTTOM", "SHOES", "OUTERWEAR")).build(),
-                    "colorName", Schema.builder().type(Type.Known.STRING).build(),
-                    "colorHex", Schema.builder().type(Type.Known.STRING).build()))
-            .required(List.of("subject", "type", "category", "colorName", "colorHex"))
+                    "colors", Schema.builder().type(Type.Known.ARRAY)
+                            .items(Schema.builder().type(Type.Known.STRING)
+                                    .enum_(Arrays.stream(ItemColor.values()).map(Enum::name).toList()).build())
+                            .minItems(1L).maxItems((long) ItemColor.MAX_PER_ITEM).build()))
+            .required(List.of("subject", "type", "category", "colors"))
             .build();
 
     private final GeminiJson gemini;
@@ -94,21 +99,13 @@ public class TaggingService {
         } catch (IllegalArgumentException ignored) {
             // unknown category → leave it for the user to choose
         }
-        String name = node.path("colorName").asString("").trim();
-        String hex = node.path("colorHex").asString("").trim();
-        ItemType type = ItemType.fromCode(node.path("type").asString(""));
-        return new Tags(subject, type, category,
-                name.isEmpty() || name.length() > 30 ? null : capitalize(name),
-                hex.matches("#[0-9a-fA-F]{6}") ? hex.toUpperCase() : null);
-    }
-
-    /** "light blue" → "Light Blue", so color names look the same everywhere. */
-    private static String capitalize(String text) {
-        StringBuilder out = new StringBuilder();
-        for (String word : text.toLowerCase().split("\\s+")) {
-            out.append(out.isEmpty() ? "" : " ").append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        List<String> codes = new ArrayList<>();
+        for (JsonNode color : node.path("colors")) {
+            codes.add(color.asString(""));
         }
-        return out.toString();
+        ItemType type = ItemType.fromCode(node.path("type").asString(""));
+        // fromCodes drops anything that isn't in the palette and keeps at most three.
+        return new Tags(subject, type, category, ItemColor.fromCodes(codes));
     }
 
     /** Transparent pixels would reach the model as black; put the item on white instead. */

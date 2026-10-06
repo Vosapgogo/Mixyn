@@ -1,6 +1,9 @@
 package com.mixyn.item;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,11 +39,13 @@ public class Item {
     @Column(length = 20)
     private Category category;
 
+    /** Up to three palette colors, main one first, stored as codes: "GREY,BROWN". */
+    @Column(length = 60)
+    private String colors;
+
+    /** Older single free-text color; read only as a fallback for items saved before the palette existed. */
     @Column(name = "color_name", length = 30)
     private String colorName;
-
-    @Column(name = "color_hex", length = 7)
-    private String colorHex;
 
     @Column(length = 60)
     private String name;
@@ -60,13 +65,12 @@ public class Item {
     protected Item() {
     }
 
-    public Item(Long userId, String imageFile, ItemType type, Category category, String colorName, String colorHex) {
+    public Item(Long userId, String imageFile, ItemType type, Category category, List<ItemColor> colors) {
         this.userId = userId;
         this.imageFile = imageFile;
         this.type = type;
         this.category = type != null ? type.getCategory() : category;
-        this.colorName = colorName;
-        this.colorHex = colorHex;
+        setColors(colors);
     }
 
     public Long getId() {
@@ -109,11 +113,6 @@ public class Item {
         this.imageFile = imageFile;
     }
 
-    public void setColor(String colorName, String colorHex) {
-        this.colorName = colorName;
-        this.colorHex = colorHex;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -126,12 +125,18 @@ public class Item {
         this.season = season;
     }
 
-    public String getColorName() {
-        return colorName;
+    public List<ItemColor> getColors() {
+        if (colors != null && !colors.isBlank()) {
+            return ItemColor.fromCodes(Arrays.asList(colors.split(",")));
+        }
+        ItemColor legacy = ItemColor.from(colorName);
+        return legacy == null ? List.of() : List.of(legacy);
     }
 
-    public String getColorHex() {
-        return colorHex;
+    public void setColors(List<ItemColor> newColors) {
+        this.colors = newColors == null || newColors.isEmpty()
+                ? null : newColors.stream().map(Enum::name).collect(Collectors.joining(","));
+        this.colorName = null;
     }
 
     public String getName() {

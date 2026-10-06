@@ -10,8 +10,10 @@ public final class ItemDtos {
     }
 
     /** Body of PATCH /api/items/{id}: only the fields that are present are changed. */
-    public record ItemUpdate(String type, String colorName, String colorHex, String name, List<String> tags,
-            String season) {
+    public record ItemUpdate(String type, List<String> colors, String name, List<String> tags, String season) {
+    }
+
+    public record ColorResponse(String code, String label, String hex) {
     }
 
     /**
@@ -22,7 +24,7 @@ public final class ItemDtos {
     }
 
     public record ItemResponse(Long id, String imageUrl, String type, String typeLabel, Category category,
-            String colorName, String colorHex, int scale,
+            List<ColorResponse> colors, String colorName, String colorHex, int scale,
             String name, List<String> tags, String season, Instant createdAt) {
 
         public static ItemResponse from(Item item) {
@@ -30,9 +32,13 @@ public final class ItemDtos {
                     ? List.of()
                     : Arrays.asList(item.getTags().split(","));
             ItemType type = item.getType();
+            List<ColorResponse> colors = item.getColors().stream()
+                    .map(c -> new ColorResponse(c.name(), c.getLabel(), c.getHex())).toList();
+            // colorName / colorHex repeat the main (first) color for places that show just one.
+            ColorResponse main = colors.isEmpty() ? null : colors.get(0);
             return new ItemResponse(item.getId(), "/images/" + item.getImageFile(),
                     type == null ? null : type.name(), type == null ? null : type.getLabel(), item.getCategory(),
-                    item.getColorName(), item.getColorHex(), item.getScale(), item.getName(), tags, item.getSeason(),
+                    colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, item.getSeason(),
                     item.getCreatedAt());
         }
     }
