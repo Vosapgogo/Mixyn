@@ -16,6 +16,7 @@ import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.additem.AddItemActivity;
+import com.mixyn.app.ui.item.ItemDetailActivity;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class ClothesFragment extends Fragment {
         loading = view.findViewById(R.id.clothes_loading);
         error = view.findViewById(R.id.clothes_error);
 
-        adapter = new ClothesAdapter(item -> { /* the item card opens here in the next build step */ });
+        adapter = new ClothesAdapter((all, position) -> ItemDetailActivity.start(requireContext(), all, position));
         grid.setLayoutManager(new GridLayoutManager(requireContext(), COLUMNS));
         grid.setAdapter(adapter);
         view.findViewById(R.id.clothes_add).setOnClickListener(v -> AddItemActivity.start(requireContext()));

@@ -24,13 +24,17 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.mixyn.app.R;
 import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
+import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
+import com.mixyn.app.ui.item.ItemDetailActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -180,19 +184,28 @@ public class AddItemActivity extends BaseActivity {
         title.setText(R.string.add_item_done);
         title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check, 0, 0, 0);
         String detected = getString(R.string.add_item_detected,
-                getString(Categories.label(item.category)),
-                item.colorName != null ? item.colorName : getString(R.string.color_unknown));
+                item.typeLabel != null ? item.typeLabel : getString(Categories.label(item.category)),
+                colorNames(item));
         subtitle.setText(getString(R.string.add_item_done_count) + "\n" + detected);
         progress.setIndeterminate(false);
         progress.setProgressCompat(100, true);
         action.setText(R.string.add_item_view);
         action.setVisibility(View.VISIBLE);
-        // The item card arrives in the next build step; for now this returns to the closet, where the item is.
-        action.setOnClickListener(v -> finish());
+        action.setOnClickListener(v -> {
+            ItemDetailActivity.start(this, List.of(item), 0);
+            finish(); // Back from the item card lands in the closet
+        });
         cancel.setVisibility(View.INVISIBLE);
     }
 
     /** The user ticked several photos: nothing is uploaded, and they are asked to choose just one. */
+    private String colorNames(ItemDto item) {
+        if (item.colors == null || item.colors.isEmpty()) return getString(R.string.color_unknown);
+        List<String> names = new ArrayList<>();
+        for (ColorDto color : item.colors) names.add(color.label);
+        return String.join(getString(R.string.tags_joined_separator), names);
+    }
+
     private void showOnePhotoLimit() {
         pickedUri = null;
         photo.setImageDrawable(null);
