@@ -3,6 +3,7 @@ package com.mixyn.app.api;
 import com.mixyn.app.api.dto.AuthResponse;
 import com.mixyn.app.api.dto.CityDto;
 import com.mixyn.app.api.dto.ColorDto;
+import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.ItemTypeDto;
 import com.mixyn.app.api.dto.LoginRequest;
@@ -58,6 +59,10 @@ public interface MixynApi {
     /** "Edit photo" → Done; body is {"rotation": 0|90|180|270, "mirror": false, "scale": 50..150}. */
     @POST("api/items/{itemId}/photo")
     Call<ItemDto> editPhoto(@Path("itemId") long itemId, @Body Map<String, Object> edit);
+
+    /** Asks the AI stylist for a look from the user's own items; body is {"hint": "burgundy"} or {}. */
+    @POST("api/users/{userId}/outfits/generate")
+    Call<GenerateResult> generateOutfit(@Path("userId") long userId, @Body Map<String, String> body);
 
     /** The fixed color palette. */
     @GET("api/item-colors")

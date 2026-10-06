@@ -14,8 +14,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = '0.1'
-        // The emulator reaches the laptop's localhost at 10.0.2.2.
-        buildConfigField 'String', 'API_BASE_URL', '"http://10.0.2.2:8080/"'
+        // The emulator reaches the laptop's localhost at 10.0.2.2. The backend port is 8080 unless the build
+        // is run with -PapiPort=8081 (handy for testing against a second backend).
+        def apiPort = project.findProperty('apiPort') ?: '8080'
+        buildConfigField 'String', 'API_BASE_URL', "\"http://10.0.2.2:${apiPort}/\""
     }
 
     buildFeatures {
