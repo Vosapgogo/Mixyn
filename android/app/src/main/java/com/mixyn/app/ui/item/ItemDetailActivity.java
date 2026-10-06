@@ -20,7 +20,6 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mixyn.app.R;
 import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
@@ -55,8 +54,7 @@ import retrofit2.Call;
 public class ItemDetailActivity extends BaseActivity
         implements EditPhotoSheet.Listener, MixynBottomBar.Listener {
 
-    private static final String EXTRA_ITEMS = "items";
-    private static final String EXTRA_INDEX = "index";
+    private static final String EXTRA_ITEM = "item";
     private static final String KEY_TYPE = "type";
     private static final String KEY_TAGS = "tags";
     private static final String KEY_COLOR = "color";
@@ -65,17 +63,13 @@ public class ItemDetailActivity extends BaseActivity
 
     private final Gson gson = new Gson();
     private MixynApi api;
-    /** The wardrobe this card was opened from, so "next" can walk through it; item is items.get(index). */
-    private List<ItemDto> items;
-    private int index;
     private ItemDto item;
     private ImageView photo;
     private View photoFrame;
 
-    public static void start(Context context, List<ItemDto> items, int index) {
+    public static void start(Context context, ItemDto item) {
         context.startActivity(new Intent(context, ItemDetailActivity.class)
-                .putExtra(EXTRA_ITEMS, new Gson().toJson(items))
-                .putExtra(EXTRA_INDEX, index));
+                .putExtra(EXTRA_ITEM, new Gson().toJson(item)));
     }
 
     @Override
@@ -83,10 +77,9 @@ public class ItemDetailActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_detail);
         api = ApiClient.get(this);
-        Bundle state = savedInstanceState != null ? savedInstanceState : getIntent().getExtras();
-        items = gson.fromJson(state.getString(EXTRA_ITEMS), new TypeToken<ArrayList<ItemDto>>() { }.getType());
-        index = state.getInt(EXTRA_INDEX);
-        item = items.get(index);
+        String json = savedInstanceState != null
+                ? savedInstanceState.getString(EXTRA_ITEM) : getIntent().getStringExtra(EXTRA_ITEM);
+        item = gson.fromJson(json, ItemDto.class);
         photo = findViewById(R.id.item_photo);
         photoFrame = findViewById(R.id.item_photo_frame);
 
@@ -95,13 +88,6 @@ public class ItemDetailActivity extends BaseActivity
         findViewById(R.id.item_name_edit).setOnClickListener(v -> editName());
         findViewById(R.id.item_edit_photo).setOnClickListener(v ->
                 EditPhotoSheet.newInstance(item.scale).show(getSupportFragmentManager(), "edit_photo"));
-        View next = findViewById(R.id.item_next);
-        next.setVisibility(items.size() > 1 ? View.VISIBLE : View.GONE);
-        next.setOnClickListener(v -> {
-            index = (index + 1) % items.size();
-            item = items.get(index);
-            bind();
-        });
         MixynBottomBar bottomBar = findViewById(R.id.item_bottom_bar);
         bottomBar.setListener(this);
         findViewById(R.id.item_row_type).setOnClickListener(v -> chooseType());
@@ -120,8 +106,7 @@ public class ItemDetailActivity extends BaseActivity
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(EXTRA_ITEMS, gson.toJson(items));
-        outState.putInt(EXTRA_INDEX, index);
+        outState.putString(EXTRA_ITEM, gson.toJson(item));
     }
 
     @Override
@@ -194,7 +179,6 @@ public class ItemDetailActivity extends BaseActivity
             protected void onSuccess(@Nullable ItemDto updated) {
                 if (updated == null) return;
                 item = updated;
-                items.set(index, updated);
                 bind();
             }
 

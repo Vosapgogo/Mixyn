@@ -20,7 +20,7 @@ import java.util.List;
 public class ClothesAdapter extends RecyclerView.Adapter<ClothesAdapter.Holder> {
 
     public interface OnItemClick {
-        void onClick(List<ItemDto> all, int position);
+        void onClick(ItemDto item);
     }
 
     private final List<ItemDto> items = new ArrayList<>();
@@ -48,7 +48,7 @@ public class ClothesAdapter extends RecyclerView.Adapter<ClothesAdapter.Holder> 
         Glide.with(holder.image).load(ApiClient.imageUrl(item.imageUrl)).into(holder.image);
         holder.image.setScaleX(item.scale / 100f); // the size chosen in "Edit photo"
         holder.image.setScaleY(item.scale / 100f);
-        holder.itemView.setOnClickListener(v -> onItemClick.onClick(items, holder.getBindingAdapterPosition()));
+        holder.itemView.setOnClickListener(v -> onItemClick.onClick(item));
     }
 
     @Override

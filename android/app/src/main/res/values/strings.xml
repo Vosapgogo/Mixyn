@@ -113,7 +113,6 @@
     <string name="item_name_dialog_title">Name this piece</string>
     <string name="item_name_field_hint">e.g. Favorite black blazer</string>
     <string name="item_edit_photo">Edit</string>
-    <string name="item_next">Next item</string>
     <string name="edit_photo_title">Edit photo</string>
     <string name="edit_photo_reset">Reset</string>
     <string name="edit_photo_size">Size</string>

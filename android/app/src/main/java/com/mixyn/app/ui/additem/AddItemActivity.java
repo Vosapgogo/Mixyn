@@ -192,7 +192,7 @@ public class AddItemActivity extends BaseActivity {
         action.setText(R.string.add_item_view);
         action.setVisibility(View.VISIBLE);
         action.setOnClickListener(v -> {
-            ItemDetailActivity.start(this, List.of(item), 0);
+            ItemDetailActivity.start(this, item);
             finish(); // Back from the item card lands in the closet
         });
         cancel.setVisibility(View.INVISIBLE);

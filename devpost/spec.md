@@ -198,7 +198,7 @@ PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`.
 PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 
 #### Item Detail
-`ItemDetailActivity` (design pages 9–11): back arrow, the photo with a **›** next-item button, the name ("Add a name…" + pencil → dialog) and an **Edit** pill, then a card with four rows — type + category, tags, colors (dots + names), season — and the bottom bar. Every change is sent at once and the card is redrawn from the answer.
+`ItemDetailActivity` (design pages 9–11): back arrow, the photo, the name ("Add a name…" + pencil → dialog) and an **Edit** pill, then a card with four rows — type + category, tags, colors (dots + names), season — and the bottom bar. Every change is sent at once and the card is redrawn from the answer.
 - **Edit** opens `EditPhotoSheet`: Size slider with −/+ (50–150%), Left 90° / Right 90° / Mirror, Reset, Done. Changes are previewed live on the photo (dashed frame) and saved only on Done.
 - Choices use one reusable `OptionsSheet`: a searchable list for types (type "bl" → Blouse, Blazer), multi-select chips for tags and for colors (max 3), single-select chips for season.
 PRD ref: `prd.md > AI Item Details`.

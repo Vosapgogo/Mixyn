@@ -42,7 +42,7 @@ public class ClothesFragment extends Fragment {
         loading = view.findViewById(R.id.clothes_loading);
         error = view.findViewById(R.id.clothes_error);
 
-        adapter = new ClothesAdapter((all, position) -> ItemDetailActivity.start(requireContext(), all, position));
+        adapter = new ClothesAdapter(item -> ItemDetailActivity.start(requireContext(), item));
         grid.setLayoutManager(new GridLayoutManager(requireContext(), COLUMNS));
         grid.setAdapter(adapter);
         view.findViewById(R.id.clothes_add).setOnClickListener(v -> AddItemActivity.start(requireContext()));
