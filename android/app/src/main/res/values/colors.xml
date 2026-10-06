@@ -27,6 +27,16 @@
     <color name="sparkle_tan">#C9A27A</color>
     <color name="card_blush">#EADFDB</color>
 
+    <!-- Tag dots (item card → tags) -->
+    <color name="tag_casual">#8FA3BF</color>
+    <color name="tag_night_out">#2B2926</color>
+    <color name="tag_streetwear">#A8492E</color>
+    <color name="tag_date_night">#C48F86</color>
+    <color name="tag_work">#6F7254</color>
+    <color name="tag_favorites">#8A6C5C</color>
+    <color name="tag_sports">#4F7F7A</color>
+    <color name="tag_cozy">#B5AFA6</color>
+
     <!-- States -->
     <color name="error">#4F0005</color>            <!-- Pantone 4975C "Red Inferno": wrong input (border + message) -->
     <color name="logout">@color/error</color>      <!-- Log out row: same Red Inferno as errors -->

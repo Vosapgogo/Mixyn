@@ -107,6 +107,40 @@
     <string name="category_unknown">Choose a category</string>
     <string name="color_unknown">No color yet</string>
 
+    <!-- Item card -->
+    <string name="item_name_hint">Add a name…</string>
+    <string name="item_edit_name">Edit name</string>
+    <string name="item_name_dialog_title">Name this piece</string>
+    <string name="item_name_field_hint">e.g. Favorite black blazer</string>
+    <string name="item_edit_photo">Edit</string>
+    <string name="item_next">Next item</string>
+    <string name="edit_photo_title">Edit photo</string>
+    <string name="edit_photo_reset">Reset</string>
+    <string name="edit_photo_size">Size</string>
+    <string name="edit_photo_percent">%1$d%%</string>
+    <string name="edit_photo_smaller">Smaller</string>
+    <string name="edit_photo_larger">Larger</string>
+    <string name="edit_photo_rotate">Rotate</string>
+    <string name="edit_photo_degrees">%1$d°</string>
+    <string name="edit_photo_left">Left 90°</string>
+    <string name="edit_photo_right">Right 90°</string>
+    <string name="edit_photo_mirror">Mirror</string>
+    <string name="item_type_empty">Choose a type</string>
+    <string name="item_type_title">What is it?</string>
+    <string name="item_type_search_hint">Start typing: blazer, jeans…</string>
+    <string name="item_type_none_found">Nothing in the list matches</string>
+    <string name="item_tags_empty">Add tags</string>
+    <string name="item_tags_title">Add tags</string>
+    <string name="item_color_empty">Add colors</string>
+    <string name="item_color_title">Colors</string>
+    <string name="item_color_limit">Up to %1$d colors — unselect one first</string>
+    <string name="item_season_empty">Add season</string>
+    <string name="item_season_title">Season</string>
+    <string name="action_save">Save</string>
+    <string name="action_done">Done</string>
+    <string name="action_clear_selection">Clear selection</string>
+    <string name="tags_joined_separator">", "</string>
+
     <!-- + menu -->
     <string name="menu_add_clothes">Add clothes</string>
     <string name="menu_create_outfit">Create outfit</string>

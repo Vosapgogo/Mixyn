@@ -164,6 +164,66 @@
         <item name="tint">@color/ink</item>
     </style>
 
+    <!-- A selectable chip (tags, colors, seasons): colored dot + label, outlined, filled when selected -->
+    <style name="Widget.Mixyn.Chip" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">@dimen/chip_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+        <item name="android:drawablePadding">@dimen/space_xs</item>
+        <item name="android:background">@drawable/bg_chip</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.BodyStrong</item>
+    </style>
+
+    <!-- Small quiet pill next to a title: "Rotate" -->
+    <style name="Widget.Mixyn.Button.Tonal">
+        <item name="android:minHeight">@dimen/icon_button_size</item>
+        <item name="backgroundTint">@color/mocha_light</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="iconTint">@color/ink</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+    </style>
+
+    <!-- Square-ish action tile with the icon above the label: Left 90° / Right 90° / Mirror -->
+    <style name="Widget.Mixyn.Button.Tile" parent="Widget.Mixyn.Button.Tonal">
+        <item name="android:minHeight">@dimen/tile_height</item>
+        <item name="cornerRadius">@dimen/radius_field</item>
+        <item name="iconGravity">top</item>
+        <item name="iconPadding">@dimen/space_xxs</item>
+        <item name="iconSize">@dimen/icon_size</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Label</item>
+        <item name="android:paddingStart">@dimen/space_xxs</item>
+        <item name="android:paddingEnd">@dimen/space_xxs</item>
+    </style>
+
+    <!-- Size slider in "Edit photo" -->
+    <style name="Widget.Mixyn.Slider" parent="Widget.Material3.Slider">
+        <item name="trackColorActive">@color/mocha</item>
+        <item name="trackColorInactive">@color/line</item>
+        <item name="thumbColor">@color/mocha</item>
+        <item name="haloColor">@color/mocha_light</item>
+        <item name="tickVisible">false</item>
+        <item name="labelBehavior">gone</item>
+    </style>
+
+    <!-- Section label inside a sheet: icon + "Size" -->
+    <style name="Widget.Mixyn.SheetLabel" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:drawablePadding">@dimen/space_s</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.BodyStrong</item>
+        <item name="drawableTint">@color/ink_muted</item>
+    </style>
+
+    <!-- Value shown at the end of a list row ("Outerwear") -->
+    <style name="TextAppearance.Mixyn.RowValue" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
     <!-- Row in a list card (Profile, + menu) -->
     <style name="Widget.Mixyn.ListRow" parent="">
         <item name="android:layout_width">match_parent</item>
