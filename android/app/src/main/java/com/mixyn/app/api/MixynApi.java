@@ -2,12 +2,15 @@ package com.mixyn.app.api;
 
 import com.mixyn.app.api.dto.AuthResponse;
 import com.mixyn.app.api.dto.CityDto;
+import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.ItemDto;
+import com.mixyn.app.api.dto.ItemTypeDto;
 import com.mixyn.app.api.dto.LoginRequest;
 import com.mixyn.app.api.dto.RegisterRequest;
 import com.mixyn.app.api.dto.UserDto;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -15,6 +18,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
@@ -46,4 +50,20 @@ public interface MixynApi {
 
     @GET("api/users/{userId}/items")
     Call<List<ItemDto>> items(@Path("userId") long userId);
+
+    /** Changes only the fields present in the map: type, colors, name, tags, season. */
+    @PATCH("api/items/{itemId}")
+    Call<ItemDto> updateItem(@Path("itemId") long itemId, @Body Map<String, Object> changes);
+
+    /** "Edit photo" → Done; body is {"rotation": 0|90|180|270, "mirror": false, "scale": 50..150}. */
+    @POST("api/items/{itemId}/photo")
+    Call<ItemDto> editPhoto(@Path("itemId") long itemId, @Body Map<String, Object> edit);
+
+    /** The fixed color palette. */
+    @GET("api/item-colors")
+    Call<List<ColorDto>> itemColors();
+
+    /** The fixed list of clothing types (Blazer, Jeans…). */
+    @GET("api/item-types")
+    Call<List<ItemTypeDto>> itemTypes();
 }
