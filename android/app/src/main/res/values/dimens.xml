@@ -35,6 +35,9 @@
     <dimen name="item_photo_height">320dp</dimen>
     <dimen name="tile_height">72dp</dimen>
     <dimen name="dash_length">4dp</dimen>
+    <!-- How much the screen behind "Edit photo" is darkened: enough to show the sheet's edge and rounded
+         corners, light enough to keep the photo preview clear (other sheets use the default 0.6). -->
+    <item name="edit_photo_dim" format="float" type="dimen">0.28</item>
     <dimen name="sheet_list_max_height">360dp</dimen>
     <dimen name="grid_columns_gap">@dimen/space_xs</dimen>
     <dimen name="logo_tile_size">96dp</dimen>

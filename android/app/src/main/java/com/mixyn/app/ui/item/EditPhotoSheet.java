@@ -113,9 +113,11 @@ public class EditPhotoSheet extends BottomSheetDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        // No dark overlay: the photo behind the sheet is the preview and must stay clearly visible.
+        // Only a light overlay: the sheet's edge and rounded corners stay visible, and so does the
+        // photo behind it, which is the live preview.
         if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().setDimAmount(0f);
+            getDialog().getWindow().setDimAmount(
+                    androidx.core.content.res.ResourcesCompat.getFloat(getResources(), R.dimen.edit_photo_dim));
         }
     }
 
