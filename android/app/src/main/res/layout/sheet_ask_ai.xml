@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/screen_margin"
+    android:paddingTop="@dimen/space_s"
+    android:paddingEnd="@dimen/screen_margin"
+    android:paddingBottom="@dimen/space_l">
+
+    <View
+        android:layout_width="@dimen/space_xxl"
+        android:layout_height="@dimen/space_xxs"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_sheet_handle" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:text="@string/ask_ai_title"
+        android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/ask_ai_body"
+        android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+
+    <com.mixyn.app.ui.components.MixynTextField
+        android:id="@+id/ask_ai_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        app:fieldType="text"
+        app:hint="@string/ask_ai_hint"
+        app:label="@string/ask_ai_hint_label" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ask_ai_generate"
+        style="@style/Widget.Mixyn.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:text="@string/ask_ai_generate"
+        app:icon="@drawable/ic_sparkle" />
+</LinearLayout>
