@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mixyn.app.R;
 import com.mixyn.app.ui.additem.AddItemActivity;
+import com.mixyn.app.ui.canvas.OutfitCanvasActivity;
 
 /** The central + menu: Add clothes, Create outfit, OutfitCHECK (coming soon). */
 public class AddMenuSheet extends BottomSheetDialogFragment {
@@ -29,7 +30,10 @@ public class AddMenuSheet extends BottomSheetDialogFragment {
             AddItemActivity.start(requireContext());
             dismiss();
         });
-        view.findViewById(R.id.menu_create_outfit).setOnClickListener(v -> toastAndClose(R.string.coming_next_step));
+        view.findViewById(R.id.menu_create_outfit).setOnClickListener(v -> {
+            OutfitCanvasActivity.start(requireContext());
+            dismiss();
+        });
         view.findViewById(R.id.menu_outfitcheck).setOnClickListener(v -> toastAndClose(R.string.coming_soon));
     }
 

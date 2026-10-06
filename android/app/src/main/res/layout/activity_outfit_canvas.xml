@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Create outfit: the pieces stacked like a silhouette (top + optional outerwear, bottom, shoes).
+     Each slot is its own horizontal pager, so swiping one piece never moves the others. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageButton
+        android:id="@+id/canvas_back"
+        android:layout_width="@dimen/icon_button_size"
+        android:layout_height="@dimen/icon_button_size"
+        android:layout_marginStart="@dimen/space_s"
+        android:layout_marginTop="@dimen/space_xs"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back"
+        android:padding="@dimen/space_s"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_back"
+        app:tint="@color/ink" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/canvas_slots"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingBottom="@dimen/space_m">
+
+            <!-- Top, with the optional outerwear drawn over it -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="36"
+                android:clipChildren="false">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/canvas_top"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- Not touchable, so swipes still reach the top underneath -->
+                <ImageView
+                    android:id="@+id/canvas_outerwear"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/category_outerwear"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/canvas_outerwear_button"
+                    style="@style/Widget.Mixyn.Button.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_marginEnd="@dimen/space_m"
+                    android:text="@string/canvas_outerwear_add"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_hanger" />
+            </FrameLayout>
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/canvas_overlap"
+                android:layout_weight="42" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_shoes"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/canvas_overlap"
+                android:layout_weight="22" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/canvas_loading"
+            android:layout_width="@dimen/space_xl"
+            android:layout_height="@dimen/space_xl"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/mocha" />
+
+        <LinearLayout
+            android:id="@+id/canvas_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_margin"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/canvas_empty_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/canvas_empty_title"
+                android:textAppearance="@style/TextAppearance.Mixyn.Title" />
+
+            <TextView
+                android:id="@+id/canvas_empty_body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center"
+                android:text="@string/canvas_empty_body"
+                android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_bottom_bar"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_m"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingBottom="@dimen/space_m">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/canvas_ask_ai"
+            style="@style/Widget.Mixyn.Button.Dark"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:text="@string/canvas_ask_ai"
+            app:cornerRadius="@dimen/radius_field"
+            app:icon="@drawable/ic_sparkle" />
+    </LinearLayout>
+</LinearLayout>

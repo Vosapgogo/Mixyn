@@ -34,6 +34,8 @@
     <dimen name="swatch_overlap">-8dp</dimen>
     <dimen name="item_photo_height">320dp</dimen>
     <dimen name="tile_height">72dp</dimen>
+    <!-- Outfit canvas: how much the pieces overlap vertically, like clothes on a body -->
+    <dimen name="canvas_overlap">-12dp</dimen>
     <dimen name="dash_length">4dp</dimen>
     <!-- How much the screen behind "Edit photo" is darkened: enough to show the sheet's edge and rounded
          corners, light enough to keep the photo preview clear (other sheets use the default 0.6). -->
