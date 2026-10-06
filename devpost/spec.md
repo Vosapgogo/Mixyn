@@ -155,14 +155,14 @@ PRD ref: `prd.md > AI Item Details`, `prd.md > Adding Clothes`.
 
 #### Stylist Service
 `StylistService.generate(userId, hint)`:
-1. Load the user's categorized items and build a compact text list: `id | category | colorName | name | tags`.
+1. Load the user's categorized items and build a compact text list: `id | category | type | colors | name | tags | seasons`.
 2. Make one Gemini call with that list plus the hint (or "no hint"). JSON output:
    ```json
    { "topId": 12, "bottomId": 7, "shoesId": 3, "outerwearId": null, "hintMatched": true }
    ```
 3. **Validate:** each id must belong to this user *and* be in the right category. Any invalid or missing slot is filled with a random item from that category; if the category is empty, the slot is `null` and the app shows the placeholder.
 4. If `hintMatched` is false and a hint was given, `message` = "We couldn't find anything {hint}. Here is another stylish option!"
-5. Return `{top, bottom, shoes, outerwear, hintMatched, message}` with full `Item` objects.
+5. Return `{top, bottom, shoes, outerwear, hintMatched, message, source}` with full `Item` objects; `source` is `AI`, or `RANDOM` when no model answered. Steps 3–4 are the pure function `StylistService.buildLook`, covered by `StylistServiceTest` (8 cases). Outerwear is kept only when the model picked a valid one; it is never added at random.
 Outerwear is optional: the prompt tells the stylist it *may* add one (resolves `prd.md > Open Questions` using the PRD's assumption).
 PRD ref: `prd.md > AI Stylist`.
 
@@ -204,7 +204,10 @@ PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
-`OutfitCanvasActivity`: a white card stacking a top slot (with an outerwear `ViewPager2` overlapping it), a bottom slot, and a shoes slot, each a horizontal `ViewPager2` over that category's items. It opens on a random index per slot. An empty category shows a placeholder view (dashed `line` outline, **+**, "Add {category} to complete the look") that opens the Add Item Flow. Below the card: the hint `EditText`, **Generate with AI** (a spinner while waiting), and **Save**.
+`OutfitCanvasActivity` (design page 14): the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal `ViewPager2` over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Outerwear is an optional layer drawn over the top (not touchable, so swipes reach the top); a small "Add a layer / Change layer" button cycles none → each outerwear item → none. Items without a category are not shown.
+- **Ask AI** (dark button) opens `AskAiSheet`: an optional hint ("burgundy, cozy, my black blazer…") and **Generate look**. The result moves each slot to the chosen piece and shows the stylist's message, if any, as a toast.
+- Still to come: a random starting look and empty-category placeholders (slice 5), **Save** (slice 6).
+- Not in the PoC from the design: weather chip, Next, Add bag, Accessory.
 PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md > Saving Outfits`.
 
 ## Data Model

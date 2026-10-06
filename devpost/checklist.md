@@ -112,3 +112,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Items can have up to three colors from a fixed 18-color palette kept on the backend (the AI and the user both choose from it) instead of one free-text color — learner request; the AI had described a striped sweater as just "Grey".
 - The next-item arrow beside the photo was removed from the item card — the learner tried it and saw no need for it.
 - An item can have several seasons instead of one, and the "Edit photo" sheet got a light dim so its edge and rounded corners are visible — learner feedback while checking slice 3.
+- On the canvas the hint is typed in an "Ask AI" sheet instead of a field under the canvas, and outerwear is changed with a small "Add a layer" button rather than by swiping — follows the learner's canvas design (page 14), where the top and the outer layer share the same area.
