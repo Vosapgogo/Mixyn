@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -30,6 +31,7 @@ public class MixynTextField extends LinearLayout {
     private static final int TYPE_NAME = 1;
     private static final int TYPE_EMAIL = 2;
     private static final int TYPE_PASSWORD = 3;
+    private static final int TYPE_MULTILINE = 4;
 
     private final TextView label;
     private final AutoCompleteTextView input;
@@ -74,6 +76,18 @@ public class MixynTextField extends LinearLayout {
     }
 
     private void applyType(int type) {
+        if (type == TYPE_MULTILINE) {
+            // A taller box for a few sentences; the keyboard's Enter adds a line.
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                    | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+            input.setSingleLine(false);
+            input.setGravity(Gravity.TOP | Gravity.START);
+            input.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.field_height_multiline);
+            int pad = getResources().getDimensionPixelSize(R.dimen.space_m);
+            input.setPadding(pad, pad, pad, pad);
+            input.setTypeface(getResources().getFont(R.font.inter));
+            return;
+        }
         // Must come first: setSingleLine() replaces the transformation method and would unmask passwords.
         input.setSingleLine(true);
         // The keyboard shows "Next" and moves to the following field; the last one gets "Done" automatically.
