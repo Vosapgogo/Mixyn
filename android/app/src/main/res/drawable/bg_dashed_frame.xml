@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashed outline around the photo while it is being edited. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <stroke android:width="@dimen/stroke" android:color="@color/ink_muted"
+        android:dashWidth="@dimen/dash_length" android:dashGap="@dimen/dash_length" />
+    <corners android:radius="@dimen/radius_card" />
+</shape>

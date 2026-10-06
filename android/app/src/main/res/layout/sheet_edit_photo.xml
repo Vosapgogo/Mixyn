@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Edit photo": size, rotate, mirror. Changes are previewed on the item card behind the sheet. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/screen_margin"
+    android:paddingTop="@dimen/space_s"
+    android:paddingEnd="@dimen/screen_margin"
+    android:paddingBottom="@dimen/space_l">
+
+    <View
+        android:layout_width="@dimen/space_xxl"
+        android:layout_height="@dimen/space_xxs"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_sheet_handle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/edit_photo_title"
+            android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/edit_reset"
+            style="@style/Widget.Mixyn.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_photo_reset" />
+    </LinearLayout>
+
+    <!-- Size -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/Widget.Mixyn.SheetLabel"
+            android:text="@string/edit_photo_size"
+            app:drawableStartCompat="@drawable/ic_size" />
+
+        <TextView
+            android:id="@+id/edit_size_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/edit_size_minus"
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:background="@drawable/bg_circle_button"
+            android:contentDescription="@string/edit_photo_smaller"
+            android:padding="@dimen/space_s"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_minus"
+            app:tint="@color/ink" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/edit_size_slider"
+            style="@style/Widget.Mixyn.Slider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:contentDescription="@string/edit_photo_size"
+            android:stepSize="5"
+            android:valueFrom="50"
+            android:valueTo="150" />
+
+        <ImageButton
+            android:id="@+id/edit_size_plus"
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:background="@drawable/bg_circle_button"
+            android:contentDescription="@string/edit_photo_larger"
+            android:padding="@dimen/space_s"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_plus"
+            app:tint="@color/ink" />
+    </LinearLayout>
+
+    <!-- Rotate -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/Widget.Mixyn.SheetLabel"
+            android:text="@string/edit_photo_rotate"
+            app:drawableStartCompat="@drawable/ic_rotate" />
+
+        <TextView
+            android:id="@+id/edit_rotate_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/edit_left"
+            style="@style/Widget.Mixyn.Button.Tile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/edit_photo_left"
+            app:icon="@drawable/ic_rotate_left" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/edit_right"
+            style="@style/Widget.Mixyn.Button.Tile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
+            android:layout_weight="1"
+            android:text="@string/edit_photo_right"
+            app:icon="@drawable/ic_rotate" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/edit_mirror"
+            style="@style/Widget.Mixyn.Button.Tile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
+            android:layout_weight="1"
+            android:text="@string/edit_photo_mirror"
+            app:icon="@drawable/ic_mirror" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/edit_done"
+        style="@style/Widget.Mixyn.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:text="@string/action_done" />
+</LinearLayout>
