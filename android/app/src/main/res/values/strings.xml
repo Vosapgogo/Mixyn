@@ -134,7 +134,7 @@
     <string name="item_color_title">Colors</string>
     <string name="item_color_limit">Up to %1$d colors — unselect one first</string>
     <string name="item_season_empty">Add season</string>
-    <string name="item_season_title">Season</string>
+    <string name="item_season_title">Seasons</string>
     <string name="action_save">Save</string>
     <string name="action_done">Done</string>
     <string name="action_clear_selection">Clear selection</string>

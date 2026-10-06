@@ -19,5 +19,6 @@ public class ItemDto {
     public int scale = 100;
     public String name;
     public List<String> tags;
-    public String season;
+    /** One or more of Spring / Summer / Autumn / Winter, or just "All". */
+    public List<String> seasons;
 }

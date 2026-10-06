@@ -51,7 +51,7 @@ public interface MixynApi {
     @GET("api/users/{userId}/items")
     Call<List<ItemDto>> items(@Path("userId") long userId);
 
-    /** Changes only the fields present in the map: type, colors, name, tags, season. */
+    /** Changes only the fields present in the map: type, colors, name, tags, seasons. */
     @PATCH("api/items/{itemId}")
     Call<ItemDto> updateItem(@Path("itemId") long itemId, @Body Map<String, Object> changes);
 

@@ -98,7 +98,7 @@ public class ItemDetailActivity extends BaseActivity
         // Each sheet answers under its own key.
         listen(KEY_TYPE, values -> save("type", values.get(0)));
         listen(KEY_TAGS, values -> save("tags", values));
-        listen(KEY_SEASON, values -> save("season", values.get(0)));
+        listen(KEY_SEASON, values -> save("seasons", values));
         listen(KEY_COLOR, values -> save("colors", values));
         bind();
     }
@@ -131,9 +131,7 @@ public class ItemDetailActivity extends BaseActivity
         ((TextView) findViewById(R.id.item_type_value))
                 .setText(item.category == null ? "" : getString(Categories.label(item.category)));
 
-        String tags = item.tags == null || item.tags.isEmpty()
-                ? null : String.join(getString(R.string.tags_joined_separator), item.tags);
-        setRow(R.id.item_tags_label, tags, R.string.item_tags_empty);
+        setRow(R.id.item_tags_label, joined(item.tags), R.string.item_tags_empty);
 
         // Colors row: one dot per color, then the names: "Brown, White".
         LinearLayout swatches = findViewById(R.id.item_color_swatches);
@@ -156,7 +154,14 @@ public class ItemDetailActivity extends BaseActivity
         setRow(R.id.item_color_label, String.join(getString(R.string.tags_joined_separator), colorNames),
                 R.string.item_color_empty);
 
-        setRow(R.id.item_season_label, item.season, R.string.item_season_empty);
+        setRow(R.id.item_season_label, joined(item.seasons), R.string.item_season_empty);
+    }
+
+    /** ["Work", "Cozy"] → "Work, Cozy"; null or empty → null. */
+    @Nullable
+    private String joined(@Nullable List<String> values) {
+        return values == null || values.isEmpty()
+                ? null : String.join(getString(R.string.tags_joined_separator), values);
     }
 
     private void setRow(int labelId, @Nullable String value, int emptyText) {
@@ -261,8 +266,8 @@ public class ItemDetailActivity extends BaseActivity
     private void listen(String key, OnValues action) {
         getSupportFragmentManager().setFragmentResultListener(key, this, (k, result) -> {
             ArrayList<String> values = result.getStringArrayList(OptionsSheet.RESULT_VALUES);
-            // Tags and colors may come back empty ("Clear selection"); single choices never do.
-            boolean mayBeEmpty = KEY_TAGS.equals(key) || KEY_COLOR.equals(key);
+            // Tags, colors and seasons may come back empty ("Clear selection"); the type never does.
+            boolean mayBeEmpty = !KEY_TYPE.equals(key);
             if (values != null && (!values.isEmpty() || mayBeEmpty)) action.accept(values);
         });
     }
@@ -318,9 +323,9 @@ public class ItemDetailActivity extends BaseActivity
     }
 
     private void chooseSeason() {
-        show(KEY_SEASON, R.string.item_season_title, Mode.CHIPS_SINGLE,
+        show(KEY_SEASON, R.string.item_season_title, Mode.CHIPS_MULTI,
                 optionsFrom(R.array.season_names, 0),
-                item.season == null ? new ArrayList<>() : new ArrayList<>(List.of(item.season)), null);
+                item.seasons == null ? new ArrayList<>() : new ArrayList<>(item.seasons), null);
     }
 
     private void show(String key, int title, Mode mode, ArrayList<Option> options, ArrayList<String> selected,
