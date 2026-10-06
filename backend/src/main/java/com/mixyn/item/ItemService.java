@@ -25,6 +25,7 @@ public class ItemService {
             "Casual", "Night out", "Streetwear", "Date night", "Work", "Favorites", "Sports", "Cozy");
     private static final int MIN_SCALE = 50;
     private static final int MAX_SCALE = 150;
+    private static final List<String> FOUR_SEASONS = List.of("Spring", "Summer", "Autumn", "Winter");
     private static final Set<String> ALLOWED_SEASONS = Set.of("All", "Spring", "Summer", "Autumn", "Winter");
 
     private final ItemRepository items;
@@ -111,13 +112,22 @@ public class ItemService {
             }
             item.setTags(update.tags().isEmpty() ? null : String.join(",", update.tags()));
         }
-        if (update.season() != null) {
-            if (!update.season().isEmpty() && !ALLOWED_SEASONS.contains(update.season())) {
-                throw invalid("Choose a season from the list");
+        if (update.seasons() != null) {
+            if (!ALLOWED_SEASONS.containsAll(update.seasons())) {
+                throw invalid("Choose seasons from the list");
             }
-            item.setSeason(update.season().isEmpty() ? null : update.season());
+            item.setSeason(normalizeSeasons(update.seasons()));
         }
         return items.save(item);
+    }
+
+    /** Several seasons are kept in calendar order; "All", or all four together, is stored as just "All". */
+    private static String normalizeSeasons(List<String> chosen) {
+        List<String> seasons = FOUR_SEASONS.stream().filter(chosen::contains).toList();
+        if (chosen.contains("All") || seasons.size() == FOUR_SEASONS.size()) {
+            return "All";
+        }
+        return seasons.isEmpty() ? null : String.join(",", seasons);
     }
 
     /**

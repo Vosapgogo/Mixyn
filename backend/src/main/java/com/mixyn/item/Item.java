@@ -53,7 +53,8 @@ public class Item {
     /** Comma-separated, e.g. "Casual,Work". */
     private String tags;
 
-    @Column(length = 20)
+    /** One or more seasons, comma-separated ("Spring,Autumn"), or "All". */
+    @Column(length = 30)
     private String season;
 
     /** How large the item is drawn inside its frame, in percent (set in "Edit photo"). Null means 100. */

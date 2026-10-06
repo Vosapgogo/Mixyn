@@ -9,8 +9,15 @@ public final class ItemDtos {
     private ItemDtos() {
     }
 
+    /** "Work,Cozy" → ["Work", "Cozy"]; null or empty → []. */
+    private static List<String> split(String commaSeparated) {
+        return commaSeparated == null || commaSeparated.isBlank()
+                ? List.of() : Arrays.asList(commaSeparated.split(","));
+    }
+
     /** Body of PATCH /api/items/{id}: only the fields that are present are changed. */
-    public record ItemUpdate(String type, List<String> colors, String name, List<String> tags, String season) {
+    public record ItemUpdate(String type, List<String> colors, String name, List<String> tags,
+            List<String> seasons) {
     }
 
     public record ColorResponse(String code, String label, String hex) {
@@ -25,12 +32,10 @@ public final class ItemDtos {
 
     public record ItemResponse(Long id, String imageUrl, String type, String typeLabel, Category category,
             List<ColorResponse> colors, String colorName, String colorHex, int scale,
-            String name, List<String> tags, String season, Instant createdAt) {
+            String name, List<String> tags, List<String> seasons, Instant createdAt) {
 
         public static ItemResponse from(Item item) {
-            List<String> tags = item.getTags() == null || item.getTags().isBlank()
-                    ? List.of()
-                    : Arrays.asList(item.getTags().split(","));
+            List<String> tags = split(item.getTags());
             ItemType type = item.getType();
             List<ColorResponse> colors = item.getColors().stream()
                     .map(c -> new ColorResponse(c.name(), c.getLabel(), c.getHex())).toList();
@@ -38,7 +43,7 @@ public final class ItemDtos {
             ColorResponse main = colors.isEmpty() ? null : colors.get(0);
             return new ItemResponse(item.getId(), "/images/" + item.getImageFile(),
                     type == null ? null : type.name(), type == null ? null : type.getLabel(), item.getCategory(),
-                    colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, item.getSeason(),
+                    colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, split(item.getSeason()),
                     item.getCreatedAt());
         }
     }
