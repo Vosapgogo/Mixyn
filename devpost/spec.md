@@ -129,10 +129,10 @@ PRD ref: `prd.md > Account and Session`.
 `ItemController` + `ItemService`.
 - `POST /api/users/{userId}/items` (multipart field `photo`, JPEG/PNG/HEIC up to 10 MB) → `201 Item`. Steps: rembg → store PNG → tag → save. See `prd.md > Adding Clothes`, `prd.md > AI Item Details`.
 - `GET /api/users/{userId}/items` → `200 [Item]`, newest first.
-- `PATCH /api/items/{itemId}` `{type?, colors?, name?, tags?, season?}` → `200 Item`. This is how the user corrects AI results. Only present fields change; every value must come from its fixed list (`type` from `ItemType`, up to 3 `colors` from `ItemColor`, the 8 tags, the 5 seasons) or the request is `400 validation_failed`. Another user's item is `404`.
+- `PATCH /api/items/{itemId}` `{type?, colors?, name?, tags?, seasons?}` → `200 Item`. This is how the user corrects AI results. Only present fields change; every value must come from its fixed list (`type` from `ItemType`, up to 3 `colors` from `ItemColor`, the 8 tags, the 5 seasons) or the request is `400 validation_failed`. Another user's item is `404`.
 - `POST /api/items/{itemId}/photo` `{rotation: 0|90|180|270, mirror, scale: 50..150}` → `200 Item` ("Edit photo" → Done). The picture is mirrored, then turned, and saved under a new file name; `scale` is only stored and applied by the app when drawing.
 - `GET /api/item-types?q=` → `[{code, label, category}]` (29 types, names containing `q`, prefix matches first) and `GET /api/item-colors` → `[{code, label, hex}]` (18 colors). These fixed lists live in the backend enums `ItemType` and `ItemColor`; the AI's JSON schema and the app's pickers both use them, so nobody can invent a value.
-- `Item` JSON: `{id, imageUrl, type, typeLabel, category, colors[{code,label,hex}], colorName, colorHex, scale, name, tags[], season, createdAt}`, where `imageUrl` = `/images/{file}` and `colorName`/`colorHex` repeat the first color.
+- `Item` JSON: `{id, imageUrl, type, typeLabel, category, colors[{code,label,hex}], colorName, colorHex, scale, name, tags[], seasons[], createdAt}`, where `imageUrl` = `/images/{file}` and `colorName`/`colorHex` repeat the first color.
 
 #### Image Storage
 `ImageStorage` writes PNGs to `${IMAGE_DIR}` (`/data/images`, a Docker volume) as `{uuid}.png`. `WebConfig` serves them at `GET /images/**`.
@@ -200,7 +200,7 @@ PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 #### Item Detail
 `ItemDetailActivity` (design pages 9–11): back arrow, the photo, the name ("Add a name…" + pencil → dialog) and an **Edit** pill, then a card with four rows — type + category, tags, colors (dots + names), season — and the bottom bar. Every change is sent at once and the card is redrawn from the answer.
 - **Edit** opens `EditPhotoSheet`: Size slider with −/+ (50–150%), Left 90° / Right 90° / Mirror, Reset, Done. Changes are previewed live on the photo (dashed frame) and saved only on Done.
-- Choices use one reusable `OptionsSheet`: a searchable list for types (type "bl" → Blouse, Blazer), multi-select chips for tags and for colors (max 3), single-select chips for season.
+- Choices use one reusable `OptionsSheet`: a searchable list for types (type "bl" → Blouse, Blazer), multi-select chips for tags, colors (max 3) and seasons.
 PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
