@@ -26,7 +26,12 @@ public class Item {
     @Column(name = "image_file", nullable = false)
     private String imageFile;
 
-    /** Null when the AI couldn't tell; the user then chooses it on the item card. */
+    /** What it is, from the fixed list (Blazer, Jeans…). Null when the AI couldn't tell; the user then chooses. */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private ItemType type;
+
+    /** The outfit slot. Follows the type when there is one. */
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Category category;
@@ -52,10 +57,11 @@ public class Item {
     protected Item() {
     }
 
-    public Item(Long userId, String imageFile, Category category, String colorName, String colorHex) {
+    public Item(Long userId, String imageFile, ItemType type, Category category, String colorName, String colorHex) {
         this.userId = userId;
         this.imageFile = imageFile;
-        this.category = category;
+        this.type = type;
+        this.category = type != null ? type.getCategory() : category;
         this.colorName = colorName;
         this.colorHex = colorHex;
     }
@@ -72,8 +78,41 @@ public class Item {
         return imageFile;
     }
 
+    public ItemType getType() {
+        return type;
+    }
+
+    /** Choosing a type also moves the item to that type's outfit slot. */
+    public void setType(ItemType type) {
+        this.type = type;
+        if (type != null) {
+            this.category = type.getCategory();
+        }
+    }
+
     public Category getCategory() {
         return category;
+    }
+
+    public void setImageFile(String imageFile) {
+        this.imageFile = imageFile;
+    }
+
+    public void setColor(String colorName, String colorHex) {
+        this.colorName = colorName;
+        this.colorHex = colorHex;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public void setSeason(String season) {
+        this.season = season;
     }
 
     public String getColorName() {

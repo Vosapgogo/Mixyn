@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type;
 import com.mixyn.item.Category;
+import com.mixyn.item.ItemType;
 
 import tools.jackson.databind.JsonNode;
 
@@ -24,8 +26,8 @@ import tools.jackson.databind.JsonNode;
 public class TaggingService {
 
     /** What the AI detected. Any field may be null when the AI was unsure or unavailable. */
-    public record Tags(Subject subject, Category category, String colorName, String colorHex) {
-        public static final Tags NONE = new Tags(null, null, null, null);
+    public record Tags(Subject subject, ItemType type, Category category, String colorName, String colorHex) {
+        public static final Tags NONE = new Tags(null, null, null, null, null);
     }
 
     /** What the photo shows. Only SINGLE_ITEM belongs in a wardrobe. */
@@ -40,6 +42,7 @@ public class TaggingService {
             PERSON (a person or a body part is visible, e.g. someone wearing the clothes, a selfie), \
             MULTIPLE_ITEMS (two or more separate garments, e.g. a whole outfit laid out), \
             NOT_CLOTHING (anything else).
+            - type: the single best match from the allowed list of clothing types.
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, dresses), \
             BOTTOM (trousers, jeans, skirts, shorts), SHOES (any footwear), \
             OUTERWEAR (coats, jackets, blazers, cardigans worn over a top).
@@ -52,11 +55,14 @@ public class TaggingService {
             .properties(Map.of(
                     "subject", Schema.builder().type(Type.Known.STRING)
                             .enum_(List.of("SINGLE_ITEM", "PERSON", "MULTIPLE_ITEMS", "NOT_CLOTHING")).build(),
+                    // The allowed values come straight from the ItemType list, so the model can't invent one.
+                    "type", Schema.builder().type(Type.Known.STRING)
+                            .enum_(Arrays.stream(ItemType.values()).map(Enum::name).toList()).build(),
                     "category", Schema.builder().type(Type.Known.STRING)
                             .enum_(List.of("TOP", "BOTTOM", "SHOES", "OUTERWEAR")).build(),
                     "colorName", Schema.builder().type(Type.Known.STRING).build(),
                     "colorHex", Schema.builder().type(Type.Known.STRING).build()))
-            .required(List.of("subject", "category", "colorName", "colorHex"))
+            .required(List.of("subject", "type", "category", "colorName", "colorHex"))
             .build();
 
     private final GeminiJson gemini;
@@ -90,7 +96,8 @@ public class TaggingService {
         }
         String name = node.path("colorName").asString("").trim();
         String hex = node.path("colorHex").asString("").trim();
-        return new Tags(subject, category,
+        ItemType type = ItemType.fromCode(node.path("type").asString(""));
+        return new Tags(subject, type, category,
                 name.isEmpty() || name.length() > 30 ? null : capitalize(name),
                 hex.matches("#[0-9a-fA-F]{6}") ? hex.toUpperCase() : null);
     }

@@ -1,6 +1,7 @@
 package com.mixyn.item;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +13,16 @@ import com.mixyn.ai.TaggingService;
 import com.mixyn.ai.TaggingService.Subject;
 import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.common.ApiException;
+import com.mixyn.item.ItemDtos.ItemUpdate;
 import com.mixyn.storage.ImageStorage;
 
 @Service
 public class ItemService {
 
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
+    private static final Set<String> ALLOWED_TAGS = Set.of(
+            "Casual", "Night out", "Streetwear", "Date night", "Work", "Favorites", "Sports", "Cozy");
+    private static final Set<String> ALLOWED_SEASONS = Set.of("All", "Spring", "Summer", "Autumn", "Winter");
 
     private final ItemRepository items;
     private final RembgClient rembg;
@@ -49,9 +54,9 @@ public class ItemService {
         long afterTagging = System.currentTimeMillis();
         rejectIfNotOneItem(tags.subject());
         String file = storage.save(cutout);
-        Item item = items.save(new Item(userId, file, tags.category(), tags.colorName(), tags.colorHex()));
-        log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, category {}",
-                item.getId(), afterRembg - start, afterTagging - afterRembg, item.getCategory());
+        Item item = items.save(new Item(userId, file, tags.type(), tags.category(), tags.colorName(), tags.colorHex()));
+        log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, type {}, category {}",
+                item.getId(), afterRembg - start, afterTagging - afterRembg, item.getType(), item.getCategory());
         return item;
     }
 
@@ -70,6 +75,70 @@ public class ItemService {
             default -> "We couldn't find a clothing item in this photo. Add a photo of just one item.";
         };
         throw new ApiException(HttpStatus.BAD_REQUEST, "not_single_item", message);
+    }
+
+    /** The user corrects or enriches an item on its card. Null fields in the update are left as they are. */
+    public Item updateItem(Long userId, Long itemId, ItemUpdate update) {
+        Item item = ownItem(userId, itemId);
+        if (update.type() != null) {
+            ItemType type = ItemType.fromCode(update.type());
+            if (type == null) {
+                throw invalid("Choose a type from the list");
+            }
+            item.setType(type);
+        }
+        if (update.colorName() != null || update.colorHex() != null) {
+            String name = update.colorName() == null ? item.getColorName() : update.colorName().trim();
+            String hex = update.colorHex() == null ? item.getColorHex() : update.colorHex().trim().toUpperCase();
+            if (name == null || name.isEmpty() || name.length() > 30 || (hex != null && !hex.matches("#[0-9A-F]{6}"))) {
+                throw invalid("That color isn't valid");
+            }
+            item.setColor(name, hex);
+        }
+        if (update.name() != null) {
+            String name = update.name().trim();
+            if (name.length() > 60) {
+                throw invalid("The name is too long (max 60 characters)");
+            }
+            item.setName(name.isEmpty() ? null : name); // an empty name clears it
+        }
+        if (update.tags() != null) {
+            if (!ALLOWED_TAGS.containsAll(update.tags())) {
+                throw invalid("Choose tags from the list");
+            }
+            item.setTags(update.tags().isEmpty() ? null : String.join(",", update.tags()));
+        }
+        if (update.season() != null) {
+            if (!update.season().isEmpty() && !ALLOWED_SEASONS.contains(update.season())) {
+                throw invalid("Choose a season from the list");
+            }
+            item.setSeason(update.season().isEmpty() ? null : update.season());
+        }
+        return items.save(item);
+    }
+
+    /** Turns the stored photo clockwise. The file gets a new name so apps don't show a cached old picture. */
+    public Item rotateItem(Long userId, Long itemId, int degrees) {
+        if (degrees != 90 && degrees != 180 && degrees != 270) {
+            throw invalid("Rotate by 90, 180 or 270 degrees");
+        }
+        Item item = ownItem(userId, itemId);
+        String oldFile = item.getImageFile();
+        item.setImageFile(storage.save(storage.rotate(storage.read(oldFile), degrees)));
+        Item saved = items.save(item);
+        storage.delete(oldFile);
+        return saved;
+    }
+
+    /** Someone else's item is reported as "not found", so ids can't be probed. */
+    private Item ownItem(Long userId, Long itemId) {
+        return items.findById(itemId)
+                .filter(item -> item.getUserId().equals(userId))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "not_found", "Item not found"));
+    }
+
+    private static ApiException invalid(String message) {
+        return new ApiException(HttpStatus.BAD_REQUEST, "validation_failed", message);
     }
 
     public List<Item> listItems(Long userId) {
