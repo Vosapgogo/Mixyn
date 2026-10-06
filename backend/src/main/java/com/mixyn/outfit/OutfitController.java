@@ -23,6 +23,10 @@ public class OutfitController {
     @PostMapping("/api/users/{userId}/outfits/generate")
     public GenerateResponse generate(@PathVariable Long userId,
             @Valid @RequestBody(required = false) GenerateRequest request) {
-        return GenerateResponse.from(stylist.generate(userId, request == null ? null : request.hint()));
+        if (request == null) {
+            return GenerateResponse.from(stylist.generate(userId, null, null, null));
+        }
+        return GenerateResponse.from(
+                stylist.generate(userId, request.hint(), request.history(), request.current()));
     }
 }

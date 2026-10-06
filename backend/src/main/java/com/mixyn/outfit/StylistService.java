@@ -16,6 +16,8 @@ import com.mixyn.item.Category;
 import com.mixyn.item.Item;
 import com.mixyn.item.ItemColor;
 import com.mixyn.item.ItemRepository;
+import com.mixyn.outfit.OutfitDtos.LookIds;
+import com.mixyn.outfit.OutfitDtos.PastTurn;
 
 import tools.jackson.databind.JsonNode;
 
@@ -45,13 +47,25 @@ public class StylistService {
             You are a personal stylist. Build ONE outfit using ONLY the items listed below; they are the \
             user's own clothes. Pick exactly one TOP, one BOTTOM and one SHOES item by id (if that category \
             has items). You MAY add one OUTERWEAR item if it suits the look; otherwise use null.
-            Choose pieces whose colors and style go well together.
 
-            User's request: %s
-            If there is a request, favor items that match it (a color, a mood, a type of garment, or a \
-            specific piece) and build the rest of the look around them. Set hintMatched to true if at \
-            least one chosen item really matches the request, or if there is no request; false if nothing \
-            in the wardrobe matches it (then still return a good outfit).
+            %sUser's request now: %s
+
+            How to use the request:
+            - It can be a color ("burgundy"), a mood or style ("cozy", "streetwear"), a specific piece \
+            ("my black blazer"), or an occasion / event ("job interview", "first date", "gym", \
+            "dinner with parents", "rainy walk"), in any language.
+            - For an occasion, first decide what kind of outfit suits it (how formal, how comfortable, \
+            what the weather implies), then choose the items that fit best. Read every column: \
+            the type (a blazer and loafers are smarter than a hoodie and sneakers), the tags the user \
+            gave (Work, Casual, Night out, Date night, Streetwear, Sports, Cozy, Favorites) and the seasons.
+            - Always make the colors and styles of the chosen pieces go well together.
+            - If there is no request, build a balanced everyday look.
+            - If there is an earlier conversation, the new request continues it: keep in mind what the \
+            user already asked for. When the new request changes only part of the outfit ("other shoes", \
+            "warmer", "without the blazer"), keep the other pieces of the current outfit exactly as they \
+            are and change only what is needed. When it is a completely new idea, start fresh.
+            Set hintMatched to true if the outfit genuinely fits the request (or there is no request); \
+            false only if the wardrobe has nothing suitable for it — then still return the best outfit you can.
 
             Wardrobe (id | category | type | colors | name | tags | seasons):
             %s
@@ -68,7 +82,9 @@ public class StylistService {
             .required(List.of("topId", "bottomId", "shoesId", "outerwearId", "hintMatched"))
             .build();
 
-    private static final int MAX_HINT_LENGTH = 100;
+    private static final int MAX_HINT_LENGTH = 500;
+    /** Long requests are not repeated inside the "nothing fits" message. */
+    private static final int MAX_QUOTED_HINT = 40;
 
     private final ItemRepository items;
     private final GeminiJson gemini;
@@ -79,22 +95,52 @@ public class StylistService {
         this.gemini = gemini;
     }
 
-    public Look generate(Long userId, String hint) {
+    public Look generate(Long userId, String hint, List<PastTurn> history, LookIds current) {
         // Only items with a category can stand in an outfit slot.
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .filter(item -> item.getCategory() != null)
                 .toList();
-        String cleanHint = hint == null ? "" : hint.trim();
-        if (cleanHint.length() > MAX_HINT_LENGTH) {
-            cleanHint = cleanHint.substring(0, MAX_HINT_LENGTH);
-        }
+        String cleanHint = clean(hint);
         if (wardrobe.isEmpty()) {
             return new Look(null, null, null, null, true, null, false);
         }
-        String prompt = PROMPT.formatted(cleanHint.isEmpty() ? "(none)" : cleanHint, describe(wardrobe));
+        String prompt = PROMPT.formatted(describeConversation(history, current),
+                cleanHint.isEmpty() ? "(none)" : cleanHint, describe(wardrobe));
         Optional<JsonNode> answer = gemini.generate(prompt, null, SCHEMA);
         AiPick pick = answer.map(StylistService::parse).orElse(null);
         return buildLook(wardrobe, pick, cleanHint, random);
+    }
+
+    private static String clean(String hint) {
+        String text = hint == null ? "" : hint.trim().replaceAll("\\s+", " ");
+        return text.length() > MAX_HINT_LENGTH ? text.substring(0, MAX_HINT_LENGTH) : text;
+    }
+
+    /**
+     * The session's memory, as text for the prompt. The app sends it with every request (the backend
+     * keeps no conversation state): earlier requests with the outfit each produced, then the outfit on
+     * screen now. Ids here are only context for the model; its answer is validated as always.
+     */
+    static String describeConversation(List<PastTurn> history, LookIds current) {
+        StringBuilder text = new StringBuilder();
+        if (history != null && !history.isEmpty()) {
+            text.append("Earlier in this conversation (oldest first):\n");
+            int n = 1;
+            for (PastTurn turn : history) {
+                text.append(n++).append(". User asked: \"").append(clean(turn.hint()).isEmpty() ? "(no request)" : clean(turn.hint()))
+                        .append("\" -> outfit ").append(describeIds(turn.look())).append('\n');
+            }
+        }
+        if (current != null) {
+            text.append("Outfit on screen right now: ").append(describeIds(current)).append('\n');
+        }
+        return text.isEmpty() ? "" : text.append('\n').toString();
+    }
+
+    private static String describeIds(LookIds look) {
+        return look == null ? "(unknown)"
+                : "top=" + look.topId() + ", bottom=" + look.bottomId() + ", shoes=" + look.shoesId()
+                        + ", outerwear=" + look.outerwearId();
     }
 
     /** One line per item, e.g. "27 | SHOES | Sneakers | Black, White | - | Casual | Summer". */
@@ -149,7 +195,9 @@ public class StylistService {
         boolean hintGiven = !hint.isEmpty();
         boolean matched = !hintGiven || pick.hintMatched();
         String message = matched ? null
-                : "We couldn't find anything " + hint + ". Here is another stylish option!";
+                : "Nothing in your closet quite fits "
+                        + (hint.length() <= MAX_QUOTED_HINT ? "\u201C" + hint + "\u201D" : "that request")
+                        + ". Here is another stylish option!";
         return new Look(top, bottom, shoes, outerwear, matched, message, true);
     }
 

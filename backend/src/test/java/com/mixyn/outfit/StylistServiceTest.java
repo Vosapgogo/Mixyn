@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import com.mixyn.item.Category;
 import com.mixyn.item.Item;
 import com.mixyn.item.ItemColor;
+import com.mixyn.outfit.OutfitDtos.LookIds;
+import com.mixyn.outfit.OutfitDtos.PastTurn;
 import com.mixyn.outfit.StylistService.AiPick;
 import com.mixyn.outfit.StylistService.Look;
 
@@ -99,7 +101,7 @@ class StylistServiceTest {
         Look look = StylistService.buildLook(wardrobe, new AiPick(10L, 20L, 30L, null, false), "burgundy", random);
 
         assertFalse(look.hintMatched());
-        assertEquals("We couldn't find anything burgundy. Here is another stylish option!", look.message());
+        assertEquals("Nothing in your closet quite fits \u201Cburgundy\u201D. Here is another stylish option!", look.message());
         assertNotNull(look.top());
         assertNotNull(look.bottom());
         assertNotNull(look.shoes());
@@ -111,6 +113,25 @@ class StylistServiceTest {
 
         assertTrue(look.hintMatched());
         assertNull(look.message());
+    }
+
+    @Test
+    void doesNotQuoteAVeryLongRequestInTheMessage() {
+        String longHint = "something elegant but comfortable for a long dinner with my parents on a cold evening";
+        Look look = StylistService.buildLook(wardrobe, new AiPick(10L, 20L, 30L, null, false), longHint, random);
+
+        assertEquals("Nothing in your closet quite fits that request. Here is another stylish option!", look.message());
+    }
+
+    @Test
+    void putsEarlierRequestsAndTheCurrentOutfitIntoThePrompt() {
+        String memory = StylistService.describeConversation(
+                List.of(new PastTurn("job interview", new LookIds(10L, 20L, 30L, 40L))),
+                new LookIds(11L, 20L, 30L, null));
+
+        assertTrue(memory.contains("User asked: \"job interview\" -> outfit top=10, bottom=20, shoes=30, outerwear=40"));
+        assertTrue(memory.contains("Outfit on screen right now: top=11, bottom=20, shoes=30, outerwear=null"));
+        assertEquals("", StylistService.describeConversation(null, null));
     }
 
     /** A wardrobe item with a database id, without needing a database. */
