@@ -44,7 +44,9 @@ public class TaggingService {
             PERSON (a person or a body part is visible, e.g. someone wearing the clothes, a selfie), \
             MULTIPLE_ITEMS (two or more separate garments, e.g. a whole outfit laid out), \
             NOT_CLOTHING (anything else).
-            - type: the single best match from the allowed list of clothing types.
+            - type: the single best match from the allowed list of clothing types. For outerwear, \
+            length matters: use COAT, TRENCH_COAT or PUFFER_COAT only for a long piece that reaches \
+            well below the hips, and a jacket type (JACKET, PUFFER_JACKET, BLAZER…) for a short one.
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, dresses), \
             BOTTOM (trousers, jeans, skirts, shorts), SHOES (any footwear), \
             OUTERWEAR (coats, jackets, blazers, cardigans worn over a top), \

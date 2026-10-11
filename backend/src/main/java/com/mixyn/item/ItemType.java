@@ -32,6 +32,7 @@ public enum ItemType {
     COAT("Coat", Category.OUTERWEAR),
     TRENCH_COAT("Trench coat", Category.OUTERWEAR),
     PUFFER_JACKET("Puffer jacket", Category.OUTERWEAR),
+    PUFFER_COAT("Puffer coat", Category.OUTERWEAR),
     DENIM_JACKET("Denim jacket", Category.OUTERWEAR),
     LEATHER_JACKET("Leather jacket", Category.OUTERWEAR),
     VEST("Vest", Category.OUTERWEAR),
