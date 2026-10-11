@@ -12,6 +12,8 @@ public final class Categories {
     public static final String BOTTOM = "BOTTOM";
     public static final String SHOES = "SHOES";
     public static final String OUTERWEAR = "OUTERWEAR";
+    public static final String BAG = "BAG";
+    public static final String ACCESSORY = "ACCESSORY";
 
     private Categories() {
     }
@@ -24,6 +26,8 @@ public final class Categories {
             case BOTTOM -> R.string.category_bottom;
             case SHOES -> R.string.category_shoes;
             case OUTERWEAR -> R.string.category_outerwear;
+            case BAG -> R.string.category_bag;
+            case ACCESSORY -> R.string.category_accessory;
             default -> R.string.category_unknown;
         };
     }

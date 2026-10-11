@@ -104,6 +104,8 @@
     <string name="category_bottom">Bottom</string>
     <string name="category_shoes">Shoes</string>
     <string name="category_outerwear">Outerwear</string>
+    <string name="category_bag">Bag</string>
+    <string name="category_accessory">Accessory</string>
     <string name="category_unknown">Choose a category</string>
     <string name="color_unknown">No color yet</string>
 

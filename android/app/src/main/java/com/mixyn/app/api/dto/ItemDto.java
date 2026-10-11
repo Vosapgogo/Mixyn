@@ -9,7 +9,7 @@ public class ItemDto {
     /** Code from the fixed type list ("BLAZER") and its label ("Blazer"); null when not chosen yet. */
     public String type;
     public String typeLabel;
-    /** TOP, BOTTOM, SHOES, OUTERWEAR — or null when the AI couldn't tell. */
+    /** TOP, BOTTOM, SHOES, OUTERWEAR, BAG, ACCESSORY — or null when the AI couldn't tell. */
     public String category;
     /** Up to three palette colors, the main one first. colorName / colorHex repeat the first. */
     public List<ColorDto> colors;
