@@ -1,10 +1,13 @@
 package com.mixyn.outfit;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import com.mixyn.item.Category;
 import com.mixyn.item.Item;
 import com.mixyn.item.ItemColor;
 import com.mixyn.item.ItemRepository;
+import com.mixyn.item.ItemType;
 import com.mixyn.outfit.OutfitDtos.LookIds;
 import com.mixyn.outfit.OutfitDtos.PastTurn;
 import com.mixyn.weather.WeatherService;
@@ -35,20 +39,29 @@ import tools.jackson.databind.JsonNode;
 public class StylistService {
 
     /** What the model picked. Ids may be null, unknown, or point at the wrong kind of item. */
-    public record AiPick(Long topId, Long bottomId, Long shoesId, Long outerwearId, boolean hintMatched) {
+    public record AiPick(Long topId, Long bottomId, Long shoesId, Long outerwearId, Long bagId,
+            List<Long> accessoryIds, boolean hintMatched) {
     }
 
-    /** The validated result. A slot is null only when the wardrobe has nothing for it (or no outerwear was added). */
-    public record Look(Item top, Item bottom, Item shoes, Item outerwear, boolean hintMatched, String message,
-            boolean byAi) {
+    /**
+     * The validated result. A base slot is null only when the wardrobe has nothing for it; the layers
+     * (outerwear, bag, accessories) are null / empty unless the stylist validly chose them.
+     */
+    public record Look(Item top, Item bottom, Item shoes, Item outerwear, Item bag, List<Item> accessories,
+            boolean hintMatched, String message, boolean byAi) {
     }
+
+    /** More accessories than this on one outfit is clutter, whatever the model thinks. */
+    static final int MAX_ACCESSORIES = 4;
 
     static final String FALLBACK_MESSAGE = "The stylist is taking a break — here's a random look instead.";
 
     private static final String PROMPT = """
             You are a personal stylist. Build ONE outfit using ONLY the items listed below; they are the \
             user's own clothes. Pick exactly one TOP, one BOTTOM and one SHOES item by id (if that category \
-            has items). You MAY add one OUTERWEAR item if it suits the look; otherwise use null.
+            has items). On top of that you MAY add optional layers when they suit the look: one OUTERWEAR item, \
+            one BAG item, and up to 4 ACCESSORY items of different types (never two head coverings at once). \
+            Use null / an empty list for a layer you leave off.
 
             %s%sUser's request now: %s
 
@@ -62,13 +75,15 @@ public class StylistService {
             gave (Work, Casual, Night out, Date night, Streetwear, Sports, Cozy, Favorites) and the seasons.
             - Always make the colors and styles of the chosen pieces go well together.
             - If the weather is given, dress for it: warmer pieces and an outer layer when it is cold, \
-            lighter pieces when it is warm, sensible shoes in rain or snow. Use the seasons column too. \
+            lighter pieces when it is warm, sensible shoes in rain or snow. In the cold, add a beanie, a scarf \
+            and gloves if the user owns them; in hot sunny weather a cap, hat or headscarf and sunglasses. \
+            Use the seasons column too. \
             A request that clearly sets another context (indoors, gym, a party) comes before the weather.
             - If there is no request, build a balanced everyday look.
             - If there is an earlier conversation, the new request continues it: keep in mind what the \
             user already asked for. When the new request changes only part of the outfit ("other shoes", \
-            "warmer", "without the blazer"), keep the other pieces of the current outfit exactly as they \
-            are and change only what is needed. When it is a completely new idea, start fresh.
+            "warmer", "without the blazer", "add a bag", "another scarf"), keep the other pieces of the \
+            current outfit exactly as they are, layers included, and change only what is needed. When it is a completely new idea, start fresh.
             Set hintMatched to true if the outfit genuinely fits the request (or there is no request); \
             false only if the wardrobe has nothing suitable for it — then still return the best outfit you can.
 
@@ -83,8 +98,11 @@ public class StylistService {
                     "bottomId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "shoesId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "outerwearId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
+                    "bagId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
+                    "accessoryIds", Schema.builder().type(Type.Known.ARRAY)
+                            .items(Schema.builder().type(Type.Known.INTEGER).build()).build(),
                     "hintMatched", Schema.builder().type(Type.Known.BOOLEAN).build()))
-            .required(List.of("topId", "bottomId", "shoesId", "outerwearId", "hintMatched"))
+            .required(List.of("topId", "bottomId", "shoesId", "outerwearId", "bagId", "accessoryIds", "hintMatched"))
             .build();
 
     private static final int MAX_HINT_LENGTH = 500;
@@ -109,7 +127,7 @@ public class StylistService {
                 .toList();
         String cleanHint = clean(hint);
         if (wardrobe.isEmpty()) {
-            return new Look(null, null, null, null, true, null, false);
+            return new Look(null, null, null, null, null, List.of(), true, null, false);
         }
         String prompt = PROMPT.formatted(describeWeather(weather.forUser(userId).orElse(null)),
                 describeConversation(history, current),
@@ -154,7 +172,8 @@ public class StylistService {
     private static String describeIds(LookIds look) {
         return look == null ? "(unknown)"
                 : "top=" + look.topId() + ", bottom=" + look.bottomId() + ", shoes=" + look.shoesId()
-                        + ", outerwear=" + look.outerwearId();
+                        + ", outerwear=" + look.outerwearId() + ", bag=" + look.bagId()
+                        + ", accessories=" + (look.accessoryIds() == null ? List.of() : look.accessoryIds());
     }
 
     /** One line per item, e.g. "27 | SHOES | Sneakers | Black, White | - | Casual | Summer". */
@@ -177,8 +196,12 @@ public class StylistService {
     }
 
     static AiPick parse(JsonNode node) {
+        List<Long> accessoryIds = new ArrayList<>();
+        for (JsonNode value : node.path("accessoryIds")) {
+            if (value.isIntegralNumber()) accessoryIds.add(value.asLong());
+        }
         return new AiPick(id(node, "topId"), id(node, "bottomId"), id(node, "shoesId"), id(node, "outerwearId"),
-                node.path("hintMatched").asBoolean(true));
+                id(node, "bagId"), accessoryIds, node.path("hintMatched").asBoolean(true));
     }
 
     private static Long id(JsonNode node, String field) {
@@ -193,18 +216,21 @@ public class StylistService {
     static Look buildLook(List<Item> wardrobe, AiPick pick, String hint, Random random) {
         Map<Category, List<Item>> byCategory = new EnumMap<>(Category.class);
         for (Item item : wardrobe) {
-            byCategory.computeIfAbsent(item.getCategory(), c -> new java.util.ArrayList<>()).add(item);
+            byCategory.computeIfAbsent(item.getCategory(), c -> new ArrayList<>()).add(item);
         }
         boolean aiAnswered = pick != null;
 
         Item top = choose(byCategory, Category.TOP, aiAnswered ? pick.topId() : null, true, random);
         Item bottom = choose(byCategory, Category.BOTTOM, aiAnswered ? pick.bottomId() : null, true, random);
         Item shoes = choose(byCategory, Category.SHOES, aiAnswered ? pick.shoesId() : null, true, random);
-        // Outerwear is optional: keep it only if the model chose a valid one, never add one at random.
+        // The layers are optional: keep one only if the model chose a valid item, never add one at random.
         Item outerwear = choose(byCategory, Category.OUTERWEAR, aiAnswered ? pick.outerwearId() : null, false, random);
+        Item bag = choose(byCategory, Category.BAG, aiAnswered ? pick.bagId() : null, false, random);
+        List<Item> accessories = chooseAccessories(byCategory.getOrDefault(Category.ACCESSORY, List.of()),
+                aiAnswered ? pick.accessoryIds() : null);
 
         if (!aiAnswered) {
-            return new Look(top, bottom, shoes, outerwear, false, FALLBACK_MESSAGE, false);
+            return new Look(top, bottom, shoes, outerwear, bag, accessories, false, FALLBACK_MESSAGE, false);
         }
         boolean hintGiven = !hint.isEmpty();
         boolean matched = !hintGiven || pick.hintMatched();
@@ -212,7 +238,25 @@ public class StylistService {
                 : "Nothing in your closet quite fits "
                         + (hint.length() <= MAX_QUOTED_HINT ? "\u201C" + hint + "\u201D" : "that request")
                         + ". Here is another stylish option!";
-        return new Look(top, bottom, shoes, outerwear, matched, message, true);
+        return new Look(top, bottom, shoes, outerwear, bag, accessories, matched, message, true);
+    }
+
+    /** The picked accessories that really are this user's accessories: one per type, at most MAX_ACCESSORIES. */
+    private static List<Item> chooseAccessories(List<Item> owned, List<Long> pickedIds) {
+        List<Item> chosen = new ArrayList<>();
+        if (pickedIds == null) {
+            return chosen;
+        }
+        Set<ItemType> types = new HashSet<>();
+        for (Long id : pickedIds) {
+            for (Item item : owned) {
+                // types.add is false for a second scarf, a second cap…
+                if (item.getId().equals(id) && chosen.size() < MAX_ACCESSORIES && types.add(item.getType())) {
+                    chosen.add(item);
+                }
+            }
+        }
+        return chosen;
     }
 
     /**
