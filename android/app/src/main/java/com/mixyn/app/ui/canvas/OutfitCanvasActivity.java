@@ -63,7 +63,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** How much of the outerwear's frame (top + bottom) the top takes; must match the layout weights. */
     private static final float TOP_SHARE = 36f / 78f;
     /** These reach down over the bottom; every other outerwear type covers only the top. */
-    private static final List<String> LONG_OUTERWEAR = List.of("COAT", "TRENCH_COAT");
+    private static final List<String> LONG_OUTERWEAR = List.of("COAT", "TRENCH_COAT", "PUFFER_COAT");
     /** Everything that can't be changed while one layer is being chosen is faded to this. */
     private static final float LOCKED_ALPHA = 0.45f;
     /** Where the bag hangs: by the hand, beside the bottom. Same units as AccessorySpot. */
