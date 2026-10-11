@@ -145,7 +145,7 @@ PRD ref: `prd.md > Adding Clothes`.
 `TaggingService` makes one Gemini call (through `GeminiJson`) with the cutout on a white background plus a short prompt. JSON output is constrained to:
 ```json
 { "subject": "SINGLE_ITEM|PERSON|MULTIPLE_ITEMS|NOT_CLOTHING",
-  "type": "BLAZER", "category": "TOP|BOTTOM|SHOES|OUTERWEAR", "colors": ["KHAKI", "BROWN"] }
+  "type": "BLAZER", "category": "TOP|BOTTOM|SHOES|OUTERWEAR|BAG|ACCESSORY", "colors": ["KHAKI", "BROWN"] }
 ```
 - **Single-item check:** if `subject` is not `SINGLE_ITEM`, nothing is saved and the upload returns `400 {"error":"not_single_item"}` with a message for that case (person / several items / not clothing).
 - **AI unavailable:** if every model fails or times out, the item is **still saved** with `category = null` and no single-item check; the item card shows "Choose a category". Items without a category don't appear on the canvas until one is set.
@@ -158,12 +158,12 @@ PRD ref: `prd.md > AI Item Details`, `prd.md > Adding Clothes`.
 1. Load the user's categorized items and build a compact text list: `id | category | type | colors | name | tags | seasons`.
 2. Make one Gemini call with that list plus the hint (or "no hint"). JSON output:
    ```json
-   { "topId": 12, "bottomId": 7, "shoesId": 3, "outerwearId": null, "hintMatched": true }
+   { "topId": 12, "bottomId": 7, "shoesId": 3, "outerwearId": null, "bagId": 21, "accessoryIds": [30, 31], "hintMatched": true }
    ```
 3. **Validate:** each id must belong to this user *and* be in the right category. Any invalid or missing slot is filled with a random item from that category; if the category is empty, the slot is `null` and the app shows the placeholder.
 4. If `hintMatched` is false and a hint was given, `message` = "We couldn't find anything {hint}. Here is another stylish option!"
-5. Return `{top, bottom, shoes, outerwear, hintMatched, message, source}` with full `Item` objects; `source` is `AI`, or `RANDOM` when no model answered. Steps 3–4 are the pure function `StylistService.buildLook`, covered by `StylistServiceTest` (8 cases). Outerwear is kept only when the model picked a valid one; it is never added at random.
-Outerwear is optional: the prompt tells the stylist it *may* add one (resolves `prd.md > Open Questions` using the PRD's assumption).
+5. Return `{top, bottom, shoes, outerwear, bag, accessories, hintMatched, message, source}` with full `Item` objects; `source` is `AI`, or `RANDOM` when no model answered. Steps 3–4 are the pure function `StylistService.buildLook`, covered by `StylistServiceTest` (8 cases). Outerwear is kept only when the model picked a valid one; it is never added at random.
+Outerwear, a bag and up to four accessories (one per type) are optional layers: the prompt tells the stylist it *may* add them, and an invalid pick is dropped, never replaced at random (this extends the PRD's assumption in `prd.md > Open Questions`, which covered outerwear only).
 PRD ref: `prd.md > AI Stylist`.
 
 #### Weather
@@ -207,12 +207,14 @@ PRD ref: `prd.md > Adding Clothes`, `prd.md > States and Boundaries`.
 PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
-`OutfitCanvasActivity` (design page 14): the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal `ViewPager2` over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Outerwear is an optional layer drawn over the top (not touchable, so swipes reach the top). It appears when the stylist adds one; the canvas has no outerwear button (removed to match the design). Items without a category are not shown.
-- Header: back, a weather chip ("13° · cool", from `GET /api/me/weather`; hidden if unavailable) and **Next** (leads to saving the look, slice 6). Bottom panel: **Add bag** and **Accessory** ("Coming soon") and **Ask AI**.
-- Outerwear is drawn as the left half of the jacket (`setClipBounds`), aligned with the top underneath; shoes are drawn at 70% so they sit below the trousers.
-- **Ask AI** opens `AskAiSheet`: a multi-line request (a word, an occasion or a full description) and **Generate look**. The canvas keeps the session's conversation (each request + the look it produced, max 6) and sends it, with the outfit currently on screen, in every request; from the second request the sheet shows "Last request…" and **Start over**. The result moves each slot to the chosen piece and shows the stylist's message, if any, as a toast.
-- Still to come: a random starting look and empty-category placeholders (slice 5), **Save** (slice 6).
-- Not in the PoC from the design: weather chip, Next, Add bag, Accessory.
+`OutfitCanvasActivity`: the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal `ViewPager2` over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Over them lie optional **layers**, each its own pager, hidden until put on: outerwear, a bag, and accessories. Items without a category are not shown. (The layout started from design page 14; the layers and the bottom panel are the learner's later design.)
+- Header: back, a weather chip ("13° · cool", from `GET /api/me/weather`; hidden if unavailable) and **Next** (leads to saving the look, slice 6).
+- Bottom panel: three equal tiles — **Outerwear**, **Bag**, **Accessories**. A tile puts its layer on and enters *focus*: the slots and the other layers are faded and stop reacting, swipes change only that layer, and the panel shows **Remove** / **Done**. Accessories first opens a multi-choice sheet of the accessory types the closet has.
+- Outerwear shares one frame with the top and the bottom and is drawn as its left half (`setClipBounds`), hung from the shoulder line of the top underneath (`PieceImageView`): a jacket fits the top's part of the frame, a `COAT` / `TRENCH_COAT` the whole frame. Shoes are drawn at 70% so they sit below the trousers.
+- Accessories are placed by `AccessorySpot` (head, neck, waist, by the shoulder, by the hand); types that share a spot share one pager, so an outfit shows one of them. The bag hangs beside the bottom.
+- **Ask AI** is a round button at the side of the canvas. It opens `AskAiSheet`: a multi-line request (a word, an occasion or a full description) and **Generate look**. The canvas keeps the session's conversation (each request + the look it produced, max 6) and sends it, with the outfit currently on screen (layers included), in every request; from the second request the sheet shows "Last request…" and **Start over**. The result moves each slot to the chosen piece, puts the chosen layers on and the others off, and shows the stylist's message, if any, as a toast.
+- Weather tip: tapping the weather chip, or Next for the first time, opens `WeatherTipSheet` when the weather calls for accessories the closet has and the outfit lacks — beanie / scarf / gloves when it feels cold or freezing, cap / hat / headscarf when hot (or warm and sunny). **Add to the outfit** puts them on and enters focus; **Not now** continues.
+- Still to come: a random starting look and empty-category placeholders (slice 5), **Save** (slice 6) — the saved outfit will also need the bag and accessory ids.
 PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md > Saving Outfits`.
 
 ## Data Model
