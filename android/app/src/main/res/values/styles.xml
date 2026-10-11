@@ -210,6 +210,14 @@
         <item name="labelBehavior">gone</item>
     </style>
 
+    <!-- Small capital label in the corner of a card: "JACKET" -->
+    <style name="Widget.Mixyn.CardLabel" parent="">
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Caption</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
+    </style>
+
     <!-- Section label inside a sheet: icon + "Size" -->
     <style name="Widget.Mixyn.SheetLabel" parent="">
         <item name="android:layout_width">0dp</item>

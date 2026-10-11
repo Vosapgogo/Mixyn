@@ -34,8 +34,10 @@ import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.OptionsSheet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +53,8 @@ import java.util.Set;
  * A layer is chosen in "focus": tapping Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
  * canvas offers to go and add a piece. The round Ask AI button sends an optional hint to the backend
- * stylist, which may change the slots and all the layers at once.
+ * stylist, which may change the slots and all the layers at once. The weather chip and Next offer the
+ * layers the weather calls for.
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
@@ -72,27 +75,28 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** Where the bag hangs: by the hand, beside the bottom. Same units as AccessorySpot. */
     private static final float BAG_LEFT = 0.66f, BAG_RIGHT = 0.98f, BAG_TOP = 0.50f, BAG_BOTTOM = 0.76f;
 
-    /** What the weather tip offers, by item type. */
+    /** The accessories the weather tip offers, by item type. In the cold it offers outerwear as well. */
     private static final List<String> COLD_TYPES = List.of("BEANIE", "SCARF", "GLOVES");
     private static final List<String> HOT_TYPES = List.of("CAP", "HAT", "HEADSCARF");
+    /** The weather tip's key for "put outerwear on"; every other key is an accessory type. */
+    private static final String TIP_OUTERWEAR = "OUTERWEAR";
 
     private static final String KEY_ACCESSORIES = "canvas_accessories";
-
-    /** Which layer the user is choosing right now; NONE = the normal canvas. */
-    private enum Focus { NONE, OUTERWEAR, BAG, ACCESSORIES }
 
     /** One optional layer over the outfit: its pager and whether it is part of the outfit right now. */
     private static final class Layer {
         final ViewPager2 pager;
-        final Focus group;
         /** True for layers as wide as the canvas, whose neighbors peek in at the sides while in focus. */
         final boolean wide;
+        /** For an accessory layer, its place on the outfit; null for outerwear and the bag. */
+        @Nullable
+        final AccessorySpot spot;
         boolean on;
 
-        Layer(ViewPager2 pager, Focus group, boolean wide) {
+        Layer(ViewPager2 pager, boolean wide, @Nullable AccessorySpot spot) {
             this.pager = pager;
-            this.group = group;
             this.wide = wide;
+            this.spot = spot;
             pager.setUserInputEnabled(false); // swipes reach a layer only while it is in focus
         }
     }
@@ -108,7 +112,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     private final List<Layer> layers = new ArrayList<>();
     private ImageButton askAi;
     private TextView weatherChip;
-    private Focus focus = Focus.NONE;
+    /** The layers the user is choosing right now; empty = the normal canvas. */
+    private final Set<Layer> focused = new HashSet<>();
     private OnBackPressedCallback leaveFocusOnBack;
     /** Set when the user leaves to add a piece to the wardrobe, so the canvas picks it up on return. */
     private boolean reloadOnReturn;
@@ -121,8 +126,7 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     @Nullable
     private WeatherDto weather;
-    /** The types the open weather tip is offering, and whether it interrupted Next. */
-    private List<String> tipTypes = List.of();
+    /** Whether the open weather tip interrupted Next (then "Not now" goes on to the next screen). */
     private boolean tipFromNext;
     /** Next asks about the weather only once per visit; after that it just goes on. */
     private boolean weatherTipOffered;
@@ -151,12 +155,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         askAi = findViewById(R.id.canvas_ask_ai);
         weatherChip = findViewById(R.id.canvas_weather);
 
-        outerwear = new Layer(findViewById(R.id.canvas_outerwear), Focus.OUTERWEAR, true);
-        bag = new Layer(findViewById(R.id.canvas_bag), Focus.BAG, false);
+        outerwear = new Layer(findViewById(R.id.canvas_outerwear), true, null);
+        bag = new Layer(findViewById(R.id.canvas_bag), false, null);
         layers.add(outerwear);
         layers.add(bag);
         for (AccessorySpot spot : AccessorySpot.values()) {
-            Layer layer = new Layer(findViewById(spot.pagerId), Focus.ACCESSORIES, spot.right - spot.left == 1f);
+            Layer layer = new Layer(findViewById(spot.pagerId), spot.right - spot.left == 1f, spot);
             accessorySpots.put(spot, layer);
             layers.add(layer);
         }
@@ -172,20 +176,20 @@ public class OutfitCanvasActivity extends BaseActivity {
         });
 
         findViewById(R.id.canvas_outerwear_button).setOnClickListener(v -> chooseLayer(outerwear,
-                R.string.missing_outerwear_title, R.string.missing_outerwear_body));
+                R.string.canvas_focus_outerwear, R.string.missing_outerwear_title, R.string.missing_outerwear_body));
         findViewById(R.id.canvas_bag_button).setOnClickListener(v -> chooseLayer(bag,
-                R.string.missing_bag_title, R.string.missing_bag_body));
+                R.string.canvas_focus_bag, R.string.missing_bag_title, R.string.missing_bag_body));
         findViewById(R.id.canvas_accessory_button).setOnClickListener(v -> chooseAccessoryTypes());
         getSupportFragmentManager().setFragmentResultListener(KEY_ACCESSORIES, this, (key, result) ->
                 wear(result.getStringArrayList(OptionsSheet.RESULT_VALUES)));
-        findViewById(R.id.canvas_focus_done).setOnClickListener(v -> setFocus(Focus.NONE));
-        findViewById(R.id.canvas_focus_remove).setOnClickListener(v -> removeFocusedLayer());
+        findViewById(R.id.canvas_focus_done).setOnClickListener(v -> leaveFocus());
+        findViewById(R.id.canvas_focus_remove).setOnClickListener(v -> removeFocusedLayers());
 
         // Back (the arrow or the system gesture) first leaves the layer being chosen, then the screen.
         leaveFocusOnBack = new OnBackPressedCallback(false) {
             @Override
             public void handleOnBackPressed() {
-                setFocus(Focus.NONE);
+                leaveFocus();
             }
         };
         getOnBackPressedDispatcher().addCallback(this, leaveFocusOnBack);
@@ -205,9 +209,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         });
         getSupportFragmentManager().setFragmentResultListener(WeatherTipSheet.REQUEST_KEY, this, (key, result) -> {
             if (result.getBoolean(WeatherTipSheet.RESULT_ADD)) {
-                List<String> types = new ArrayList<>(wornTypes);
-                types.addAll(tipTypes);
-                wear(types);
+                addFromWeatherTip(result.getStringArrayList(WeatherTipSheet.RESULT_KEYS));
             } else if (tipFromNext) {
                 goNext();
             }
@@ -330,7 +332,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         pager.setPageTransformer((page, position) -> {
             float centered = 1 - Math.min(1f, Math.abs(position)); // 1 in the middle, 0 one page away
             float itemScale = page.getTag() instanceof Float f ? f : 1f;
-            float neighborAlpha = layer == null || layer.group == focus ? NEIGHBOR_ALPHA : 0f;
+            float neighborAlpha = layer == null || focused.contains(layer) ? NEIGHBOR_ALPHA : 0f;
             page.setAlpha(neighborAlpha + (1 - neighborAlpha) * centered);
             float scale = (NEIGHBOR_SCALE + (1 - NEIGHBOR_SCALE) * centered) * itemScale * slotScale;
             page.setScaleX(scale);
@@ -449,14 +451,15 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /** Outerwear / Bag: put the layer on if it isn't, then let the user swipe through it. */
-    private void chooseLayer(Layer layer, @StringRes int missingTitle, @StringRes int missingBody) {
+    private void chooseLayer(Layer layer, @StringRes int hint, @StringRes int missingTitle,
+            @StringRes int missingBody) {
         if (!wardrobeLoaded) return;
         if (currentItem(layer.pager) == null) {
             askToAdd(missingTitle, missingBody);
             return;
         }
         if (!layer.on) putOn(layer, null);
-        setFocus(layer.group);
+        setFocus(List.of(layer), hint);
     }
 
     /** Accessories: first choose which kinds to wear, from the kinds the closet has. */
@@ -481,7 +484,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         wornTypes.clear();
         if (types != null) wornTypes.addAll(types);
         showAccessories(List.of());
-        if (!wornTypes.isEmpty()) setFocus(Focus.ACCESSORIES);
+        if (!wornTypes.isEmpty()) setFocus(accessorySpots.values(), R.string.canvas_focus_accessories);
     }
 
     /**
@@ -527,105 +530,139 @@ public class OutfitCanvasActivity extends BaseActivity {
         }
     }
 
-    // ----- Focus: choosing one layer while the rest of the outfit is locked -----
+    // ----- Focus: choosing layers while the rest of the outfit is locked -----
 
-    private void setFocus(Focus newFocus) {
-        focus = newFocus;
-        boolean locked = focus != Focus.NONE;
+    /** Locks everything except these layers; the hint says what to do with them. */
+    private void setFocus(Collection<Layer> chosen, @StringRes int hint) {
+        focused.clear();
+        focused.addAll(chosen);
+        ((TextView) findViewById(R.id.canvas_focus_hint)).setText(hint);
+        applyFocus();
+    }
+
+    private void leaveFocus() {
+        focused.clear();
+        applyFocus();
+    }
+
+    private void applyFocus() {
+        boolean locked = !focused.isEmpty();
         for (ViewPager2 slot : List.of(topPager, bottomPager, shoesPager)) {
             slot.setUserInputEnabled(!locked);
             slot.setAlpha(locked ? LOCKED_ALPHA : 1f);
         }
         for (Layer layer : layers) {
-            layer.pager.setUserInputEnabled(layer.group == focus);
-            layer.pager.setAlpha(locked && layer.group != focus ? LOCKED_ALPHA : 1f);
+            boolean inFocus = focused.contains(layer);
+            layer.pager.setUserInputEnabled(inFocus);
+            layer.pager.setAlpha(locked && !inFocus ? LOCKED_ALPHA : 1f);
             layer.pager.requestTransform(); // neighbors appear in focus and disappear after it
         }
         findViewById(R.id.canvas_tools).setVisibility(locked ? View.GONE : View.VISIBLE);
         findViewById(R.id.canvas_focus_bar).setVisibility(locked ? View.VISIBLE : View.GONE);
+        findViewById(R.id.canvas_focus_hint).setVisibility(locked ? View.VISIBLE : View.GONE);
         findViewById(R.id.canvas_ask_ai_holder).setVisibility(locked ? View.GONE : View.VISIBLE);
         findViewById(R.id.canvas_next).setEnabled(!locked);
         weatherChip.setEnabled(!locked);
         leaveFocusOnBack.setEnabled(locked);
-
-        TextView hint = findViewById(R.id.canvas_focus_hint);
-        hint.setVisibility(locked ? View.VISIBLE : View.GONE);
-        switch (focus) {
-            case OUTERWEAR -> hint.setText(R.string.canvas_focus_outerwear);
-            case BAG -> hint.setText(R.string.canvas_focus_bag);
-            case ACCESSORIES -> hint.setText(R.string.canvas_focus_accessories);
-            case NONE -> { }
-        }
     }
 
-    /** "Remove" in the focus bar: the layer being chosen leaves the outfit. */
-    private void removeFocusedLayer() {
-        switch (focus) {
-            case OUTERWEAR -> takeOff(outerwear);
-            case BAG -> takeOff(bag);
-            case ACCESSORIES -> {
-                wornTypes.clear();
-                showAccessories(List.of());
-            }
-            case NONE -> { }
+    /** "Remove" in the focus bar: the layers being chosen leave the outfit. */
+    private void removeFocusedLayers() {
+        for (Layer layer : focused) {
+            if (layer.spot != null) wornTypes.removeAll(layer.spot.types);
+            else takeOff(layer);
         }
-        setFocus(Focus.NONE);
+        showAccessories(List.of());
+        leaveFocus();
     }
 
     // ----- The weather tip -----
 
     /**
      * Opened by the weather chip or by Next: offers what the weather calls for, the closet has and the
-     * outfit lacks. With nothing to offer, the chip says why and Next simply goes on.
+     * outfit lacks — a jacket, beanie, scarf and gloves when it is cool or cold, a cap, hat or headscarf
+     * in the heat. With nothing to offer, Next simply goes on, and the chip says why: either the outfit
+     * is fine, or the closet has nothing suitable (then the user may go and add a piece).
      */
     private void offerWeatherTip(boolean fromNext) {
         if (!wardrobeLoaded) {
             if (fromNext) goNext();
             return;
         }
-        List<String> called = weatherTypes();
-        List<String> missing = new ArrayList<>(); // called for, and nothing is worn in that spot yet
-        List<String> labels = new ArrayList<>();  // …and the closet has one
-        List<String> offered = new ArrayList<>();
-        for (String type : called) {
-            if (accessorySpots.get(AccessorySpot.of(type)).on) continue;
-            missing.add(type);
+        boolean cold = isCold();
+        List<String> types = cold ? COLD_TYPES : isHot() ? HOT_TYPES : List.of();
+        ArrayList<WeatherTipSheet.Piece> pieces = new ArrayList<>();
+        boolean lacking = false; // called for, not worn, and not in the closet either
+        if (cold && !outerwear.on) {
+            ItemDto jacket = currentItem(outerwear.pager);
+            if (jacket == null) lacking = true;
+            else pieces.add(tipPiece(TIP_OUTERWEAR, getString(R.string.weather_tip_jacket), jacket));
+        }
+        for (String type : types) {
+            if (accessorySpots.get(AccessorySpot.of(type)).on) continue; // that spot is already taken
+            ItemDto owned = null;
             for (ItemDto item : accessories) {
                 if (type.equals(item.type)) {
-                    offered.add(type);
-                    labels.add(item.typeLabel.toLowerCase(Locale.ROOT));
+                    owned = item;
                     break;
                 }
             }
+            if (owned == null) lacking = true;
+            else pieces.add(tipPiece(type, owned.typeLabel, owned));
         }
-        if (offered.isEmpty()) {
+        if (pieces.isEmpty()) {
             if (fromNext) {
                 goNext();
+            } else if (lacking) {
+                askToAdd(cold ? R.string.missing_cold_title : R.string.missing_hot_title,
+                        cold ? R.string.missing_cold_body : R.string.missing_hot_body);
             } else {
-                int message = missing.isEmpty() ? R.string.weather_tip_fine
-                        : called == COLD_TYPES ? R.string.weather_tip_cold_none : R.string.weather_tip_hot_none;
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.weather_tip_fine, Toast.LENGTH_LONG).show();
             }
             return;
         }
-        tipTypes = offered;
         tipFromNext = fromNext;
         weatherTipOffered = true;
-        WeatherTipSheet.newInstance(weatherChip.getText().toString(), called == COLD_TYPES,
-                        String.join(getString(R.string.tags_joined_separator), labels))
+        WeatherTipSheet.newInstance(weatherChip.getText().toString(), cold, pieces)
                 .show(getSupportFragmentManager(), WeatherTipSheet.REQUEST_KEY);
     }
 
-    /** The accessory types today's weather calls for: COLD_TYPES, HOT_TYPES or nothing. */
-    private List<String> weatherTypes() {
-        if (weather == null || weather.feel == null) return List.of();
+    /** A card for the tip: the kind of piece and the user's own one, named like "Camel coat". */
+    private WeatherTipSheet.Piece tipPiece(String key, String kind, ItemDto item) {
+        String name = item.name != null && !item.name.isEmpty() ? item.name
+                : item.typeLabel == null ? kind
+                : item.colorName == null ? item.typeLabel
+                : getString(R.string.weather_tip_piece_name, item.colorName, item.typeLabel.toLowerCase(Locale.ROOT));
+        return new WeatherTipSheet.Piece(key, kind, name, item.imageUrl);
+    }
+
+    /** Puts on what the user ticked in the weather tip, then lets them swipe through those layers. */
+    private void addFromWeatherTip(@Nullable List<String> keys) {
+        if (keys == null || keys.isEmpty()) return;
+        List<Layer> swappable = new ArrayList<>(accessorySpots.values());
+        for (String key : keys) {
+            if (TIP_OUTERWEAR.equals(key)) {
+                putOn(outerwear, null);
+                swappable.add(outerwear);
+            } else {
+                wornTypes.add(key);
+            }
+        }
+        showAccessories(List.of());
+        setFocus(swappable, R.string.canvas_focus_layers);
+    }
+
+    /** Cool, cold or freezing: time for a jacket and the warm accessories. */
+    private boolean isCold() {
+        return weather != null && weather.feel != null
+                && List.of("freezing", "cold", "cool").contains(weather.feel);
+    }
+
+    /** Hot, or warm under a clear sky: time for something on the head. */
+    private boolean isHot() {
+        if (weather == null || weather.feel == null) return false;
         boolean sunny = "clear".equals(weather.sky) || "partly cloudy".equals(weather.sky);
-        return switch (weather.feel) {
-            case "freezing", "cold" -> COLD_TYPES;
-            case "hot" -> HOT_TYPES;
-            case "warm" -> sunny ? HOT_TYPES : List.of();
-            default -> List.of();
-        };
+        return "hot".equals(weather.feel) || ("warm".equals(weather.feel) && sunny);
     }
 
     // ----- The AI stylist -----

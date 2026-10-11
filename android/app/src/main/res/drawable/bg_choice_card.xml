@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A card the user can tick or untick (weather tip): mocha outline when chosen, quiet line when not. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface" />
+            <stroke android:width="@dimen/stroke_error" android:color="@color/mocha" />
+            <corners android:radius="@dimen/radius_card" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface" />
+            <stroke android:width="@dimen/stroke" android:color="@color/line" />
+            <corners android:radius="@dimen/radius_card" />
+        </shape>
+    </item>
+</selector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tick itself: visible only on a chosen card. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/on_dark" android:state_selected="true" />
+    <item android:color="@android:color/transparent" />
+</selector>
