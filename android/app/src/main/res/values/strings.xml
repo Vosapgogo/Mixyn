@@ -162,6 +162,16 @@
     <string name="ask_ai_surprise">surprise me</string>
     <string name="ask_ai_hint_followup">make it warmer, other shoes, no blazer…</string>
 
+    <!-- Weather tip (canvas: tap the weather, or Next) -->
+    <string name="weather_tip_cold_title">Chilly out. Want a layer?</string>
+    <string name="weather_tip_hot_title">Sunny out. Want some shade?</string>
+    <string name="weather_tip_body">From your closet: %1$s. You can swap each piece right after.</string>
+    <string name="weather_tip_add">Add to the outfit</string>
+    <string name="weather_tip_skip">Not now</string>
+    <string name="weather_tip_fine">You\'re dressed for the weather</string>
+    <string name="weather_tip_cold_none">It\'s cold — add a beanie, scarf or gloves to your closet to wear them here</string>
+    <string name="weather_tip_hot_none">It\'s hot — add a cap or headscarf to your closet to wear it here</string>
+
     <!-- + menu -->
     <string name="menu_add_clothes">Add clothes</string>
     <string name="menu_create_outfit">Create outfit</string>
