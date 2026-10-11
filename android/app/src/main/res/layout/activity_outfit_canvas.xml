@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Create outfit: the pieces stacked like a silhouette (top + optional outerwear, bottom, shoes).
-     Each slot is its own horizontal pager, so swiping one piece never moves the others. -->
+<!-- Create outfit: the pieces stacked like a silhouette (top, bottom, shoes) with optional layers over
+     them (outerwear, a bag, accessories). Every slot and layer is its own horizontal pager, so swiping
+     one piece never moves the others. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -33,7 +34,8 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- Hidden until the weather arrives (and stays hidden if it can't be loaded) -->
+        <!-- Hidden until the weather arrives (and stays hidden if it can't be loaded).
+             Tapping it asks whether to add what the weather calls for. -->
         <TextView
             android:id="@+id/canvas_weather"
             android:layout_width="wrap_content"
@@ -74,34 +76,41 @@
             android:paddingTop="@dimen/space_xxl"
             android:paddingBottom="@dimen/space_m">
 
-            <!-- Top, with the optional outerwear drawn over it -->
+            <!-- Top and bottom, with the optional outerwear drawn over both: a jacket covers the top,
+                 a long coat reaches down over the bottom as well -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="36"
+                android:layout_weight="78"
                 android:clipChildren="false">
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/canvas_top"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:clipChildren="false"
+                    android:orientation="vertical">
 
-                <!-- Not touchable, so swipes still reach the top underneath -->
-                <ImageView
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/canvas_top"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="36" />
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/canvas_bottom"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="@dimen/canvas_overlap"
+                        android:layout_weight="42" />
+                </LinearLayout>
+
+                <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/canvas_outerwear"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@string/category_outerwear"
-                    android:scaleType="fitCenter"
                     android:visibility="gone" />
             </FrameLayout>
-
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/canvas_bottom"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="@dimen/canvas_overlap"
-                android:layout_weight="42" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/canvas_shoes"
@@ -109,6 +118,97 @@
                 android:layout_height="0dp"
                 android:layout_weight="22" />
         </LinearLayout>
+
+        <!-- The bag and the accessories. Each pager is hidden until its layer is put on; the activity
+             gives every one its place on the outfit (head, neck, waist, by the hand…). Later ones are on top. -->
+        <FrameLayout
+            android:id="@+id/canvas_layers"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_waist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_neck"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_head"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_hands"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/canvas_bag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/category_bag"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <!-- While one layer is being chosen: what to do, where the stylist button normally sits -->
+        <TextView
+            android:id="@+id/canvas_focus_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="@dimen/space_s"
+            android:background="@drawable/bg_pill_surface"
+            android:paddingStart="@dimen/space_m"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingEnd="@dimen/space_m"
+            android:paddingBottom="@dimen/space_xs"
+            android:textAppearance="@style/TextAppearance.Mixyn.Label"
+            android:visibility="gone" />
+
+        <!-- Ask AI: a round button at the side of the canvas; a spinner replaces the icon while styling -->
+        <FrameLayout
+            android:id="@+id/canvas_ask_ai_holder"
+            android:layout_width="@dimen/bottom_bar_plus_size"
+            android:layout_height="@dimen/bottom_bar_plus_size"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginBottom="@dimen/space_m">
+
+            <ImageButton
+                android:id="@+id/canvas_ask_ai"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_plus_button"
+                android:contentDescription="@string/canvas_ask_ai"
+                android:enabled="false"
+                android:padding="@dimen/space_m"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_sparkle"
+                app:tint="@color/on_dark" />
+
+            <ProgressBar
+                android:id="@+id/canvas_styling"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/on_dark"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <ProgressBar
             android:id="@+id/canvas_loading"
@@ -146,47 +246,79 @@
         </LinearLayout>
     </FrameLayout>
 
-    <LinearLayout
+    <!-- Bottom panel: three equal tiles for the optional layers. While one of them is being chosen
+         the tiles give way to Remove / Done, and the rest of the outfit is locked. -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_bottom_bar"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
         android:paddingStart="@dimen/screen_margin"
         android:paddingTop="@dimen/space_m"
         android:paddingEnd="@dimen/screen_margin"
         android:paddingBottom="@dimen/space_m">
 
-        <!-- Bags and accessories are not in the PoC: visible like the design, "Coming soon" on tap -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/canvas_add_bag"
-            style="@style/Widget.Mixyn.Button.Tile"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/tile_height"
-            android:layout_weight="1"
-            android:text="@string/canvas_add_bag"
-            app:icon="@drawable/ic_bag" />
+        <LinearLayout
+            android:id="@+id/canvas_tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/canvas_accessory"
-            style="@style/Widget.Mixyn.Button.Tile"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/tile_height"
-            android:layout_marginStart="@dimen/canvas_control_gap"
-            android:layout_weight="1"
-            android:text="@string/canvas_accessory"
-            app:icon="@drawable/ic_accessory" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_outerwear_button"
+                style="@style/Widget.Mixyn.Button.Tile"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_weight="1"
+                android:text="@string/canvas_outerwear"
+                app:icon="@drawable/ic_jacket" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/canvas_ask_ai"
-            style="@style/Widget.Mixyn.Button.Dark"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/tile_height"
-            android:layout_marginStart="@dimen/canvas_control_gap"
-            android:layout_weight="2.3"
-            android:enabled="false"
-            android:text="@string/canvas_ask_ai"
-            app:cornerRadius="@dimen/radius_field"
-            app:icon="@drawable/ic_sparkle" />
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_bag_button"
+                style="@style/Widget.Mixyn.Button.Tile"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_marginStart="@dimen/canvas_control_gap"
+                android:layout_weight="1"
+                android:text="@string/canvas_bag"
+                app:icon="@drawable/ic_bag" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_accessory_button"
+                style="@style/Widget.Mixyn.Button.Tile"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_marginStart="@dimen/canvas_control_gap"
+                android:layout_weight="1"
+                android:text="@string/canvas_accessories"
+                app:icon="@drawable/ic_accessory" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/canvas_focus_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_focus_remove"
+                style="@style/Widget.Mixyn.Button.Tonal"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_weight="1"
+                android:text="@string/canvas_focus_remove"
+                app:cornerRadius="@dimen/radius_field" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_focus_done"
+                style="@style/Widget.Mixyn.Button.Dark"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_marginStart="@dimen/canvas_control_gap"
+                android:layout_weight="2"
+                android:text="@string/action_done"
+                app:cornerRadius="@dimen/radius_field"
+                app:icon="@drawable/ic_check" />
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>

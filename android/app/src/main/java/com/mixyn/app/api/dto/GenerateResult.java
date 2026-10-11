@@ -2,7 +2,12 @@ package com.mixyn.app.api.dto;
 
 import androidx.annotation.Nullable;
 
-/** The stylist's look. A slot is null when the wardrobe has nothing for it (or no outerwear was added). */
+import java.util.List;
+
+/**
+ * The stylist's look. A slot is null when the wardrobe has nothing for it; the layers (outerwear, bag,
+ * accessories) are null / empty when the stylist left them off.
+ */
 public class GenerateResult {
     @Nullable
     public ItemDto top;
@@ -12,6 +17,10 @@ public class GenerateResult {
     public ItemDto shoes;
     @Nullable
     public ItemDto outerwear;
+    @Nullable
+    public ItemDto bag;
+    @Nullable
+    public List<ItemDto> accessories;
     public boolean hintMatched;
     /** A friendly note to show, e.g. when nothing matched the hint; null when there is nothing to say. */
     @Nullable
