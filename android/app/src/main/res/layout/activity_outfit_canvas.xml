@@ -110,18 +110,6 @@
                 android:layout_weight="22" />
         </LinearLayout>
 
-        <!-- Sits above the silhouette, under the header -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/canvas_outerwear_button"
-            style="@style/Widget.Mixyn.Button.Tonal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginEnd="@dimen/space_m"
-            android:text="@string/canvas_outerwear_add"
-            android:visibility="gone"
-            app:icon="@drawable/ic_hanger" />
-
         <ProgressBar
             android:id="@+id/canvas_loading"
             android:layout_width="@dimen/space_xl"

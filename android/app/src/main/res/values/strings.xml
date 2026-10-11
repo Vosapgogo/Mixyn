@@ -147,8 +147,6 @@
     <string name="canvas_add_bag">Add bag</string>
     <string name="canvas_accessory">Accessory</string>
     <string name="canvas_styling">Styling…</string>
-    <string name="canvas_outerwear_add">Add a layer</string>
-    <string name="canvas_outerwear_change">Change layer</string>
     <string name="canvas_empty_title">Nothing to style yet</string>
     <string name="canvas_empty_body">Add a few clothes first, then come back to build an outfit.</string>
     <string name="ask_ai_title">Ask the stylist</string>

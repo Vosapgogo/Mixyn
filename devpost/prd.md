@@ -89,7 +89,7 @@ Source: `scope.md > The Unique Kernel`.
 ### Outfit Canvas and Carousel
 Source: `scope.md > The Core Loop`.
 - [ ] Opening Create outfit shows a random outfit from the user's wardrobe: one Top, one Bottom, one Shoes, stacked vertically.
-- [ ] Outerwear, when added, appears as half a jacket over the left side of the Top, so the top stays visible; a small button adds, changes or removes the layer.
+- [ ] Outerwear, when the stylist adds it, appears as half a jacket over the left side of the Top, so the top stays visible. (The canvas has no separate outerwear button, as in the design.)
 - [ ] Swiping left/right on a piece changes only that piece to another item of the same category; all other pieces stay.
 - [ ] If a category has no items, its slot shows a faded placeholder outline with a small **+** and "Add shoes to complete the look" (wording adapted to the category).
 

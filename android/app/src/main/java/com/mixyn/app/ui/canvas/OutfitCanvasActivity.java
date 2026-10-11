@@ -35,7 +35,8 @@ import java.util.Map;
 /**
  * Create outfit. The wardrobe is loaded once and split by category; each slot (top, bottom, shoes) is a
  * pager over its category. "Ask AI" sends an optional hint to the backend stylist and moves every slot
- * to the piece it chose. Outerwear is an optional layer: half a jacket drawn over the left side of the top.
+ * to the piece it chose. Outerwear is an optional layer the stylist may add: half a jacket drawn over the left
+ * side of the top.
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
@@ -54,7 +55,6 @@ public class OutfitCanvasActivity extends BaseActivity {
     private ViewPager2 bottomPager;
     private ViewPager2 shoesPager;
     private ImageView outerwearView;
-    private MaterialButton outerwearButton;
     private MaterialButton askAi;
 
     /**
@@ -83,14 +83,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         bottomPager = findViewById(R.id.canvas_bottom);
         shoesPager = findViewById(R.id.canvas_shoes);
         outerwearView = findViewById(R.id.canvas_outerwear);
-        outerwearButton = findViewById(R.id.canvas_outerwear_button);
         askAi = findViewById(R.id.canvas_ask_ai);
 
         findViewById(R.id.canvas_back).setOnClickListener(v -> finish());
         View.OnClickListener comingSoon = v -> Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show();
         findViewById(R.id.canvas_add_bag).setOnClickListener(comingSoon);
         findViewById(R.id.canvas_accessory).setOnClickListener(comingSoon);
-        outerwearButton.setOnClickListener(v -> showOuterwear(outerwearIndex + 1 >= outerwear.size() ? -1 : outerwearIndex + 1));
         askAi.setOnClickListener(v -> AskAiSheet.newInstance(lastRequest())
                 .show(getSupportFragmentManager(), AskAiSheet.REQUEST_KEY));
         getSupportFragmentManager().setFragmentResultListener(AskAiSheet.REQUEST_KEY, this, (key, result) -> {
@@ -154,7 +152,6 @@ public class OutfitCanvasActivity extends BaseActivity {
                 setUpSlot(topPager, tops, 1f);
                 setUpSlot(bottomPager, bottoms, 1f);
                 setUpSlot(shoesPager, shoes, SHOES_SCALE);
-                outerwearButton.setVisibility(outerwear.isEmpty() ? View.GONE : View.VISIBLE);
                 showOuterwear(-1);
                 askAi.setEnabled(true);
             }
@@ -192,7 +189,6 @@ public class OutfitCanvasActivity extends BaseActivity {
         outerwearIndex = index;
         if (index < 0) {
             outerwearView.setVisibility(View.GONE);
-            outerwearButton.setText(R.string.canvas_outerwear_add);
             return;
         }
         ItemDto item = outerwear.get(index);
@@ -206,7 +202,6 @@ public class OutfitCanvasActivity extends BaseActivity {
         outerwearView.post(() -> outerwearView.setClipBounds(
                 new Rect(0, 0, outerwearView.getWidth() / 2, outerwearView.getHeight())));
         Glide.with(this).load(ApiClient.imageUrl(item.imageUrl)).into(outerwearView);
-        outerwearButton.setText(R.string.canvas_outerwear_change);
     }
 
     // ----- The AI stylist -----
