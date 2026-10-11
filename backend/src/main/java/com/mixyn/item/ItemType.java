@@ -6,7 +6,7 @@ import java.util.Locale;
 
 /**
  * The fixed list of clothing types. Both the AI and the user must pick from it, so there are never
- * free-text categories. Every type belongs to exactly one of the four outfit slots (Category).
+ * free-text categories. Every type belongs to exactly one outfit slot or layer (Category).
  * To add a type, add a line here; nothing else needs to change.
  */
 public enum ItemType {
@@ -42,7 +42,23 @@ public enum ItemType {
     HEELS("Heels", Category.SHOES),
     FLATS("Flats", Category.SHOES),
     LOAFERS("Loafers", Category.SHOES),
-    SANDALS("Sandals", Category.SHOES);
+    SANDALS("Sandals", Category.SHOES),
+    // Bags
+    HANDBAG("Handbag", Category.BAG),
+    TOTE_BAG("Tote bag", Category.BAG),
+    CROSSBODY_BAG("Crossbody bag", Category.BAG),
+    BACKPACK("Backpack", Category.BAG),
+    CLUTCH("Clutch", Category.BAG),
+    // Accessories
+    BEANIE("Beanie", Category.ACCESSORY),
+    HAT("Hat", Category.ACCESSORY),
+    CAP("Cap", Category.ACCESSORY),
+    HEADSCARF("Headscarf", Category.ACCESSORY),
+    SCARF("Scarf", Category.ACCESSORY),
+    GLOVES("Gloves", Category.ACCESSORY),
+    SUNGLASSES("Sunglasses", Category.ACCESSORY),
+    BELT("Belt", Category.ACCESSORY),
+    JEWELRY("Jewelry", Category.ACCESSORY);
 
     private final String label;
     private final Category category;

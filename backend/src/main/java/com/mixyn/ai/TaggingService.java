@@ -38,16 +38,18 @@ public class TaggingService {
     }
 
     private static final String PROMPT = """
-            This photo should show exactly one clothing item, with the background removed.
+            This photo should show exactly one clothing item, bag or accessory, with the background removed.
             First decide what it really shows, then classify it:
-            - subject: SINGLE_ITEM (one garment or one pair of shoes, not worn by anyone), \
+            - subject: SINGLE_ITEM (one garment, one pair of shoes or gloves, one bag or one accessory, not worn by anyone), \
             PERSON (a person or a body part is visible, e.g. someone wearing the clothes, a selfie), \
             MULTIPLE_ITEMS (two or more separate garments, e.g. a whole outfit laid out), \
             NOT_CLOTHING (anything else).
             - type: the single best match from the allowed list of clothing types.
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, dresses), \
             BOTTOM (trousers, jeans, skirts, shorts), SHOES (any footwear), \
-            OUTERWEAR (coats, jackets, blazers, cardigans worn over a top).
+            OUTERWEAR (coats, jackets, blazers, cardigans worn over a top), \
+            BAG (handbags, totes, backpacks, clutches), \
+            ACCESSORY (hats, caps, scarves, gloves, sunglasses, belts, jewelry).
             - colors: the item's 1 to 3 most visible colors from the allowed list, the main color first. \
             Use one color for a plain item; add more only for clearly multi-colored items (stripes, prints, \
             color blocks). Ignore tiny details such as buttons, labels and stitching.
@@ -62,7 +64,7 @@ public class TaggingService {
                     "type", Schema.builder().type(Type.Known.STRING)
                             .enum_(Arrays.stream(ItemType.values()).map(Enum::name).toList()).build(),
                     "category", Schema.builder().type(Type.Known.STRING)
-                            .enum_(List.of("TOP", "BOTTOM", "SHOES", "OUTERWEAR")).build(),
+                            .enum_(Arrays.stream(Category.values()).map(Enum::name).toList()).build(),
                     "colors", Schema.builder().type(Type.Known.ARRAY)
                             .items(Schema.builder().type(Type.Known.STRING)
                                     .enum_(Arrays.stream(ItemColor.values()).map(Enum::name).toList()).build())
