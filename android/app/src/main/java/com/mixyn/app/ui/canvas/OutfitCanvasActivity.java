@@ -19,6 +19,7 @@ import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mixyn.app.R;
 import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
@@ -27,6 +28,7 @@ import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.WeatherDto;
 import com.mixyn.app.session.SessionStore;
+import com.mixyn.app.ui.additem.AddItemActivity;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.OptionsSheet;
@@ -47,8 +49,9 @@ import java.util.Set;
  * accessories, each in its own spot on the outfit.
  *
  * A layer is chosen in "focus": tapping Outerwear, Bag or Accessories locks the rest of the outfit, so
- * swipes change only that layer, until the user taps Done. The round Ask AI button sends an optional
- * hint to the backend stylist, which may change the slots and all the layers at once.
+ * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
+ * canvas offers to go and add a piece. The round Ask AI button sends an optional hint to the backend
+ * stylist, which may change the slots and all the layers at once.
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
@@ -107,6 +110,10 @@ public class OutfitCanvasActivity extends BaseActivity {
     private TextView weatherChip;
     private Focus focus = Focus.NONE;
     private OnBackPressedCallback leaveFocusOnBack;
+    /** Set when the user leaves to add a piece to the wardrobe, so the canvas picks it up on return. */
+    private boolean reloadOnReturn;
+    /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
+    private boolean wardrobeLoaded;
 
     /** Every accessory in the wardrobe, and the types the user chose to wear ("SCARF", "CAP"…). */
     private final List<ItemDto> accessories = new ArrayList<>();
@@ -156,9 +163,18 @@ public class OutfitCanvasActivity extends BaseActivity {
         View stage = findViewById(R.id.canvas_layers);
         whenLaidOut(stage, this::placeLayers);
 
-        findViewById(R.id.canvas_outerwear_button).setOnClickListener(v ->
-                chooseLayer(outerwear, R.string.canvas_no_outerwear));
-        findViewById(R.id.canvas_bag_button).setOnClickListener(v -> chooseLayer(bag, R.string.canvas_no_bags));
+        // Outerwear hangs from the top's shoulder line, so it follows every change of the top.
+        topPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager2.SCROLL_STATE_IDLE) alignOuterwear();
+            }
+        });
+
+        findViewById(R.id.canvas_outerwear_button).setOnClickListener(v -> chooseLayer(outerwear,
+                R.string.missing_outerwear_title, R.string.missing_outerwear_body));
+        findViewById(R.id.canvas_bag_button).setOnClickListener(v -> chooseLayer(bag,
+                R.string.missing_bag_title, R.string.missing_bag_body));
         findViewById(R.id.canvas_accessory_button).setOnClickListener(v -> chooseAccessoryTypes());
         getSupportFragmentManager().setFragmentResultListener(KEY_ACCESSORIES, this, (key, result) ->
                 wear(result.getStringArrayList(OptionsSheet.RESULT_VALUES)));
@@ -201,6 +217,16 @@ public class OutfitCanvasActivity extends BaseActivity {
         loadWeather();
     }
 
+    /** Back from adding a piece to the wardrobe: load it in, keeping the outfit as it was. */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (reloadOnReturn) {
+            reloadOnReturn = false;
+            loadWardrobe();
+        }
+    }
+
     /** The save screen behind Next arrives with the next build step. */
     private void goNext() {
         Toast.makeText(this, R.string.coming_next_step, Toast.LENGTH_SHORT).show();
@@ -233,6 +259,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             protected void onSuccess(@Nullable List<ItemDto> items) {
                 findViewById(R.id.canvas_loading).setVisibility(View.GONE);
                 if (items == null) return;
+                wardrobeLoaded = true;
                 List<ItemDto> tops = new ArrayList<>();
                 List<ItemDto> bottoms = new ArrayList<>();
                 List<ItemDto> shoes = new ArrayList<>();
@@ -253,24 +280,18 @@ public class OutfitCanvasActivity extends BaseActivity {
                         default -> { }
                     }
                 }
-                if (tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty() && jackets.isEmpty()) {
-                    findViewById(R.id.canvas_empty).setVisibility(View.VISIBLE);
-                    return;
-                }
-                // Outerwear hangs from the top's shoulder line, so it follows every change of the top.
+                boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty() && jackets.isEmpty();
+                findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
+                if (nothingToStyle) return;
+                // The top's image tells the outerwear where the shoulder line is, whenever it changes.
                 setUpPager(topPager, tops, 1f, null, (image, item) ->
                         ((PieceImageView) image).setOnImageChanged(OutfitCanvasActivity.this::alignOuterwear));
-                topPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                    @Override
-                    public void onPageScrollStateChanged(int state) {
-                        if (state == ViewPager2.SCROLL_STATE_IDLE) alignOuterwear();
-                    }
-                });
                 setUpPager(bottomPager, bottoms, 1f, null, null);
                 setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
                 setUpPager(outerwear.pager, jackets, OUTERWEAR_SCALE, outerwear,
                         OutfitCanvasActivity.this::styleOuterwearPage);
                 setUpPager(bag.pager, bags, 1f, bag, null);
+                showAccessories(List.of());
                 askAi.setEnabled(true);
             }
 
@@ -285,6 +306,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     /**
      * One slot or layer = one pager. In a base slot (layer == null) and in a wide layer, side padding
      * leaves room for the previous and next piece, faded and smaller; a layer shows them only in focus.
+     * A pager that already shows pieces (the wardrobe was reloaded) stays on the piece it was showing.
      */
     private void setUpPager(ViewPager2 pager, List<ItemDto> items, float slotScale, @Nullable Layer layer,
             @Nullable SlotPagerAdapter.PageStyle pageStyle) {
@@ -297,7 +319,14 @@ public class OutfitCanvasActivity extends BaseActivity {
         pages.setClipToPadding(!wide);
         pages.setOverScrollMode(View.OVER_SCROLL_NEVER);
         pager.setOffscreenPageLimit(1);
-        pager.setAdapter(new SlotPagerAdapter(items, pageStyle));
+        ItemDto shown = currentItem(pager);
+        SlotPagerAdapter adapter = new SlotPagerAdapter(items, pageStyle);
+        pager.setAdapter(adapter);
+        int keep = shown == null ? -1 : adapter.indexOf(shown.id);
+        if (keep > 0) {
+            pager.setCurrentItem(keep, false);
+            pager.post(pager::requestTransform); // an instant move doesn't re-run the page transformer
+        }
         pager.setPageTransformer((page, position) -> {
             float centered = 1 - Math.min(1f, Math.abs(position)); // 1 in the middle, 0 one page away
             float itemScale = page.getTag() instanceof Float f ? f : 1f;
@@ -420,9 +449,10 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /** Outerwear / Bag: put the layer on if it isn't, then let the user swipe through it. */
-    private void chooseLayer(Layer layer, @StringRes int nothingOwned) {
-        if (layer.pager.getAdapter() == null || layer.pager.getAdapter().getItemCount() == 0) {
-            Toast.makeText(this, nothingOwned, Toast.LENGTH_SHORT).show();
+    private void chooseLayer(Layer layer, @StringRes int missingTitle, @StringRes int missingBody) {
+        if (!wardrobeLoaded) return;
+        if (currentItem(layer.pager) == null) {
+            askToAdd(missingTitle, missingBody);
             return;
         }
         if (!layer.on) putOn(layer, null);
@@ -431,13 +461,14 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     /** Accessories: first choose which kinds to wear, from the kinds the closet has. */
     private void chooseAccessoryTypes() {
+        if (!wardrobeLoaded) return;
         ArrayList<OptionsSheet.Option> options = new ArrayList<>();
         Set<String> listed = new LinkedHashSet<>();
         for (ItemDto item : accessories) {
             if (listed.add(item.type)) options.add(new OptionsSheet.Option(item.type, item.typeLabel, null, 0));
         }
         if (options.isEmpty()) {
-            Toast.makeText(this, R.string.canvas_no_accessories, Toast.LENGTH_SHORT).show();
+            askToAdd(R.string.missing_accessories_title, R.string.missing_accessories_body);
             return;
         }
         OptionsSheet.newInstance(KEY_ACCESSORIES, getString(R.string.canvas_accessories_title),
@@ -451,6 +482,22 @@ public class OutfitCanvasActivity extends BaseActivity {
         if (types != null) wornTypes.addAll(types);
         showAccessories(List.of());
         if (!wornTypes.isEmpty()) setFocus(Focus.ACCESSORIES);
+    }
+
+    /**
+     * "You don't have one yet": the closet has nothing for what the user (or the weather) asked for.
+     * They can go and add a piece — the canvas picks it up when they come back — or skip it.
+     */
+    private void askToAdd(@StringRes int title, @StringRes int body) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(title)
+                .setMessage(body)
+                .setNegativeButton(R.string.missing_skip, null)
+                .setPositiveButton(R.string.missing_add, (dialog, which) -> {
+                    reloadOnReturn = true;
+                    AddItemActivity.start(this);
+                })
+                .show();
     }
 
     /**
@@ -532,6 +579,10 @@ public class OutfitCanvasActivity extends BaseActivity {
      * outfit lacks. With nothing to offer, the chip says why and Next simply goes on.
      */
     private void offerWeatherTip(boolean fromNext) {
+        if (!wardrobeLoaded) {
+            if (fromNext) goNext();
+            return;
+        }
         List<String> called = weatherTypes();
         List<String> missing = new ArrayList<>(); // called for, and nothing is worn in that spot yet
         List<String> labels = new ArrayList<>();  // …and the closet has one
