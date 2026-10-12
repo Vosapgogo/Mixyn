@@ -22,7 +22,7 @@ public class PieceImageView extends AppCompatImageView {
 
     /** Behind a top: how much of the top's height the collar shows above it and the hem below it… */
     private static final float SHOWS_ABOVE = 0.04f;
-    private static final float SHOWS_BELOW = 0.07f;
+    private static final float SHOWS_BELOW = 0.035f;
     /** …and how wide a strip of the piece is drawn, in shares of the top's width: the collar and the body, not the sleeves. */
     private static final float COLLAR_STRIP = 0.45f;
     private static final float HEM_STRIP = 0.7f;
