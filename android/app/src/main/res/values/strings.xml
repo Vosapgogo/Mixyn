@@ -204,6 +204,12 @@
     <string name="outfit_deleted">Outfit deleted</string>
     <string name="error_outfit_picture">Couldn\'t prepare the outfit\'s picture. Please try again.</string>
 
+    <!-- Calendar -->
+    <string name="calendar_title">Calendar</string>
+    <string name="calendar_previous">Previous month</string>
+    <string name="calendar_next">Next month</string>
+    <string name="calendar_day_outfit">The outfit worn on %1$s</string>
+
     <!-- Weather tip (canvas: tap the weather, or Next) -->
     <string name="weather_tip_cold_title">Chilly out. Want a layer?</string>
     <string name="weather_tip_hot_title">Sunny out. Want some shade?</string>

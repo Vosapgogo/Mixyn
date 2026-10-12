@@ -238,7 +238,7 @@ public class ItemDetailActivity extends BaseActivity
     public void onTabClick(MixynBottomBar.Tab tab) {
         switch (tab) {
             case HOME -> finish(); // the wardrobe is right behind this card
-            case PROFILE -> startActivity(MainActivity.tabIntent(this, tab));
+            case CALENDAR, PROFILE -> startActivity(MainActivity.tabIntent(this, tab));
             default -> Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show();
         }
     }

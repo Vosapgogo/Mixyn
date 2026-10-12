@@ -13,7 +13,7 @@ import com.mixyn.app.R;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.MixynBottomBar;
 
-/** Hosts the tabs: Home (wardrobe) and Profile. Calendar and Friends are "coming soon". */
+/** Hosts the tabs: Home (wardrobe), Calendar and Profile. Friends is "coming soon". */
 public class MainActivity extends BaseActivity implements MixynBottomBar.Listener {
 
     private static final String EXTRA_TAB = "tab";
@@ -68,6 +68,7 @@ public class MainActivity extends BaseActivity implements MixynBottomBar.Listene
     public void onTabClick(MixynBottomBar.Tab tab) {
         switch (tab) {
             case HOME -> show(new WardrobeFragment(), tab);
+            case CALENDAR -> show(new CalendarFragment(), tab);
             case PROFILE -> show(new ProfileFragment(), tab);
             default -> Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show();
         }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One cell of the calendar: the day's number and, if an outfit was worn that day, its picture.
+     A cell before the first or after the last day of the month is just a filled block.
+     The adapter sets the height, so that the weeks of the month share the screen between them. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/day_cell"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/calendar_day_min_height">
+
+    <ImageView
+        android:id="@+id/day_outfit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/space_l"
+        android:paddingStart="@dimen/space_xxs"
+        android:paddingEnd="@dimen/space_xxs"
+        android:paddingBottom="@dimen/space_xs"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/day_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xs"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label" />
+</FrameLayout>

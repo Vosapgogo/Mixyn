@@ -54,6 +54,11 @@
     <dimen name="grid_columns_gap">@dimen/space_xs</dimen>
     <dimen name="logo_tile_size">96dp</dimen>
     <dimen name="stroke">1dp</dimen>
+    <!-- Calendar: every day has a hairline around it (two neighbors make one thin line); today a bold one -->
+    <dimen name="stroke_hairline">0.5dp</dimen>
+    <dimen name="stroke_today">2dp</dimen>
+    <!-- Calendar: a day is never shorter than this; on a short screen the month scrolls instead -->
+    <dimen name="calendar_day_min_height">96dp</dimen>
     <dimen name="stroke_error">1.5dp</dimen>
 
     <!-- Type scale -->

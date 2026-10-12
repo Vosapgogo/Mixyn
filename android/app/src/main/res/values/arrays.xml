@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fixed choice lists for the item card (tags, seasons). tag_names has a matching tag_colors array (same order).
+<!-- Fixed lists: the choices on the item and outfit cards (tags, seasons) and the calendar's weekdays. tag_names has a matching tag_colors array (same order).
      The values sent to the backend are these English names, so they must match its allowed lists.
      Item types and colors are not here: the app loads those lists from the backend. -->
 <resources>
@@ -30,5 +30,16 @@
         <item>Summer</item>
         <item>Autumn</item>
         <item>Winter</item>
+    </string-array>
+
+    <!-- Calendar: the first letters of the days of the week, Monday first -->
+    <string-array name="weekday_letters">
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
+        <item>S</item>
     </string-array>
 </resources>
