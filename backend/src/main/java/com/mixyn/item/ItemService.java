@@ -202,6 +202,13 @@ public class ItemService {
         return saved;
     }
 
+    /** "Remove from wardrobe": the item and its picture are gone for good. */
+    public void deleteItem(Long userId, Long itemId) {
+        Item item = ownItem(userId, itemId);
+        items.delete(item);
+        storage.delete(item.getImageFile());
+    }
+
     /** Someone else's item is reported as "not found", so ids can't be probed. */
     private Item ownItem(Long userId, Long itemId) {
         return items.findById(itemId)

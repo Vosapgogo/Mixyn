@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +49,12 @@ public class ItemController {
     public ItemResponse editPhoto(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId,
             @RequestBody PhotoEdit edit) {
         return ItemResponse.from(itemService.editPhoto(userId, itemId, edit));
+    }
+
+    @DeleteMapping("/api/items/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId) {
+        itemService.deleteItem(userId, itemId);
     }
 
     @GetMapping("/api/users/{userId}/items")
