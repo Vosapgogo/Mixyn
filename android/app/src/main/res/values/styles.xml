@@ -239,6 +239,48 @@
         <item name="android:textSize">@dimen/text_label</item>
     </style>
 
+    <!-- One row of a details card (the outfit card): icon, label, optional chevron -->
+    <style name="Widget.Mixyn.CardRow" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_s</item>
+    </style>
+
+    <style name="Widget.Mixyn.CardRowIcon" parent="">
+        <item name="android:layout_width">@dimen/icon_size</item>
+        <item name="android:layout_height">@dimen/icon_size</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">@color/ink_muted</item>
+    </style>
+
+    <style name="Widget.Mixyn.CardRowLabel" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">@dimen/space_m</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.BodyStrong</item>
+    </style>
+
+    <!-- The thin line between two rows of a card -->
+    <style name="Widget.Mixyn.CardDivider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/stroke</item>
+        <item name="android:background">@color/line</item>
+    </style>
+
+    <!-- "mixyn" in the corner of an outfit's picture -->
+    <style name="TextAppearance.Mixyn.Watermark" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_watermark</item>
+        <item name="android:textColor">@color/ink_muted</item>
+    </style>
+
     <!-- Row in a list card (Profile, + menu) -->
     <style name="Widget.Mixyn.ListRow" parent="">
         <item name="android:layout_width">match_parent</item>

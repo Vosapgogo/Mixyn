@@ -17,6 +17,7 @@ import com.mixyn.app.ui.components.MixynBottomBar;
 public class MainActivity extends BaseActivity implements MixynBottomBar.Listener {
 
     private static final String EXTRA_TAB = "tab";
+    private static final String EXTRA_OUTFITS = "outfits";
 
     private MixynBottomBar bottomBar;
 
@@ -37,6 +38,11 @@ public class MainActivity extends BaseActivity implements MixynBottomBar.Listene
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     }
 
+    /** Home, opened on its Outfits tab: where the user lands after saving an outfit. */
+    public static Intent outfitsIntent(Context context) {
+        return tabIntent(context, MixynBottomBar.Tab.HOME).putExtra(EXTRA_OUTFITS, true);
+    }
+
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
@@ -45,10 +51,12 @@ public class MainActivity extends BaseActivity implements MixynBottomBar.Listene
 
     private void openRequestedTab(Intent intent) {
         String tab = intent.getStringExtra(EXTRA_TAB);
-        if (tab != null) {
-            intent.removeExtra(EXTRA_TAB);
-            onTabClick(MixynBottomBar.Tab.valueOf(tab));
-        }
+        if (tab == null) return;
+        boolean outfits = intent.getBooleanExtra(EXTRA_OUTFITS, false);
+        intent.removeExtra(EXTRA_TAB);
+        intent.removeExtra(EXTRA_OUTFITS);
+        if (outfits) show(WardrobeFragment.onOutfits(), MixynBottomBar.Tab.HOME);
+        else onTabClick(MixynBottomBar.Tab.valueOf(tab));
     }
 
     @Override

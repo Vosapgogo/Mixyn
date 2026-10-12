@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One piece in the list on an outfit's card: its photo, its name, and where it is worn. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Hidden on the first row -->
+    <View
+        android:id="@+id/piece_divider"
+        style="@style/Widget.Mixyn.CardDivider" />
+
+    <LinearLayout
+        style="@style/Widget.Mixyn.CardRow"
+        android:paddingEnd="@dimen/space_m">
+
+        <ImageView
+            android:id="@+id/piece_image"
+            android:layout_width="@dimen/piece_thumb_size"
+            android:layout_height="@dimen/piece_thumb_size"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/piece_name"
+            style="@style/Widget.Mixyn.CardRowLabel" />
+
+        <TextView
+            android:id="@+id/piece_slot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
+            android:textAppearance="@style/TextAppearance.Mixyn.RowValue" />
+    </LinearLayout>
+</LinearLayout>

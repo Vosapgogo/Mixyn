@@ -30,6 +30,7 @@
         <activity android:name=".ui.main.MainActivity" />
         <activity android:name=".ui.item.ItemDetailActivity" />
         <activity android:name=".ui.canvas.OutfitCanvasActivity" />
+        <activity android:name=".ui.outfit.OutfitActivity" />
         <activity
             android:name=".ui.additem.AddItemActivity"
             android:theme="@style/Theme.Mixyn.Charcoal" />

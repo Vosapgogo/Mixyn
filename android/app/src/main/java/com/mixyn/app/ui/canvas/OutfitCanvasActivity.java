@@ -2,6 +2,8 @@ package com.mixyn.app.ui.canvas;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.MixynApi;
 import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
+import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.api.dto.WeatherDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.additem.AddItemActivity;
@@ -38,7 +41,10 @@ import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.ItemNames;
 import com.mixyn.app.ui.components.OptionsSheet;
+import com.mixyn.app.ui.outfit.OutfitActivity;
+import com.mixyn.app.ui.outfit.OutfitPicture;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -48,6 +54,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Create outfit. The wardrobe is loaded once and split by category. The base of every outfit is three
@@ -61,7 +69,7 @@ import java.util.Set;
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
  * canvas offers to go and add a piece. The round Ask AI button sends an optional hint to the backend
  * stylist, which may change the slots and all the layers at once. The weather chip and Next offer the
- * layers the weather calls for.
+ * layers the weather calls for; after that Next takes the look to its card, where it is saved.
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
@@ -113,6 +121,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         }
     }
 
+    private final ExecutorService background = Executors.newSingleThreadExecutor();
     private MixynApi api;
     private long userId;
     private ViewPager2 topPager;
@@ -276,9 +285,79 @@ public class OutfitCanvasActivity extends BaseActivity {
         loadWeather();
     }
 
-    /** The save screen behind Next arrives with the next build step. */
+    /**
+     * Next: the look goes to its card ("Your fit for today"), where it can be saved. The card gets the
+     * pieces that are on and a picture of the outfit as it stands on the canvas.
+     */
     private void goNext() {
-        Toast.makeText(this, R.string.coming_next_step, Toast.LENGTH_SHORT).show();
+        List<OutfitDto.Piece> pieces = wornPieces();
+        if (pieces.isEmpty()) return; // the wardrobe hasn't arrived, or there is nothing to style
+        Bitmap drawn = drawOutfit();
+        String weatherNow = weather == null ? null
+                : getString(R.string.outfit_weather, weather.temperature, weather.sky);
+        View next = findViewById(R.id.canvas_next);
+        next.setEnabled(false);
+        // Cutting the picture down to the outfit and writing the file is slow work: off the main thread.
+        background.execute(() -> {
+            File picture = OutfitPicture.save(this, drawn);
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                next.setEnabled(true);
+                if (picture == null) {
+                    Toast.makeText(this, R.string.error_outfit_picture, Toast.LENGTH_LONG).show();
+                } else {
+                    OutfitActivity.startNew(this, pieces, weatherNow, picture);
+                }
+            });
+        });
+    }
+
+    /** Every piece that is on right now with its place, in the order an outfit's card lists them. */
+    private List<OutfitDto.Piece> wornPieces() {
+        List<OutfitDto.Piece> pieces = new ArrayList<>();
+        addPiece(pieces, OutfitDto.Piece.TOP, currentItem(topPager));
+        addPiece(pieces, OutfitDto.Piece.BOTTOM, currentItem(bottomPager));
+        addPiece(pieces, OutfitDto.Piece.SHOES, currentItem(shoesPager));
+        if (outerwear.on) addPiece(pieces, OutfitDto.Piece.OUTERWEAR, currentItem(outerwear.pager));
+        if (under.on) addPiece(pieces, OutfitDto.Piece.UNDER, currentItem(under.pager));
+        if (bag.on) addPiece(pieces, OutfitDto.Piece.BAG, currentItem(bag.pager));
+        for (Layer spot : accessorySpots.values()) {
+            if (spot.on) addPiece(pieces, OutfitDto.Piece.ACCESSORY, currentItem(spot.pager));
+        }
+        return pieces;
+    }
+
+    private static void addPiece(List<OutfitDto.Piece> pieces, String slot, @Nullable ItemDto item) {
+        if (item != null) pieces.add(new OutfitDto.Piece(slot, item));
+    }
+
+    /**
+     * Draws the outfit as it stands on the canvas into a picture with a see-through background: the
+     * slots and the layers over them, and nothing else of the screen. Only the piece each pager is on
+     * belongs to the outfit, so the pieces peeking in from the sides are hidden while it is drawn.
+     */
+    private Bitmap drawOutfit() {
+        View slots = findViewById(R.id.canvas_slots);
+        View stage = findViewById(R.id.canvas_layers);
+        List<ViewPager2> pagers = new ArrayList<>(List.of(topPager, bottomPager, shoesPager));
+        for (Layer layer : layers) pagers.add(layer.pager);
+        Map<View, Float> hidden = new HashMap<>();
+        for (ViewPager2 pager : pagers) {
+            RecyclerView pages = (RecyclerView) pager.getChildAt(0);
+            RecyclerView.ViewHolder current = pages.findViewHolderForAdapterPosition(pager.getCurrentItem());
+            for (int i = 0; i < pages.getChildCount(); i++) {
+                View page = pages.getChildAt(i);
+                if (current != null && page == current.itemView) continue;
+                hidden.put(page, page.getAlpha());
+                page.setAlpha(0f);
+            }
+        }
+        Bitmap picture = Bitmap.createBitmap(slots.getWidth(), slots.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(picture);
+        slots.draw(canvas);
+        stage.draw(canvas);
+        hidden.forEach(View::setAlpha);
+        return picture;
     }
 
     /** Shows "13° · cool" for the user's city. If the weather can't be loaded the chip just stays hidden. */

@@ -142,7 +142,7 @@
     <string name="item_season_title">Seasons</string>
     <string name="item_remove">Remove from wardrobe</string>
     <string name="item_remove_title">Remove this piece?</string>
-    <string name="item_remove_body">It will be deleted from your wardrobe together with its photo. This can\'t be undone.</string>
+    <string name="item_remove_body">It will be deleted from your wardrobe together with its photo, and taken out of your saved outfits. This can\'t be undone.</string>
     <string name="item_remove_confirm">Remove</string>
     <string name="item_removed">Removed from your wardrobe</string>
     <string name="item_front_title">Worn open or closed?</string>
@@ -181,6 +181,28 @@
     <string name="ask_ai_start_over">Start over</string>
     <string name="ask_ai_surprise">surprise me</string>
     <string name="ask_ai_hint_followup">make it warmer, other shoes, no blazer…</string>
+
+    <!-- Outfit card (after Next on the canvas, and a saved outfit opened from Outfits) -->
+    <string name="outfit_new_title">Your fit for today</string>
+    <string name="outfit_saved_title">Your outfit</string>
+    <string name="outfit_date_weather">%1$s · %2$s</string>
+    <string name="outfit_weather">%1$d° %2$s</string>
+    <string name="outfit_saved_on">Saved %1$s</string>
+    <string name="outfit_watermark">mixyn</string>
+    <string name="outfit_picture">The outfit</string>
+    <string name="outfit_share">Share</string>
+    <string name="outfit_pieces_label">In this outfit</string>
+    <string name="outfit_colors_empty">No colors yet</string>
+    <string name="outfit_category_empty">Add category</string>
+    <string name="outfit_category_title">Category</string>
+    <string name="outfit_saving">Saving…</string>
+    <string name="outfit_saved_toast">Saved to your outfits</string>
+    <string name="outfit_delete">Delete outfit</string>
+    <string name="outfit_delete_title">Delete this outfit?</string>
+    <string name="outfit_delete_body">It will be removed from your outfits. Your clothes stay in your wardrobe. This can\'t be undone.</string>
+    <string name="outfit_delete_confirm">Delete</string>
+    <string name="outfit_deleted">Outfit deleted</string>
+    <string name="error_outfit_picture">Couldn\'t prepare the outfit\'s picture. Please try again.</string>
 
     <!-- Weather tip (canvas: tap the weather, or Next) -->
     <string name="weather_tip_cold_title">Chilly out. Want a layer?</string>
@@ -221,6 +243,5 @@
 
     <!-- Shared -->
     <string name="coming_soon">Coming soon</string>
-    <string name="coming_next_step">Coming in the next build step</string>
     <string name="back">Back</string>
 </resources>

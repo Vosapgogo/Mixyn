@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An outfit's card. For the look that has just come from the canvas it is "Your fit for today" with
+     Save / Wear it today; for a saved outfit the same card can be edited and deleted. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_l">
+
+            <!-- Header: back and share -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/space_s"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_s">
+
+                <ImageButton
+                    android:id="@+id/outfit_back"
+                    android:layout_width="@dimen/icon_button_size"
+                    android:layout_height="@dimen/icon_button_size"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/back"
+                    android:padding="@dimen/space_s"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_back"
+                    app:tint="@color/ink" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/outfit_share"
+                    android:layout_width="@dimen/icon_button_size"
+                    android:layout_height="@dimen/icon_button_size"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/outfit_share"
+                    android:padding="@dimen/space_s"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_share"
+                    app:tint="@color/ink" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/outfit_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:textAppearance="@style/TextAppearance.Mixyn.Title" />
+
+            <TextView
+                android:id="@+id/outfit_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_xxs"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+
+            <!-- The look itself on a white card, 4:5 like the design, with the "mixyn" mark -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_l"
+                android:layout_marginEnd="@dimen/screen_margin">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_card"
+                    app:layout_constraintDimensionRatio="4:5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/outfit_picture"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/outfit_picture"
+                        android:padding="@dimen/space_l"
+                        android:scaleType="fitCenter" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|start"
+                        android:layout_marginStart="@dimen/space_m"
+                        android:layout_marginBottom="@dimen/space_s"
+                        android:importantForAccessibility="no"
+                        android:text="@string/outfit_watermark"
+                        android:textAppearance="@style/TextAppearance.Mixyn.Watermark" />
+                </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- The clothes in this outfit, one row each (filled in by the screen) -->
+            <TextView
+                style="@style/Widget.Mixyn.CardLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_l"
+                android:text="@string/outfit_pieces_label" />
+
+            <LinearLayout
+                android:id="@+id/outfit_pieces"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:background="@drawable/bg_card"
+                android:clipToOutline="true"
+                android:orientation="vertical" />
+
+            <!-- Colors (taken from the pieces), category and season -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_m"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:background="@drawable/bg_card"
+                android:clipToOutline="true"
+                android:orientation="vertical">
+
+                <LinearLayout style="@style/Widget.Mixyn.CardRow">
+
+                    <ImageView
+                        style="@style/Widget.Mixyn.CardRowIcon"
+                        android:src="@drawable/ic_drop" />
+
+                    <!-- One overlapping dot per color, filled in by the screen -->
+                    <LinearLayout
+                        android:id="@+id/outfit_color_swatches"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_m"
+                        android:orientation="horizontal" />
+
+                    <TextView
+                        android:id="@+id/outfit_color_label"
+                        style="@style/Widget.Mixyn.CardRowLabel" />
+                </LinearLayout>
+
+                <View style="@style/Widget.Mixyn.CardDivider" />
+
+                <LinearLayout
+                    android:id="@+id/outfit_row_category"
+                    style="@style/Widget.Mixyn.CardRow"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        style="@style/Widget.Mixyn.CardRowIcon"
+                        android:src="@drawable/ic_tag" />
+
+                    <TextView
+                        android:id="@+id/outfit_category_label"
+                        style="@style/Widget.Mixyn.CardRowLabel" />
+
+                    <ImageView
+                        style="@style/Widget.Mixyn.CardRowIcon"
+                        android:src="@drawable/ic_chevron_right" />
+                </LinearLayout>
+
+                <View style="@style/Widget.Mixyn.CardDivider" />
+
+                <LinearLayout
+                    android:id="@+id/outfit_row_season"
+                    style="@style/Widget.Mixyn.CardRow"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        style="@style/Widget.Mixyn.CardRowIcon"
+                        android:src="@drawable/ic_sun" />
+
+                    <TextView
+                        android:id="@+id/outfit_season_label"
+                        style="@style/Widget.Mixyn.CardRowLabel" />
+
+                    <ImageView
+                        style="@style/Widget.Mixyn.CardRowIcon"
+                        android:src="@drawable/ic_chevron_right" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Delete outfit: only for a saved one, on its own card, in the same red as Log out -->
+            <TextView
+                android:id="@+id/outfit_delete"
+                style="@style/Widget.Mixyn.ListRow"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_m"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:background="@drawable/bg_card"
+                android:text="@string/outfit_delete"
+                android:textColor="@color/remove"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_delete"
+                app:drawableTint="@color/remove" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Save keeps the look in Outfits -->
+    <LinearLayout
+        android:id="@+id/outfit_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingBottom="@dimen/space_m">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/outfit_save"
+            style="@style/Widget.Mixyn.Button.Outline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_save"
+            app:icon="@drawable/ic_bookmark" />
+    </LinearLayout>
+</LinearLayout>

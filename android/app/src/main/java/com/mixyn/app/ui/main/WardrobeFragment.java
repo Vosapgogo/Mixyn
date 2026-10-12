@@ -18,9 +18,19 @@ public class WardrobeFragment extends Fragment {
     private static final int TAB_CLOTHES = 0;
     private static final int TAB_OUTFITS = 1;
     private static final int TAB_COLLECTIONS = 2;
+    private static final String ARG_OUTFITS = "outfits";
 
     public WardrobeFragment() {
         super(R.layout.fragment_wardrobe);
+    }
+
+    /** Home that starts on the Outfits tab instead of Clothes. */
+    public static WardrobeFragment onOutfits() {
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_OUTFITS, true);
+        WardrobeFragment fragment = new WardrobeFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -55,7 +65,10 @@ public class WardrobeFragment extends Fragment {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
-        if (savedInstanceState == null) showTab(TAB_CLOTHES);
+        if (savedInstanceState != null) return;
+        boolean onOutfits = getArguments() != null && getArguments().getBoolean(ARG_OUTFITS);
+        if (onOutfits) tabs.selectTab(tabs.getTabAt(TAB_OUTFITS)); // the listener above shows its content
+        else showTab(TAB_CLOTHES);
     }
 
     private void showTab(int position) {

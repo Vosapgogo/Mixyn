@@ -35,6 +35,8 @@
     <dimen name="swatch_overlap">-8dp</dimen>
     <dimen name="item_photo_height">320dp</dimen>
     <dimen name="tile_height">72dp</dimen>
+    <!-- Outfit card: the thumbnail of one piece in the list of its pieces -->
+    <dimen name="piece_thumb_size">40dp</dimen>
     <!-- Weather tip: one piece card and the piece drawn on it -->
     <dimen name="tip_card_height">168dp</dimen>
     <dimen name="tip_card_image">88dp</dimen>
@@ -59,6 +61,7 @@
     <dimen name="text_display">44sp</dimen>
     <dimen name="text_title">36sp</dimen>
     <dimen name="text_logo">32sp</dimen>
+    <dimen name="text_watermark">22sp</dimen>
     <dimen name="text_body">16sp</dimen>
     <dimen name="text_label">14sp</dimen>
     <dimen name="text_caption">12sp</dimen>

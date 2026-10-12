@@ -63,7 +63,9 @@ public class SlotPagerAdapter extends RecyclerView.Adapter<SlotPagerAdapter.Hold
     public void onBindViewHolder(@NonNull Holder holder, int position) {
         ItemDto item = items.get(position);
         if (pageStyle != null) pageStyle.apply(holder.image, item);
-        Glide.with(holder.image).load(ApiClient.imageUrl(item.imageUrl)).into(holder.image);
+        // The canvas is later drawn into a picture of the outfit, and that can only be done with
+        // bitmaps kept in ordinary memory (not the graphics card's, which Glide prefers).
+        Glide.with(holder.image).load(ApiClient.imageUrl(item.imageUrl)).disallowHardwareConfig().into(holder.image);
         holder.image.setTag(item.scale / 100f); // the size from "Edit photo"; the page transformer applies it
     }
 
