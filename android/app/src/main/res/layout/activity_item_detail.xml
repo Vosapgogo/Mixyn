@@ -335,6 +335,20 @@
                     app:tint="@color/ink_muted" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- Remove from wardrobe: on its own card, in the same red as Log out -->
+        <TextView
+            android:id="@+id/item_remove"
+            style="@style/Widget.Mixyn.ListRow"
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginTop="@dimen/space_m"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginBottom="@dimen/space_l"
+            android:background="@drawable/bg_card"
+            android:text="@string/item_remove"
+            android:textColor="@color/remove"
+            app:drawableStartCompat="@drawable/ic_delete"
+            app:drawableTint="@color/remove" />
     </LinearLayout>
 </ScrollView>
 

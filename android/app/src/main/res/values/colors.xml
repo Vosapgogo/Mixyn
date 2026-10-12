@@ -40,4 +40,5 @@
     <!-- States -->
     <color name="error">#4F0005</color>            <!-- Pantone 4975C "Red Inferno": wrong input (border + message) -->
     <color name="logout">@color/error</color>      <!-- Log out row: same Red Inferno as errors -->
+    <color name="remove">@color/error</color>      <!-- Remove from wardrobe: the same again -->
 </resources>

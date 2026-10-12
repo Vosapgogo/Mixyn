@@ -99,6 +99,7 @@ public class ItemDetailActivity extends BaseActivity
         findViewById(R.id.item_row_color).setOnClickListener(v -> chooseColor());
         findViewById(R.id.item_row_season).setOnClickListener(v -> chooseSeason());
         findViewById(R.id.item_row_front).setOnClickListener(v -> chooseFront());
+        findViewById(R.id.item_remove).setOnClickListener(v -> confirmRemove());
 
         // Each sheet answers under its own key.
         listen(KEY_TYPE, values -> save("type", values.get(0)));
@@ -273,6 +274,33 @@ public class ItemDetailActivity extends BaseActivity
                 .setNegativeButton(R.string.add_item_cancel, null)
                 .setPositiveButton(R.string.action_save, (d, w) -> save("name", field.getValue()))
                 .show();
+    }
+
+    // ----- Remove from wardrobe -----
+
+    /** Removing can't be undone (the photo goes too), so it is asked once more. */
+    private void confirmRemove() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.item_remove_title)
+                .setMessage(R.string.item_remove_body)
+                .setNegativeButton(R.string.add_item_cancel, null)
+                .setPositiveButton(R.string.item_remove_confirm, (d, w) -> remove())
+                .show();
+    }
+
+    private void remove() {
+        api.deleteItem(item.id).enqueue(new ApiCallback<>(this) {
+            @Override
+            protected void onSuccess(@Nullable Void nothing) {
+                Toast.makeText(ItemDetailActivity.this, R.string.item_removed, Toast.LENGTH_SHORT).show();
+                finish(); // back to the closet, which loads its items again
+            }
+
+            @Override
+            protected void onError(@Nullable String code, @NonNull String message) {
+                Toast.makeText(ItemDetailActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     // ----- The choice sheets -----

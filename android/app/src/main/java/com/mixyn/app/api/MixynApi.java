@@ -17,6 +17,7 @@ import java.util.Map;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -60,6 +61,10 @@ public interface MixynApi {
     /** "Edit photo" → Done; body is {"rotation": 0|90|180|270, "mirror": false, "scale": 50..150}. */
     @POST("api/items/{itemId}/photo")
     Call<ItemDto> editPhoto(@Path("itemId") long itemId, @Body Map<String, Object> edit);
+
+    /** Removes the item from the wardrobe for good, picture included. */
+    @DELETE("api/items/{itemId}")
+    Call<Void> deleteItem(@Path("itemId") long itemId);
 
     /**
      * Asks the AI stylist for a look from the user's own items. Body: {"hint": "...", "history": [...],

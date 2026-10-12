@@ -138,6 +138,11 @@
     <string name="item_color_limit">Up to %1$d colors — unselect one first</string>
     <string name="item_season_empty">Add season</string>
     <string name="item_season_title">Seasons</string>
+    <string name="item_remove">Remove from wardrobe</string>
+    <string name="item_remove_title">Remove this piece?</string>
+    <string name="item_remove_body">It will be deleted from your wardrobe together with its photo. This can\'t be undone.</string>
+    <string name="item_remove_confirm">Remove</string>
+    <string name="item_removed">Removed from your wardrobe</string>
     <string name="item_front_title">Worn open or closed?</string>
     <string name="item_front_open">Open front</string>
     <string name="item_front_closed">Closed front</string>
