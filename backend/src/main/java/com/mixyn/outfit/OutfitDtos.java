@@ -1,11 +1,15 @@
 package com.mixyn.outfit;
 
 import com.mixyn.item.ItemDtos.ItemResponse;
+import com.mixyn.item.Labels;
+import com.mixyn.outfit.OutfitService.OutfitView;
 import com.mixyn.outfit.StylistService.Look;
 
+import java.time.Instant;
 import java.util.List;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public final class OutfitDtos {
@@ -49,6 +53,33 @@ public final class OutfitDtos {
 
         private static ItemResponse item(com.mixyn.item.Item item) {
             return item == null ? null : ItemResponse.from(item);
+        }
+    }
+
+    /**
+     * The "outfit" part of POST /api/users/{id}/outfits (the other part is the picture).
+     *
+     * @param look    which item is worn where
+     * @param tags    the outfit's categories, from the same list as item tags (optional)
+     * @param seasons the outfit's seasons (optional)
+     */
+    public record SaveRequest(@Valid @NotNull LookIds look, @Size(max = 8) List<String> tags,
+            @Size(max = 5) List<String> seasons) {
+    }
+
+    /** One piece of a saved outfit: the item and where it is worn (TOP, UNDER, ACCESSORY…). */
+    public record PieceResponse(Slot slot, ItemResponse item) {
+    }
+
+    /** A saved outfit. imageUrl is the picture of the whole look, served like an item photo. */
+    public record OutfitResponse(Long id, String imageUrl, List<PieceResponse> pieces, List<String> tags,
+            List<String> seasons, Instant createdAt) {
+
+        static OutfitResponse from(OutfitView view) {
+            Outfit outfit = view.outfit();
+            return new OutfitResponse(outfit.getId(), "/images/" + outfit.getImageFile(),
+                    view.pieces().stream().map(p -> new PieceResponse(p.slot(), ItemResponse.from(p.item()))).toList(),
+                    Labels.split(outfit.getTags()), Labels.split(outfit.getSeason()), outfit.getCreatedAt());
         }
     }
 }
