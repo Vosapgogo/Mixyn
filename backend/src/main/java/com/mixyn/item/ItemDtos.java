@@ -1,18 +1,11 @@
 package com.mixyn.item;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 
 public final class ItemDtos {
 
     private ItemDtos() {
-    }
-
-    /** "Work,Cozy" → ["Work", "Cozy"]; null or empty → []. */
-    private static List<String> split(String commaSeparated) {
-        return commaSeparated == null || commaSeparated.isBlank()
-                ? List.of() : Arrays.asList(commaSeparated.split(","));
     }
 
     /**
@@ -44,7 +37,7 @@ public final class ItemDtos {
             String name, List<String> tags, List<String> seasons, Instant createdAt) {
 
         public static ItemResponse from(Item item) {
-            List<String> tags = split(item.getTags());
+            List<String> tags = Labels.split(item.getTags());
             ItemType type = item.getType();
             List<ColorResponse> colors = item.getColors().stream()
                     .map(c -> new ColorResponse(c.name(), c.getLabel(), c.getHex())).toList();
@@ -52,7 +45,7 @@ public final class ItemDtos {
             ColorResponse main = colors.isEmpty() ? null : colors.get(0);
             return new ItemResponse(item.getId(), "/images/" + item.getImageFile(),
                     type == null ? null : type.name(), type == null ? null : type.getLabel(), item.getCategory(),
-                    item.getAlsoCategory(), item.canGoUnder(), item.getOpening(), colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, split(item.getSeason()),
+                    item.getAlsoCategory(), item.canGoUnder(), item.getOpening(), colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, Labels.split(item.getSeason()),
                     item.getCreatedAt());
         }
     }

@@ -1,7 +1,6 @@
 package com.mixyn.item;
 
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +22,8 @@ import com.mixyn.storage.ImageStorage;
 public class ItemService {
 
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
-    private static final Set<String> ALLOWED_TAGS = Set.of(
-            "Casual", "Night out", "Streetwear", "Date night", "Work", "Favorites", "Sports", "Cozy");
     private static final int MIN_SCALE = 50;
     private static final int MAX_SCALE = 150;
-    private static final List<String> FOUR_SEASONS = List.of("Spring", "Summer", "Autumn", "Winter");
-    private static final Set<String> ALLOWED_SEASONS = Set.of("All", "Spring", "Summer", "Autumn", "Winter");
 
     private final ItemRepository items;
     private final CutoutService cutouts;
@@ -141,27 +136,12 @@ public class ItemService {
             item.setName(name.isEmpty() ? null : name); // an empty name clears it
         }
         if (update.tags() != null) {
-            if (!ALLOWED_TAGS.containsAll(update.tags())) {
-                throw invalid("Choose tags from the list");
-            }
-            item.setTags(update.tags().isEmpty() ? null : String.join(",", update.tags()));
+            item.setTags(Labels.joinTags(update.tags()));
         }
         if (update.seasons() != null) {
-            if (!ALLOWED_SEASONS.containsAll(update.seasons())) {
-                throw invalid("Choose seasons from the list");
-            }
-            item.setSeason(normalizeSeasons(update.seasons()));
+            item.setSeason(Labels.joinSeasons(update.seasons()));
         }
         return items.save(item);
-    }
-
-    /** Several seasons are kept in calendar order; "All", or all four together, is stored as just "All". */
-    private static String normalizeSeasons(List<String> chosen) {
-        List<String> seasons = FOUR_SEASONS.stream().filter(chosen::contains).toList();
-        if (chosen.contains("All") || seasons.size() == FOUR_SEASONS.size()) {
-            return "All";
-        }
-        return seasons.isEmpty() ? null : String.join(",", seasons);
     }
 
     /**
