@@ -1,6 +1,7 @@
 package com.mixyn.app.ui.components;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.text.Editable;
 import android.text.InputType;
@@ -18,12 +19,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 
 import com.mixyn.app.R;
 
 /**
  * The one input field used on every form: label, rounded box, optional show/hide for passwords,
  * and an error line. The box is an AutoCompleteTextView so the same component can suggest values (City).
+ * As a search field it has no label: a magnifier at the start, and a cross that empties it at the end.
  */
 public class MixynTextField extends LinearLayout {
 
@@ -32,11 +36,13 @@ public class MixynTextField extends LinearLayout {
     private static final int TYPE_EMAIL = 2;
     private static final int TYPE_PASSWORD = 3;
     private static final int TYPE_MULTILINE = 4;
+    private static final int TYPE_SEARCH = 5;
 
     private final TextView label;
     private final AutoCompleteTextView input;
     private final ImageButton toggle;
     private final TextView error;
+    private boolean password;
     private boolean passwordVisible;
 
     public MixynTextField(Context context, @Nullable AttributeSet attrs) {
@@ -96,7 +102,9 @@ public class MixynTextField extends LinearLayout {
             case TYPE_NAME -> input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME
                     | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
             case TYPE_EMAIL -> input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+            case TYPE_SEARCH -> applySearch();
             case TYPE_PASSWORD -> {
+                password = true;
                 input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 input.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 input.setPaddingRelative(input.getPaddingStart(), 0,
@@ -107,6 +115,36 @@ public class MixynTextField extends LinearLayout {
             default -> input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         }
         input.setTypeface(getResources().getFont(R.font.inter));
+    }
+
+    /** No label; a magnifier inside the box; the button at the end is a cross, shown while there is text. */
+    private void applySearch() {
+        label.setVisibility(GONE);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        input.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0);
+        input.setCompoundDrawablePadding(getResources().getDimensionPixelSize(R.dimen.space_s));
+        TextViewCompat.setCompoundDrawableTintList(input,
+                ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.ink_muted)));
+        input.setPaddingRelative(input.getPaddingStart(), 0,
+                getResources().getDimensionPixelSize(R.dimen.icon_button_size), 0);
+        toggle.setImageResource(R.drawable.ic_close);
+        toggle.setContentDescription(getContext().getString(R.string.search_clear));
+        toggle.setOnClickListener(v -> input.setText(""));
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                toggle.setVisibility(s.length() > 0 ? VISIBLE : GONE);
+            }
+        });
     }
 
     private void togglePassword() {
@@ -126,7 +164,7 @@ public class MixynTextField extends LinearLayout {
     /** The typed value, trimmed (passwords are returned exactly as typed). */
     public String getValue() {
         String value = input.getText().toString();
-        return toggle.getVisibility() == VISIBLE ? value : value.trim();
+        return password ? value : value.trim();
     }
 
     public void setValue(String value) {

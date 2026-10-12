@@ -10,6 +10,7 @@
             <enum name="email" value="2" />
             <enum name="password" value="3" />
             <enum name="multiline" value="4" />
+            <enum name="search" value="5" />
         </attr>
     </declare-styleable>
 
