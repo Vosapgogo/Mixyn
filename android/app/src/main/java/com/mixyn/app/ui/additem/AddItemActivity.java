@@ -45,6 +45,8 @@ import okhttp3.RequestBody;
 /**
  * Add clothes: pick a photo from the gallery → upload → the backend removes the background and
  * tags it → "Background removed · 1/1 completed" → View item. Errors offer Try again.
+ * A screen that sends the user here for one missing piece (the outfit canvas) gets it back as the
+ * result as soon as it is added, without the "View item" step.
  */
 public class AddItemActivity extends BaseActivity {
 
@@ -60,6 +62,9 @@ public class AddItemActivity extends BaseActivity {
     private TextView cancel;
     @Nullable
     private Uri pickedUri;
+
+    public static final String RESULT_ITEM_ID = "itemId";
+    private static final String EXTRA_FOR_RESULT = "forResult";
 
     /** How many photos the gallery lets the user tick; we accept only one and explain that if they pick more. */
     private static final int PICKER_MAX = 10;
@@ -81,6 +86,14 @@ public class AddItemActivity extends BaseActivity {
 
     public static void start(Context context) {
         context.startActivity(new Intent(context, AddItemActivity.class));
+    }
+
+    /**
+     * For startActivityForResult: once a piece is added the screen closes with RESULT_OK and the new
+     * item's id in RESULT_ITEM_ID. Leaving without adding anything is RESULT_CANCELED.
+     */
+    public static Intent forResult(Context context) {
+        return new Intent(context, AddItemActivity.class).putExtra(EXTRA_FOR_RESULT, true);
     }
 
     @Override
@@ -120,7 +133,13 @@ public class AddItemActivity extends BaseActivity {
                 ApiClient.get(this).uploadItem(userId, part).enqueue(new ApiCallback<>(this) {
                     @Override
                     protected void onSuccess(@Nullable ItemDto item) {
-                        if (item != null) showDone(item);
+                        if (item == null) return;
+                        if (getIntent().getBooleanExtra(EXTRA_FOR_RESULT, false)) {
+                            setResult(RESULT_OK, new Intent().putExtra(RESULT_ITEM_ID, item.id));
+                            finish();
+                        } else {
+                            showDone(item);
+                        }
                     }
 
                     @Override

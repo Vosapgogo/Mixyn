@@ -158,6 +158,7 @@
     <string name="canvas_focus_accessories">Swipe each accessory to swap it</string>
     <string name="canvas_focus_layers">Swipe your layers to swap them</string>
     <string name="canvas_focus_remove">Remove</string>
+    <string name="canvas_added">Added to your closet: %1$s</string>
     <string name="canvas_empty_title">Nothing to style yet</string>
     <string name="canvas_empty_body">Add a few clothes first, then come back to build an outfit.</string>
     <string name="ask_ai_title">Ask the stylist</string>

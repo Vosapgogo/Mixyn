@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.content.res.ResourcesCompat;
@@ -128,8 +130,21 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** The layers the user is choosing right now; empty = the normal canvas. */
     private final Set<Layer> focused = new HashSet<>();
     private OnBackPressedCallback leaveFocusOnBack;
-    /** Set when the user leaves to add a piece to the wardrobe, so the canvas picks it up on return. */
-    private boolean reloadOnReturn;
+    /**
+     * "Add to wardrobe" from a missing-piece dialog: when the user comes back with a new piece, the
+     * wardrobe is loaded again and the piece is put on (see showAdded).
+     */
+    private final ActivityResultLauncher<Intent> addPiece =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() != RESULT_OK || result.getData() == null) return; // nothing was added
+                addedItemId = result.getData().getLongExtra(AddItemActivity.RESULT_ITEM_ID, -1);
+                loadWardrobe();
+            });
+    /** The piece just added, until the reloaded wardrobe has it; -1 otherwise. */
+    private long addedItemId = -1;
+    /** The layer whose tile led to "Add to wardrobe", or null (accessories, the weather tip). */
+    @Nullable
+    private Layer wantedLayer;
     /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
     private boolean wardrobeLoaded;
 
@@ -249,16 +264,6 @@ public class OutfitCanvasActivity extends BaseActivity {
         loadWeather();
     }
 
-    /** Back from adding a piece to the wardrobe: load it in, keeping the outfit as it was. */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (reloadOnReturn) {
-            reloadOnReturn = false;
-            loadWardrobe();
-        }
-    }
-
     /** The save screen behind Next arrives with the next build step. */
     private void goNext() {
         Toast.makeText(this, R.string.coming_next_step, Toast.LENGTH_SHORT).show();
@@ -328,6 +333,12 @@ public class OutfitCanvasActivity extends BaseActivity {
                 setUpPager(bag.pager, bags, 1f, bag, null);
                 showAccessories(List.of());
                 askAi.setEnabled(true);
+                if (addedItemId >= 0) {
+                    for (ItemDto item : items) {
+                        if (item.id == addedItemId) showAdded(item);
+                    }
+                    addedItemId = -1;
+                }
             }
 
             @Override
@@ -548,7 +559,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             @StringRes int missingBody) {
         if (!wardrobeLoaded) return;
         if (currentItem(layer.pager) == null) {
-            askToAdd(missingTitle, missingBody);
+            askToAdd(missingTitle, missingBody, layer);
             return;
         }
         if (!layer.on) putOn(layer, null);
@@ -564,7 +575,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             if (listed.add(item.type)) options.add(new OptionsSheet.Option(item.type, item.typeLabel, null, 0));
         }
         if (options.isEmpty()) {
-            askToAdd(R.string.missing_accessories_title, R.string.missing_accessories_body);
+            askToAdd(R.string.missing_accessories_title, R.string.missing_accessories_body, null);
             return;
         }
         OptionsSheet.newInstance(KEY_ACCESSORIES, getString(R.string.canvas_accessories_title),
@@ -582,18 +593,48 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     /**
      * "You don't have one yet": the closet has nothing for what the user (or the weather) asked for.
-     * They can go and add a piece — the canvas picks it up when they come back — or skip it.
+     * They can go and add a piece, and come straight back to the outfit with it, or skip it.
+     *
+     * @param wanted the layer the piece is wanted for, when a layer tile was tapped
      */
-    private void askToAdd(@StringRes int title, @StringRes int body) {
+    private void askToAdd(@StringRes int title, @StringRes int body, @Nullable Layer wanted) {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(title)
                 .setMessage(body)
                 .setNegativeButton(R.string.missing_skip, null)
                 .setPositiveButton(R.string.missing_add, (dialog, which) -> {
-                    reloadOnReturn = true;
-                    AddItemActivity.start(this);
+                    wantedLayer = wanted;
+                    addPiece.launch(AddItemActivity.forResult(this));
                 })
                 .show();
+    }
+
+    /**
+     * The user is back with a new piece, and the wardrobe has been loaded again. Says what it was
+     * recognized as and puts it on, ready to swipe: a bag, an accessory or outerwear goes to its layer;
+     * a thin top goes under the top if that is what was being added. Anything else just joins its slot.
+     */
+    private void showAdded(ItemDto item) {
+        String label = item.typeLabel != null ? item.typeLabel : getString(Categories.label(item.category));
+        Toast.makeText(this, getString(R.string.canvas_added, label), Toast.LENGTH_LONG).show();
+        ItemDto top = currentItem(topPager);
+        boolean isTheTop = top != null && top.id == item.id;
+        if (Categories.BAG.equals(item.category)) {
+            putOn(bag, item);
+            setFocus(List.of(bag), R.string.canvas_focus_bag);
+        } else if (Categories.ACCESSORY.equals(item.category) && AccessorySpot.of(item.type) != null) {
+            wornTypes.add(item.type);
+            showAccessories(List.of(item));
+            setFocus(accessorySpots.values(), R.string.canvas_focus_accessories);
+        } else if (wantedLayer == under && item.underLayer && !isTheTop) {
+            putOn(under, item);
+            setFocus(List.of(under), R.string.canvas_focus_under);
+        } else if (!isTheTop && (Categories.OUTERWEAR.equals(item.category)
+                || (wantedLayer == outerwear && Categories.OUTERWEAR.equals(item.alsoCategory)))) {
+            putOn(outerwear, item);
+            setFocus(List.of(outerwear), R.string.canvas_focus_outerwear);
+        }
+        wantedLayer = null;
     }
 
     /**
@@ -710,7 +751,7 @@ public class OutfitCanvasActivity extends BaseActivity {
                 goNext();
             } else if (lacking) {
                 askToAdd(cold ? R.string.missing_cold_title : R.string.missing_hot_title,
-                        cold ? R.string.missing_cold_body : R.string.missing_hot_body);
+                        cold ? R.string.missing_cold_body : R.string.missing_hot_body, null);
             } else {
                 Toast.makeText(this, R.string.weather_tip_fine, Toast.LENGTH_LONG).show();
             }
