@@ -76,6 +76,13 @@ public class OutfitService {
         return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId));
     }
 
+    /** "Delete outfit": the outfit and its picture are gone for good. The clothes stay in the wardrobe. */
+    public void delete(Long userId, Long outfitId) {
+        Outfit outfit = ownOutfit(userId, outfitId);
+        outfits.delete(outfit);
+        storage.delete(outfit.getImageFile());
+    }
+
     /** Someone else's outfit is reported as "not found", so ids can't be probed. */
     private Outfit ownOutfit(Long userId, Long outfitId) {
         return outfits.findById(outfitId)
