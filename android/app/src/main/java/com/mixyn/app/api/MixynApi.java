@@ -1,12 +1,14 @@
 package com.mixyn.app.api;
 
 import com.mixyn.app.api.dto.AuthResponse;
+import com.mixyn.app.api.dto.CalendarDayDto;
 import com.mixyn.app.api.dto.CityDto;
 import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.ItemTypeDto;
 import com.mixyn.app.api.dto.LoginRequest;
+import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.api.dto.RegisterRequest;
 import com.mixyn.app.api.dto.UserDto;
 import com.mixyn.app.api.dto.WeatherDto;
@@ -23,6 +25,7 @@ import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -72,6 +75,38 @@ public interface MixynApi {
      */
     @POST("api/users/{userId}/outfits/generate")
     Call<GenerateResult> generateOutfit(@Path("userId") long userId, @Body Map<String, Object> body);
+
+    /**
+     * Saves the outfit on the canvas. Two parts: "picture", the look as a PNG, and "outfit", sent as
+     * JSON: {"look": {topId…}, "tags": [...], "seasons": [...], "wornOn": "2026-10-12"}. Only "look" is
+     * required; with "wornOn" the new outfit is also put on that day of the calendar.
+     */
+    @Multipart
+    @POST("api/users/{userId}/outfits")
+    Call<OutfitDto> saveOutfit(@Path("userId") long userId, @Part MultipartBody.Part picture,
+            @Part("outfit") Map<String, Object> outfit);
+
+    /** The saved outfits, newest first. */
+    @GET("api/users/{userId}/outfits")
+    Call<List<OutfitDto>> outfits(@Path("userId") long userId);
+
+    /** Changes only the fields present in the map: tags, seasons. */
+    @PATCH("api/outfits/{outfitId}")
+    Call<OutfitDto> updateOutfit(@Path("outfitId") long outfitId, @Body Map<String, Object> changes);
+
+    /** Deletes a saved outfit for good, with its picture and its days in the calendar. */
+    @DELETE("api/outfits/{outfitId}")
+    Call<Void> deleteOutfit(@Path("outfitId") long outfitId);
+
+    /** "Wear it today" on a saved outfit; body is {"outfitId": 5}, the date is like "2026-10-12". */
+    @PUT("api/users/{userId}/calendar/{date}")
+    Call<CalendarDayDto> wearOutfit(@Path("userId") long userId, @Path("date") String date,
+            @Body Map<String, Object> body);
+
+    /** The days between two dates (both included) on which an outfit was worn. */
+    @GET("api/users/{userId}/calendar")
+    Call<List<CalendarDayDto>> calendar(@Path("userId") long userId, @Query("from") String from,
+            @Query("to") String to);
 
     /** Current weather in the logged-in user's city. */
     @GET("api/me/weather")
