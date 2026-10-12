@@ -33,9 +33,9 @@ Success = step 11: an outfit the user likes, built from their own clothes, saved
 - **Welcome** — logo, "Mixyn," one-line description, **Create Account** and **Log In** buttons. Shown only when no session exists.
 - **Create Account** — Name, Email, Password, City. Success message after creating.
 - **Log In** — Email + Password.
-- **Main screen (Wardrobe)** — two tabs: **Clothes** (item grid, or the empty state) and **Outfits** (saved outfits).
+- **Main screen (Wardrobe)** — two tabs: **Clothes** (item grid, or the empty state) and **Outfits** (saved outfits). In the header, a magnifier opens **search** and the three lines open the **filter** of the tab that is showing.
 - **Bottom navigation** — Home, Calendar, large black central **+**, Friends, Profile. Friends is visible but disabled, marked "coming soon."
-- **Calendar** — one month at a time; a day on which an outfit was worn shows that outfit's picture, today has a frame.
+- **Calendar** — one month at a time; a day on which an outfit was worn shows that outfit's picture, today has a frame. The days of the neighboring months fill the first and last week on beige. A calendar icon opens a month and year picker.
 - **Profile** — shows the user's name, email, and city, plus **Log out**. Everything else on it is "coming soon."
 - **+ menu** — Add clothes, Create outfit, OutfitCHECK (OutfitCHECK visible but disabled, "coming soon").
 - **Add clothes flow** — gallery picker → processing screen → **View item**.
@@ -116,6 +116,15 @@ Source: `scope.md > The Core Loop`.
 - [ ] The Calendar shows the month with the worn outfits on their days; tapping one opens its card.
 - [ ] Saved outfits and the calendar are still there after closing and reopening the app, and after logging out and back in.
 - [ ] Removing a piece from the wardrobe takes it out of the saved outfits that had it; the outfits stay.
+- [ ] In the calendar, the cells before the 1st and after the last day show the neighboring months' dates on beige and can't be tapped; the calendar icon (or the month's name) opens a picker with a year and its months, and months that haven't come yet can't be chosen.
+
+### Search and Filters
+Source: learner request while checking saved outfits.
+- [ ] The magnifier on Home opens a search field: typing part of a piece's name (the one the user gave it, or its color and type) or of its type narrows the Clothes grid; on the Outfits tab it shows the outfits that have such a piece.
+- [ ] The three lines open the filter of the tab that is showing, and carry a dot while a filter is on.
+- [ ] Clothes are filtered by color, type (Blazer, Jeans…), tags (Work, Date night…) and season. Inside a group one hit is enough; a piece must fit every group that has a choice.
+- [ ] Outfits are filtered by the colors and the kinds of piece of their clothes — an outfit must have every chosen color and every chosen kind — and by their category and season, where one of the chosen ones is enough. A piece or an outfit marked for all seasons fits any season.
+- [ ] When nothing fits, the tab says "Nothing matches" and offers **Clear filters**.
 
 ## States and Boundaries
 - **First use** — no session → Welcome; empty wardrobe → illustrated empty state.

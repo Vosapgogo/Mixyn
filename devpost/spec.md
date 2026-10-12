@@ -206,7 +206,9 @@ PRD ref: `prd.md > Account and Session`, `prd.md > Screens and Layout`.
 
 #### Main Screen and Navigation
 `MainActivity` has a `BottomNavigationView` with Home, Calendar, a central **+**, Friends, and Profile. Home hosts `WardrobeFragment` with a `TabLayout`: **Clothes** (`ClothesFragment`, a grid or the empty state) and **Outfits** (`OutfitsFragment`, a two-column grid of the saved outfits' pictures or the empty state). **Calendar** opens `CalendarFragment`. Friends is disabled and shows a "Coming soon" toast. **Profile** opens `ProfileFragment`: name, email, city and **Log out**; anything else there is "coming soon". **+** opens `AddMenuSheet` (a BottomSheet) with Add clothes, Create outfit, and OutfitCHECK (disabled, "coming soon").
-PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`.
+- **Search and filters** live in Home's header (`MixynLogoHeader` with a second action): the magnifier shows a search field under the tabs (`MixynTextField`, `fieldType="search"`), the three lines open the shown tab's `FilterSheet` and carry a dot while a filter is on. `WardrobeFragment` keeps one `WardrobeFilter` per tab (the tab fragments are made anew on every switch) and tells the shown tab to redraw. Filtering is done **on the phone**: both lists are already loaded in full with everything the rules need, so there is no request and no backend change.
+- `WardrobeFilter` rules. A piece: color, type, tags, season — one hit inside a group is enough, every group with a choice must fit. An outfit: every chosen color and every chosen kind of piece must be among its clothes; one of the chosen categories and seasons is enough. "All" seasons fits any season. Search matches the piece's name (`ItemNames`) or type; an outfit matches when one of its pieces does. The sheet offers only the colors and types the loaded clothes actually have.
+PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`, `prd.md > Search and Filters`.
 
 #### Add Item Flow
 `AddItemActivity` launches the Photo Picker (multi-select, but picking more than one shows "One photo at a time" and uploads nothing), shrinks the photo to max 1600 px JPEG on the phone, then shows the processing state (progress indicator + "Removing background…"), then "Background removed · 1/1 completed" + **View item**, or an error + **Try again**; a `not_single_item` answer shows "Only one item, please" + **Choose another photo**.
@@ -241,7 +243,7 @@ PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md >
 PRD ref: `prd.md > Saving Outfits`.
 
 #### Calendar
-`CalendarFragment` (design page 18, without streaks, weather and OutfitCHECK badges): the month title with arrows (never past the current month), M–S letters, and a seven-column grid (`CalendarAdapter`) whose weeks share the screen height. A day with an outfit shows its picture and opens its card; today has a mocha frame; cells outside the month are blank blocks. The month is drawn at once and the outfits are filled in when `GET …/calendar` answers; it reloads whenever the tab comes back into view.
+`CalendarFragment` (design page 18, without streaks, weather and OutfitCHECK badges): the month title with arrows (never past the current month), M–S letters, and a seven-column grid (`CalendarAdapter`) whose weeks share the screen height. A day with an outfit shows its picture and opens its card; today has a mocha frame; the first and last week are filled up with the neighboring months' days, on beige, without outfits and not tappable. The calendar icon in the header (or the month's name) opens `MonthPickerSheet`: a year with arrows and its twelve months, future months disabled. The month is drawn at once and the outfits are filled in when `GET …/calendar` answers; it reloads whenever the tab comes back into view.
 PRD ref: `prd.md > Saving Outfits`.
 
 ## Data Model
