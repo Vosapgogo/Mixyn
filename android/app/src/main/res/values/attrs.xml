@@ -23,5 +23,7 @@
         <attr name="headerTitle" format="string" />
         <attr name="actionIcon" format="reference" />
         <attr name="actionDescription" format="string" />
+        <attr name="secondActionIcon" format="reference" />
+        <attr name="secondActionDescription" format="string" />
     </declare-styleable>
 </resources>

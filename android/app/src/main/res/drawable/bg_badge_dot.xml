@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The small dot on a header icon that says "something is switched on here" (filters). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/mocha" />
+    <stroke android:width="@dimen/stroke" android:color="@color/sand_bg" />
+</shape>

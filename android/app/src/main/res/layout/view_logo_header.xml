@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MixynLogoHeader: serif title on the left ("Mixyn", "Profile") and one icon action on the right. -->
+<!-- MixynLogoHeader: serif title on the left ("Mixyn", "Profile") and up to two icon actions on the right.
+     The last one can carry a small dot ("filters are on"). -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,7 +15,7 @@
         android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
 
     <ImageButton
-        android:id="@+id/header_action"
+        android:id="@+id/header_second_action"
         android:layout_width="@dimen/icon_button_size"
         android:layout_height="@dimen/icon_button_size"
         android:background="?attr/selectableItemBackgroundBorderless"
@@ -22,4 +23,30 @@
         android:scaleType="fitCenter"
         android:visibility="gone"
         app:tint="@color/ink" />
+
+    <FrameLayout
+        android:id="@+id/header_action_holder"
+        android:layout_width="@dimen/icon_button_size"
+        android:layout_height="@dimen/icon_button_size"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/header_action"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="@dimen/space_s"
+            android:scaleType="fitCenter"
+            app:tint="@color/ink" />
+
+        <View
+            android:id="@+id/header_badge"
+            android:layout_width="@dimen/chip_dot_size"
+            android:layout_height="@dimen/chip_dot_size"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="@dimen/space_xs"
+            android:layout_marginEnd="@dimen/space_xs"
+            android:background="@drawable/bg_badge_dot"
+            android:visibility="gone" />
+    </FrameLayout>
 </merge>
