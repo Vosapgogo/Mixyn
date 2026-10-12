@@ -55,7 +55,7 @@ class TaggingServiceTest {
     @Test
     void readsWhereAnOpenCardiganIsOpen() throws Exception {
         Tags tags = TaggingService.validate(json.readTree("""
-                {"subject": "SINGLE_ITEM", "onBody": false, "box": [0, 0, 1000, 1000], "openFront": true,
+                {"subject": "SINGLE_ITEM", "onBody": false, "box": [0, 0, 1000, 1000], "front": "OPEN",
                  "opening": [380, 620, 470, 530], "type": "CARDIGAN", "category": "TOP", "colors": ["BROWN"]}"""));
 
         assertEquals(new Opening(380, 620, 470, 530), tags.opening());
@@ -64,19 +64,21 @@ class TaggingServiceTest {
     @Test
     void givesAnOpenPieceATypicalOpeningWhenTheNumbersMakeNoSense() throws Exception {
         // Both neck edges on the same side of the piece.
-        assertEquals(Opening.TYPICAL, openingOf("true", "[100, 300, 150, 250]"));
-        assertEquals(Opening.TYPICAL, openingOf("true", "[0, 0, 0, 0]"));
-        assertEquals(Opening.TYPICAL, openingOf("true", "\"wide\""));
+        // What the model really answered for an open cardigan: a good neck and a nonsense hem.
+        assertEquals(new Opening(377, 623, 464, 536), openingOf("OPEN", "[377, 623, 816, 493]"));
+        assertEquals(Opening.TYPICAL, openingOf("OPEN", "[100, 300, 150, 250]"));
+        assertEquals(Opening.TYPICAL, openingOf("OPEN", "[0, 0, 0, 0]"));
+        assertEquals(Opening.TYPICAL, openingOf("OPEN", "\"wide\""));
     }
 
     @Test
     void ignoresTheOpeningOfAClosedPiece() throws Exception {
-        assertNull(openingOf("false", "[380, 620, 470, 530]"));
+        assertNull(openingOf("CLOSED", "[380, 620, 470, 530]"));
     }
 
-    private Opening openingOf(String openFront, String opening) throws Exception {
-        return TaggingService.validate(json.readTree("{\"subject\": \"SINGLE_ITEM\", \"openFront\": "
-                + openFront + ", \"opening\": " + opening + "}")).opening();
+    private Opening openingOf(String front, String opening) throws Exception {
+        return TaggingService.validate(json.readTree("{\"subject\": \"SINGLE_ITEM\", \"front\": \""
+                + front + "\", \"opening\": " + opening + "}")).opening();
     }
 
     private Box boxOf(String box) throws Exception {

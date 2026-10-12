@@ -49,6 +49,9 @@ public class TaggingService {
         static final Opening TYPICAL = new Opening(370, 630, 460, 540);
     }
 
+    /** When only the neck of an opening is known, the gap at the hem is taken as this much of the neck's. */
+    private static final int HEM_SHARE_PERCENT = 30;
+
     /** A rectangle in the photo, in thousandths of its height (top, bottom) and width (left, right). */
     public record Box(int top, int left, int bottom, int right) {
         public static final int SCALE = 1000;
@@ -76,13 +79,16 @@ public class TaggingService {
             - onBody: true if any part of a person is visible (head, neck, hands, legs), otherwise false.
             - box: the bounding box of the piece itself, not of the person, as [ymin, xmin, ymax, xmax]: \
             integers from 0 to 1000 relative to the image height and width.
-            - openFront: true only if the piece is shown open down the front (an open cardigan, an \
-            unbuttoned or unzipped shirt or jacket), so that between its two front edges you see the inside \
-            of its back, or nothing. False for anything closed or pulled over the head.
-            - opening: when openFront is true, where that opening is, as [neckLeft, neckRight, hemLeft, \
-            hemRight]: the x positions, from 0 to 1000 across the image width, of the left and the right \
-            front edge at the neckline, and then of the same two edges at the bottom hem. \
-            When openFront is false, [0, 0, 0, 0].
+            - front: OPEN or CLOSED. OPEN only when the piece lies or hangs unfastened with its two front \
+            edges apart, so that the inside of its back is visible between them (an open cardigan, an \
+            unbuttoned shirt, an unzipped jacket). CLOSED for everything else: zipped up, buttoned up, \
+            pulled over the head, and every bottom, shoe, bag and accessory. Having a zip or buttons does \
+            not make a piece OPEN; look at whether it is actually unfastened in this photo.
+            - opening: for an OPEN piece, where the gap between its two front edges is, as [neckLeft, \
+            neckRight, hemLeft, hemRight]: the x positions, from 0 (left edge of the image) to 1000 (right \
+            edge), of the left and the right front edge at the neckline, and then of the same two edges at \
+            the bottom hem. For example [380, 620, 470, 530] is a V-shaped opening in the middle. \
+            For a CLOSED piece, [0, 0, 0, 0].
             - type: the single best match from the allowed list of clothing types. Rules:
               * Outerwear length matters: use COAT, TRENCH_COAT or PUFFER_COAT only for a long piece that \
             reaches well below the hips, and a jacket type (JACKET, PUFFER_JACKET, BLAZER) for a short one.
@@ -111,7 +117,7 @@ public class TaggingService {
                     "box", Schema.builder().type(Type.Known.ARRAY)
                             .items(Schema.builder().type(Type.Known.INTEGER).build())
                             .minItems(4L).maxItems(4L).build(),
-                    "openFront", Schema.builder().type(Type.Known.BOOLEAN).build(),
+                    "front", Schema.builder().type(Type.Known.STRING).enum_(List.of("OPEN", "CLOSED")).build(),
                     "opening", Schema.builder().type(Type.Known.ARRAY)
                             .items(Schema.builder().type(Type.Known.INTEGER).build())
                             .minItems(4L).maxItems(4L).build(),
@@ -124,7 +130,7 @@ public class TaggingService {
                             .items(Schema.builder().type(Type.Known.STRING)
                                     .enum_(Arrays.stream(ItemColor.values()).map(Enum::name).toList()).build())
                             .minItems(1L).maxItems((long) ItemColor.MAX_PER_ITEM).build()))
-            .required(List.of("subject", "onBody", "box", "openFront", "opening", "type", "category", "colors"))
+            .required(List.of("subject", "onBody", "box", "front", "opening", "type", "category", "colors"))
             .build();
 
     private final GeminiJson gemini;
@@ -164,13 +170,15 @@ public class TaggingService {
         // fromCodes drops anything that isn't in the palette and keeps at most three.
         return new Tags(subject, type, category, ItemColor.fromCodes(codes),
                 node.path("onBody").asBoolean(false), box(node.path("box")),
-                node.path("openFront").asBoolean(false) ? opening(node.path("opening")) : null);
+                "OPEN".equals(node.path("front").asString("")) ? opening(node.path("opening")) : null);
     }
 
     /**
-     * The opening of an open-front piece. The AI's four numbers are kept only if they describe a gap
-     * around the middle of the piece that is no wider at the hem than a little over the neck's width;
-     * otherwise a typical opening stands in, because the piece is still open.
+     * The opening of an open-front piece, from the AI's four numbers. The two at the neck are kept if
+     * they describe a gap around the middle of the piece; the two at the hem if they lie between them
+     * in the right order. In practice the model reads the neck well and the hem badly, so a bad hem is
+     * replaced by a narrow gap under the middle of the neck, and a bad neck by a typical opening:
+     * either way the piece is still open.
      */
     private static Opening opening(JsonNode node) {
         if (!node.isArray() || node.size() != 4) {
@@ -186,8 +194,16 @@ public class TaggingService {
         int middle = Box.SCALE / 2;
         boolean neck = v[0] >= 0 && v[0] < middle && v[1] > middle && v[1] <= Box.SCALE
                 && v[1] - v[0] >= 50 && v[1] - v[0] <= 700;
-        boolean hem = v[2] >= 0 && v[2] <= v[3] && v[3] <= Box.SCALE && v[3] - v[2] <= 700;
-        return neck && hem ? new Opening(v[0], v[1], v[2], v[3]) : Opening.TYPICAL;
+        if (!neck) {
+            return Opening.TYPICAL;
+        }
+        boolean hem = v[2] >= v[0] && v[2] <= v[3] && v[3] <= v[1];
+        if (hem) {
+            return new Opening(v[0], v[1], v[2], v[3]);
+        }
+        int center = (v[0] + v[1]) / 2;
+        int half = (v[1] - v[0]) * HEM_SHARE_PERCENT / 200;
+        return new Opening(v[0], v[1], center - half, center + half);
     }
 
     /** [ymin, xmin, ymax, xmax] in thousandths, or null unless it is a real rectangle inside the photo. */
