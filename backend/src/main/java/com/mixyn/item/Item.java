@@ -102,6 +102,16 @@ public class Item {
         return category;
     }
 
+    /** The second way to wear it (a cardigan as an outer layer), or null. */
+    public Category getAlsoCategory() {
+        return type == null ? null : type.getAlsoCategory();
+    }
+
+    /** Whether the item can stand in this outfit slot or layer. */
+    public boolean fits(Category slot) {
+        return slot != null && (slot == category || slot == getAlsoCategory());
+    }
+
     public int getScale() {
         return scale == null ? 100 : scale;
     }

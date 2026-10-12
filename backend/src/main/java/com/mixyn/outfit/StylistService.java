@@ -61,7 +61,8 @@ public class StylistService {
             user's own clothes. Pick exactly one TOP, one BOTTOM and one SHOES item by id (if that category \
             has items). On top of that you MAY add optional layers when they suit the look: one OUTERWEAR item, \
             one BAG item, and up to 4 ACCESSORY items of different types (never two head coverings at once). \
-            Use null / an empty list for a layer you leave off.
+            Use null / an empty list for a layer you leave off. An item listed as TOP/OUTERWEAR (a cardigan) \
+            can be the top, or the outer layer over another top, but never both in one outfit.
 
             %s%sUser's request now: %s
 
@@ -181,7 +182,8 @@ public class StylistService {
         return wardrobe.stream()
                 .map(item -> String.join(" | ",
                         String.valueOf(item.getId()),
-                        item.getCategory().name(),
+                        item.getAlsoCategory() == null ? item.getCategory().name()
+                                : item.getCategory().name() + "/" + item.getAlsoCategory().name(),
                         item.getType() == null ? "-" : item.getType().getLabel(),
                         item.getColors().isEmpty() ? "-"
                                 : item.getColors().stream().map(ItemColor::getLabel).collect(Collectors.joining(", ")),
@@ -214,9 +216,14 @@ public class StylistService {
      * that contains only items from this wardrobe, each in its own slot.
      */
     static Look buildLook(List<Item> wardrobe, AiPick pick, String hint, Random random) {
+        // A cardigan fits two slots, so it is a candidate for both.
         Map<Category, List<Item>> byCategory = new EnumMap<>(Category.class);
         for (Item item : wardrobe) {
-            byCategory.computeIfAbsent(item.getCategory(), c -> new ArrayList<>()).add(item);
+            for (Category slot : Category.values()) {
+                if (item.fits(slot)) {
+                    byCategory.computeIfAbsent(slot, c -> new ArrayList<>()).add(item);
+                }
+            }
         }
         boolean aiAnswered = pick != null;
 
@@ -225,6 +232,9 @@ public class StylistService {
         Item shoes = choose(byCategory, Category.SHOES, aiAnswered ? pick.shoesId() : null, true, random);
         // The layers are optional: keep one only if the model chose a valid item, never add one at random.
         Item outerwear = choose(byCategory, Category.OUTERWEAR, aiAnswered ? pick.outerwearId() : null, false, random);
+        if (outerwear == top) {
+            outerwear = null; // the same cardigan can't be the top and the layer over it
+        }
         Item bag = choose(byCategory, Category.BAG, aiAnswered ? pick.bagId() : null, false, random);
         List<Item> accessories = chooseAccessories(byCategory.getOrDefault(Category.ACCESSORY, List.of()),
                 aiAnswered ? pick.accessoryIds() : null);

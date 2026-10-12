@@ -6,7 +6,8 @@ import java.util.Locale;
 
 /**
  * The fixed list of clothing types. Both the AI and the user must pick from it, so there are never
- * free-text categories. Every type belongs to exactly one outfit slot or layer (Category).
+ * free-text categories. Every type belongs to one outfit slot or layer (Category). A few can be worn
+ * two ways and have a second one: a cardigan is a top, or an outer layer over another top.
  * To add a type, add a line here; nothing else needs to change.
  */
 public enum ItemType {
@@ -18,7 +19,7 @@ public enum ItemType {
     SWEATER("Sweater", Category.TOP),
     HOODIE("Hoodie", Category.TOP),
     SWEATSHIRT("Sweatshirt", Category.TOP),
-    CARDIGAN("Cardigan", Category.TOP),
+    CARDIGAN("Cardigan", Category.TOP, Category.OUTERWEAR),
     DRESS("Dress", Category.TOP),
     // Bottoms
     JEANS("Jeans", Category.BOTTOM),
@@ -36,6 +37,7 @@ public enum ItemType {
     DENIM_JACKET("Denim jacket", Category.OUTERWEAR),
     LEATHER_JACKET("Leather jacket", Category.OUTERWEAR),
     VEST("Vest", Category.OUTERWEAR),
+    ZIP_UP("Zip-up", Category.OUTERWEAR),
     // Shoes
     SNEAKERS("Sneakers", Category.SHOES),
     BOOTS("Boots", Category.SHOES),
@@ -63,10 +65,17 @@ public enum ItemType {
 
     private final String label;
     private final Category category;
+    /** The other way to wear it, or null for the usual one-way types. */
+    private final Category alsoCategory;
 
     ItemType(String label, Category category) {
+        this(label, category, null);
+    }
+
+    ItemType(String label, Category category, Category alsoCategory) {
         this.label = label;
         this.category = category;
+        this.alsoCategory = alsoCategory;
     }
 
     public String getLabel() {
@@ -75,6 +84,10 @@ public enum ItemType {
 
     public Category getCategory() {
         return category;
+    }
+
+    public Category getAlsoCategory() {
+        return alsoCategory;
     }
 
     /** Types whose name contains the typed text ("bl" → Blazer, Blouse); names starting with it come first. */

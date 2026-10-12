@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ItemTypeController {
 
-    public record ItemTypeResponse(String code, String label, Category category) {
+    public record ItemTypeResponse(String code, String label, Category category, Category alsoCategory) {
         static ItemTypeResponse from(ItemType type) {
-            return new ItemTypeResponse(type.name(), type.getLabel(), type.getCategory());
+            return new ItemTypeResponse(type.name(), type.getLabel(), type.getCategory(), type.getAlsoCategory());
         }
     }
 

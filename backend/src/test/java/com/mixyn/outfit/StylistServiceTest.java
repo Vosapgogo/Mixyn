@@ -110,6 +110,38 @@ class StylistServiceTest {
     }
 
     @Test
+    void letsACardiganBeTheLayerOverAnotherTop() {
+        Item cardigan = item(12, ItemType.CARDIGAN);
+        List<Item> withCardigan = List.of(top, cardigan, bottom, shoes);
+
+        Look look = StylistService.buildLook(withCardigan, new AiPick(10L, 20L, 30L, 12L, null, List.of(), true),
+                "", random);
+
+        assertSame(top, look.top());
+        assertSame(cardigan, look.outerwear());
+    }
+
+    @Test
+    void neverWearsTheSameCardiganAsTopAndLayer() {
+        Item cardigan = item(12, ItemType.CARDIGAN);
+        List<Item> withCardigan = List.of(top, cardigan, bottom, shoes);
+
+        Look look = StylistService.buildLook(withCardigan, new AiPick(12L, 20L, 30L, 12L, null, List.of(), true),
+                "", random);
+
+        assertSame(cardigan, look.top());
+        assertNull(look.outerwear());
+    }
+
+    @Test
+    void tellsTheModelACardiganFitsTwoSlots() {
+        String list = StylistService.describe(List.of(item(12, ItemType.CARDIGAN), item(13, ItemType.ZIP_UP)));
+
+        assertTrue(list.contains("12 | TOP/OUTERWEAR | Cardigan"));
+        assertTrue(list.contains("13 | OUTERWEAR | Zip-up"));
+    }
+
+    @Test
     void givesARandomFullLookWhenTheAiGaveNoAnswer() {
         Look look = StylistService.buildLook(wardrobe, null, "burgundy", random);
 
