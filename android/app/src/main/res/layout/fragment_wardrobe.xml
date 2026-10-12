@@ -12,9 +12,11 @@
         android:paddingStart="@dimen/screen_margin"
         android:paddingTop="@dimen/space_m"
         android:paddingEnd="@dimen/space_s"
-        app:actionDescription="@string/menu"
+        app:actionDescription="@string/filter_title"
         app:actionIcon="@drawable/ic_menu"
-        app:headerTitle="@string/app_name" />
+        app:headerTitle="@string/app_name"
+        app:secondActionDescription="@string/search_open"
+        app:secondActionIcon="@drawable/ic_search" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/wardrobe_tabs"
@@ -27,6 +29,18 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/stroke"
         android:background="@color/line" />
+
+    <!-- Opened by the magnifier in the header; searches the tab that is showing -->
+    <com.mixyn.app.ui.components.MixynTextField
+        android:id="@+id/wardrobe_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_margin"
+        android:layout_marginTop="@dimen/space_s"
+        android:layout_marginEnd="@dimen/screen_margin"
+        android:visibility="gone"
+        app:fieldType="search"
+        app:hint="@string/search_hint" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/wardrobe_container"
