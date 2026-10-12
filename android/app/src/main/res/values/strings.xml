@@ -109,6 +109,8 @@
     <string name="category_pair">%1$s · %2$s</string>
     <string name="category_unknown">Choose a category</string>
     <string name="color_unknown">No color yet</string>
+    <!-- A piece without a name of its own: its main color and type, "Khaki blazer" -->
+    <string name="piece_name">%1$s %2$s</string>
 
     <!-- Item card -->
     <string name="item_name_hint">Add a name…</string>
@@ -186,7 +188,6 @@
     <string name="weather_tip_cold_body">Pick what to wear on top. You can swap each piece on the next step.</string>
     <string name="weather_tip_hot_body">Keeps the sun off your face. Pick what to wear; you can swap it on the next step.</string>
     <string name="weather_tip_jacket">Jacket</string>
-    <string name="weather_tip_piece_name">%1$s %2$s</string>
     <string name="weather_tip_add">Add to the outfit</string>
     <string name="weather_tip_skip">Not now</string>
     <string name="weather_tip_fine">You\'re dressed for the weather</string>

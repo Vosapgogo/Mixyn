@@ -36,6 +36,7 @@ import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.additem.AddItemActivity;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
+import com.mixyn.app.ui.components.ItemNames;
 import com.mixyn.app.ui.components.OptionsSheet;
 
 import java.util.ArrayList;
@@ -45,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -830,11 +830,7 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     /** A card for the tip: the kind of piece and the user's own one, named like "Camel coat". */
     private WeatherTipSheet.Piece tipPiece(String key, String kind, ItemDto item) {
-        String name = item.name != null && !item.name.isEmpty() ? item.name
-                : item.typeLabel == null ? kind
-                : item.colorName == null ? item.typeLabel
-                : getString(R.string.weather_tip_piece_name, item.colorName, item.typeLabel.toLowerCase(Locale.ROOT));
-        return new WeatherTipSheet.Piece(key, kind, name, item.imageUrl);
+        return new WeatherTipSheet.Piece(key, kind, ItemNames.of(this, item), item.imageUrl);
     }
 
     /** Puts on what the user ticked in the weather tip, then lets them swipe through those layers. */
