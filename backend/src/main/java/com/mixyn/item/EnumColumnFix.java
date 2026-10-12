@@ -8,10 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * When Hibernate first creates the items table it adds database checks listing the allowed values of
- * the enum columns ("category in ('TOP', 'BOTTOM', …)"), and it never updates them afterwards. A database
+ * When Hibernate first creates a table it adds database checks listing the allowed values of its enum
+ * columns ("category in ('TOP', 'BOTTOM', …)"), and it never updates them afterwards. A database
  * created before bags and accessories existed would therefore refuse the new values. The lists live in
- * Category and ItemType, so the checks are simply removed at startup.
+ * the enums (Category, ItemType, and Slot for the pieces of a saved outfit), so the checks are simply
+ * removed at startup.
  */
 @Component
 public class EnumColumnFix implements ApplicationRunner {
@@ -29,8 +30,9 @@ public class EnumColumnFix implements ApplicationRunner {
         try {
             jdbc.execute("ALTER TABLE items DROP CONSTRAINT IF EXISTS items_category_check");
             jdbc.execute("ALTER TABLE items DROP CONSTRAINT IF EXISTS items_type_check");
+            jdbc.execute("ALTER TABLE outfit_pieces DROP CONSTRAINT IF EXISTS outfit_pieces_slot_check");
         } catch (Exception e) {
-            log.warn("Could not remove the old enum checks from the items table: {}", e.toString());
+            log.warn("Could not remove the old enum checks: {}", e.toString());
         }
     }
 }
