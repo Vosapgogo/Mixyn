@@ -54,8 +54,8 @@ import java.util.Set;
  * slots (top, bottom, shoes), each a pager over its category. Around them lie optional layers, hidden
  * until they are put on: a piece worn under the top (its collar and hem show around the top), outerwear
  * (only its left half is drawn, like an open jacket), a bag, and accessories, each in its own spot on
- * the outfit. A cardigan can be the top or the outerwear, but
- * not both at once: the outerwear layer never offers the piece that is the top right now.
+ * the outfit. A piece is worn in one place at a time: a layer never offers the piece that is the top
+ * right now, and the top slot never offers a piece that is on as the under layer or the outerwear.
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -148,6 +148,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
     private boolean wardrobeLoaded;
 
+    /** Every top in the wardrobe. The top slot offers them all except the ones worn as a layer. */
+    private List<ItemDto> topPieces = new ArrayList<>();
     /** The thin tops that can also be worn under another top (the backend marks them). */
     private final List<ItemDto> underPieces = new ArrayList<>();
     /** Every piece that can be worn as outerwear: jackets and coats, and cardigans (which are tops too). */
@@ -217,6 +219,16 @@ public class OutfitCanvasActivity extends BaseActivity {
                 alignToTop();
             }
         });
+
+        // A piece that is on as the under layer or the outerwear is no longer offered as the top.
+        ViewPager2.OnPageChangeCallback wornChanged = new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager2.SCROLL_STATE_IDLE) offerTops();
+            }
+        };
+        under.pager.registerOnPageChangeCallback(wornChanged);
+        outerwear.pager.registerOnPageChangeCallback(wornChanged);
 
         findViewById(R.id.canvas_under_button).setOnClickListener(v -> chooseLayer(under,
                 R.string.canvas_focus_under, R.string.missing_under_title, R.string.missing_under_body));
@@ -324,9 +336,8 @@ public class OutfitCanvasActivity extends BaseActivity {
                         && outerwearPieces.isEmpty();
                 findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
                 if (nothingToStyle) return;
-                // The top's image tells the layers around it where it is, whenever it changes.
-                setUpPager(topPager, tops, 1f, null, (image, item) ->
-                        ((PieceImageView) image).setOnImageChanged(OutfitCanvasActivity.this::alignToTop));
+                topPieces = tops;
+                offerTops();
                 setUpPager(bottomPager, bottoms, 1f, null, null);
                 setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
                 offerLayersExcept(currentItem(topPager));
@@ -385,6 +396,32 @@ public class OutfitCanvasActivity extends BaseActivity {
             page.setScaleX(scale);
             page.setScaleY(scale);
         });
+    }
+
+    /**
+     * Fills the top slot with every top except the ones that are on as the under layer or the outerwear
+     * right now: a piece already worn there isn't offered again as the top. The top that is showing
+     * stays where it is. Does nothing when the slot already offers exactly these pieces.
+     */
+    private void offerTops() {
+        ItemDto wornUnder = under.on ? currentItem(under.pager) : null;
+        ItemDto wornOver = outerwear.on ? currentItem(outerwear.pager) : null;
+        List<ItemDto> choices = new ArrayList<>();
+        for (ItemDto piece : topPieces) {
+            boolean worn = (wornUnder != null && wornUnder.id == piece.id)
+                    || (wornOver != null && wornOver.id == piece.id);
+            if (!worn) choices.add(piece);
+        }
+        if (topPager.getAdapter() instanceof SlotPagerAdapter adapter && sameIds(adapter.getItems(), choices)) {
+            return;
+        }
+        // The top's image tells the layers around it where it is, whenever it changes.
+        setUpPager(topPager, choices, 1f, null, (image, item) -> {
+            PieceImageView piece = (PieceImageView) image;
+            piece.setOnImageChanged(this::alignToTop);
+        });
+        // The new pages can only be asked where the top is once they are laid out.
+        topPager.post(this::alignToTop);
     }
 
     /**
@@ -447,10 +484,16 @@ public class OutfitCanvasActivity extends BaseActivity {
      */
     @Nullable
     private RectF topBounds() {
+        PieceImageView piece = topView();
+        return piece == null ? null : piece.imageBounds(piece.getTag() instanceof Float scale ? scale : 1f);
+    }
+
+    /** The view of the top that is showing, or null while its page doesn't exist yet. */
+    @Nullable
+    private PieceImageView topView() {
         RecyclerView pages = (RecyclerView) topPager.getChildAt(0);
         RecyclerView.ViewHolder page = pages.findViewHolderForAdapterPosition(topPager.getCurrentItem());
-        if (page == null || !(page.itemView instanceof PieceImageView piece)) return null;
-        return piece.imageBounds(piece.getTag() instanceof Float scale ? scale : 1f);
+        return page != null && page.itemView instanceof PieceImageView piece ? piece : null;
     }
 
     /** How far below the top of its slot the top starts: the line outerwear hangs from. */
@@ -477,9 +520,13 @@ public class OutfitCanvasActivity extends BaseActivity {
         piece.setPivotY(shoulderLine); // a resized jacket grows down from the shoulders, not up over them
     }
 
-    /** A piece worn under the top is drawn behind it: collar above the top's neckline, hem below its hem. */
+    /**
+     * A piece worn under the top is drawn behind it: collar above the top's neckline, hem below its hem.
+     * While the top's image isn't there (it was just swapped), the piece keeps the place it had.
+     */
     private void placeUnder(PieceImageView piece) {
-        piece.drawBehind(topBounds());
+        RectF bounds = topBounds();
+        if (bounds != null) piece.drawBehind(bounds);
     }
 
     /** Gives the bag and every accessory spot its rectangle on the canvas. */
@@ -540,12 +587,14 @@ public class OutfitCanvasActivity extends BaseActivity {
         // An instant move doesn't re-run the page transformer, so the pages would keep the fading and
         // size of the place they were in before. Redo it once the pages are laid out.
         layer.pager.post(layer.pager::requestTransform);
+        if (layer == under || layer == outerwear) offerTops();
     }
 
     private void takeOff(Layer layer) {
         layer.on = false;
         layer.pager.setVisibility(View.GONE);
         if (layer == under) bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
+        if (layer == under || layer == outerwear) offerTops(); // its piece can be the top again
     }
 
     /** Puts the layer on at this item, or takes it off when there is no item. */
@@ -820,6 +869,10 @@ public class OutfitCanvasActivity extends BaseActivity {
             protected void onSuccess(@Nullable GenerateResult look) {
                 setStyling(false);
                 if (look == null) return;
+                // A piece worn as a layer isn't offered as the top, and the new top may be just that
+                // piece: the layers come off first and go back on once the top is chosen.
+                takeOff(under);
+                takeOff(outerwear);
                 moveTo(topPager, look.top);
                 moveTo(bottomPager, look.bottom);
                 moveTo(shoesPager, look.shoes);
