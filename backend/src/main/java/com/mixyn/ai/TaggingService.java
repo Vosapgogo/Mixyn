@@ -70,6 +70,8 @@ public class TaggingService {
             reaches well below the hips, and a jacket type (JACKET, PUFFER_JACKET, BLAZER) for a short one.
               * ZIP_UP is a knit, sweatshirt or hoodie that closes with a zip down the whole front. \
             CARDIGAN is an open or buttoned knit. SWEATER, SWEATSHIRT and HOODIE are pulled over the head.
+              * Thin jersey tops go by their sleeves: T_SHIRT has short sleeves, LONG_SLEEVE long ones, \
+            TANK_TOP none. SHIRT and BLOUSE have a collar or buttons. TOP is for any other top.
               * GLOVES covers gloves and mittens, also when only one of them is in the photo.
               * A shirt shown with a tie is a SHIRT.
             - category: TOP (shirts, t-shirts, sweaters, hoodies, blouses, cardigans, dresses), \

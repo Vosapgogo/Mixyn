@@ -13,6 +13,8 @@ import java.util.Locale;
 public enum ItemType {
     // Tops
     T_SHIRT("T-shirt", Category.TOP),
+    LONG_SLEEVE("Long sleeve", Category.TOP),
+    TANK_TOP("Tank top", Category.TOP),
     SHIRT("Shirt", Category.TOP),
     BLOUSE("Blouse", Category.TOP),
     TOP("Top", Category.TOP),
