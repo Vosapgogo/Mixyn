@@ -188,6 +188,8 @@
     <string name="outfit_date_weather">%1$s · %2$s</string>
     <string name="outfit_weather">%1$d° %2$s</string>
     <string name="outfit_saved_on">Saved %1$s</string>
+    <string name="outfit_saved_worn">Saved %1$s · last worn %2$s</string>
+    <string name="outfit_saved_worn_today">Saved %1$s · worn today</string>
     <string name="outfit_watermark">mixyn</string>
     <string name="outfit_picture">The outfit</string>
     <string name="outfit_share">Share</string>
@@ -197,9 +199,13 @@
     <string name="outfit_category_title">Category</string>
     <string name="outfit_saving">Saving…</string>
     <string name="outfit_saved_toast">Saved to your outfits</string>
+    <string name="outfit_wear_today">Wear it today</string>
+    <string name="outfit_worn_today">Worn today</string>
+    <string name="outfit_worn_toast">Saved to your calendar</string>
     <string name="outfit_delete">Delete outfit</string>
     <string name="outfit_delete_title">Delete this outfit?</string>
     <string name="outfit_delete_body">It will be removed from your outfits. Your clothes stay in your wardrobe. This can\'t be undone.</string>
+    <string name="outfit_delete_body_worn">It will be removed from your outfits and from the days you wore it in your calendar. Your clothes stay in your wardrobe. This can\'t be undone.</string>
     <string name="outfit_delete_confirm">Delete</string>
     <string name="outfit_deleted">Outfit deleted</string>
     <string name="error_outfit_picture">Couldn\'t prepare the outfit\'s picture. Please try again.</string>

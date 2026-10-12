@@ -25,6 +25,7 @@ import com.mixyn.app.R;
 import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.MixynApi;
+import com.mixyn.app.api.dto.CalendarDayDto;
 import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.session.SessionStore;
@@ -32,6 +33,7 @@ import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.ColorDots;
 import com.mixyn.app.ui.components.ItemNames;
+import com.mixyn.app.ui.components.MixynBottomBar;
 import com.mixyn.app.ui.components.OptionsSheet;
 import com.mixyn.app.ui.components.OptionsSheet.Mode;
 import com.mixyn.app.ui.components.OptionsSheet.Option;
@@ -62,8 +64,12 @@ import okhttp3.RequestBody;
  *
  * It opens in one of two ways. From the canvas (Next) it shows the look that was just put together,
  * "Your fit for today": nothing is stored yet, the category and seasons chosen here go to the backend
- * together with the picture when the user taps Save. From the Outfits tab it shows a saved outfit:
- * every change is sent right away and the card is redrawn from the answer, and the outfit can be deleted.
+ * together with the picture when the user taps Save. From the Outfits tab or the calendar it shows a
+ * saved outfit: every change is sent right away and the card is redrawn from the answer, and the outfit
+ * can be deleted.
+ *
+ * "Wear it today" puts the outfit on today in the calendar. For a look from the canvas that also saves
+ * it, in the same request.
  */
 public class OutfitActivity extends BaseActivity {
 
@@ -93,6 +99,9 @@ public class OutfitActivity extends BaseActivity {
     private ArrayList<String> draftTags = new ArrayList<>();
     private ArrayList<String> draftSeasons = new ArrayList<>();
     private MaterialButton saveButton;
+    private MaterialButton wearButton;
+    /** A button that can't be tapped is faded to this. */
+    private static final float DISABLED_ALPHA = 0.5f;
 
     /**
      * Opens the look that is on the canvas.
@@ -119,6 +128,7 @@ public class OutfitActivity extends BaseActivity {
         setContentView(R.layout.activity_outfit);
         api = ApiClient.get(this);
         saveButton = findViewById(R.id.outfit_save);
+        wearButton = findViewById(R.id.outfit_wear);
 
         String saved = savedInstanceState != null
                 ? savedInstanceState.getString(EXTRA_OUTFIT) : getIntent().getStringExtra(EXTRA_OUTFIT);
@@ -142,7 +152,11 @@ public class OutfitActivity extends BaseActivity {
         findViewById(R.id.outfit_row_season).setOnClickListener(v -> choose(KEY_SEASON,
                 R.string.item_season_title, R.array.season_names, 0, seasons()));
         findViewById(R.id.outfit_delete).setOnClickListener(v -> confirmDelete());
-        saveButton.setOnClickListener(v -> save());
+        saveButton.setOnClickListener(v -> save(false));
+        wearButton.setOnClickListener(v -> {
+            if (outfit == null) save(true);
+            else wearToday();
+        });
 
         // Each sheet answers under its own key. An empty answer ("Clear selection") is a choice too.
         listen(KEY_CATEGORY, values -> change("tags", inListOrder(values, R.array.tag_names)));
@@ -215,7 +229,21 @@ public class OutfitActivity extends BaseActivity {
         setRow(R.id.outfit_season_label, seasons(), R.string.item_season_empty);
 
         findViewById(R.id.outfit_delete).setVisibility(saved ? View.VISIBLE : View.GONE);
-        findViewById(R.id.outfit_actions).setVisibility(saved ? View.GONE : View.VISIBLE);
+        saveButton.setVisibility(saved ? View.GONE : View.VISIBLE);
+        boolean wornToday = saved && today().equals(outfit.lastWornOn);
+        wearButton.setText(wornToday ? R.string.outfit_worn_today : R.string.outfit_wear_today);
+        wearButton.setIconResource(wornToday ? R.drawable.ic_check : 0);
+        setEnabled(wearButton, !wornToday);
+    }
+
+    /** Today as the phone sees it, in the form the backend uses for calendar days: "2026-10-12". */
+    private static String today() {
+        return LocalDate.now().toString();
+    }
+
+    private static void setEnabled(MaterialButton button, boolean enabled) {
+        button.setEnabled(enabled);
+        button.setAlpha(enabled ? 1f : DISABLED_ALPHA);
     }
 
     /** "Tuesday, 29 September · 4° cloudy"; just the day when the weather isn't known. */
@@ -225,10 +253,12 @@ public class OutfitActivity extends BaseActivity {
         return weather == null ? today : getString(R.string.outfit_date_weather, today, weather);
     }
 
-    /** "Saved 12 October". */
+    /** "Saved 12 October", and when it was last worn if it ever was: "… · last worn 14 October". */
     private String savedLine() {
-        LocalDate savedOn = Instant.parse(outfit.createdAt).atZone(ZoneId.systemDefault()).toLocalDate();
-        return getString(R.string.outfit_saved_on, savedOn.format(DAY));
+        String savedOn = Instant.parse(outfit.createdAt).atZone(ZoneId.systemDefault()).toLocalDate().format(DAY);
+        if (outfit.lastWornOn == null) return getString(R.string.outfit_saved_on, savedOn);
+        if (today().equals(outfit.lastWornOn)) return getString(R.string.outfit_saved_worn_today, savedOn);
+        return getString(R.string.outfit_saved_worn, savedOn, LocalDate.parse(outfit.lastWornOn).format(DAY));
     }
 
     private List<OutfitDto.Piece> pieces() {
@@ -323,15 +353,17 @@ public class OutfitActivity extends BaseActivity {
         });
     }
 
-    // ----- Save -----
+    // ----- Save, and Wear it today -----
 
     /**
      * Sends the look to the backend: its picture, which piece is worn where, and what was chosen on
      * this card. On success the new outfit is in the Outfits tab, so that is where the user goes.
+     *
+     * @param wearToday also put the new outfit on today in the calendar, and go there instead
      */
-    private void save() {
+    private void save(boolean wearToday) {
         if (draftPicture == null) return;
-        setSaving(true);
+        setSaving(true, wearToday);
         String path = draftPicture;
         // Reading the picture file is slow work, so it stays off the main (UI) thread.
         background.execute(() -> {
@@ -339,7 +371,7 @@ public class OutfitActivity extends BaseActivity {
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 if (png == null) {
-                    setSaving(false);
+                    setSaving(false, wearToday);
                     Toast.makeText(this, R.string.error_outfit_picture, Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -349,17 +381,22 @@ public class OutfitActivity extends BaseActivity {
                 body.put("look", lookIds());
                 body.put("tags", draftTags);
                 body.put("seasons", draftSeasons);
+                if (wearToday) body.put("wornOn", today());
                 long userId = new SessionStore(this).getUserId();
                 api.saveOutfit(userId, picture, body).enqueue(new ApiCallback<>(this) {
                     @Override
                     protected void onSuccess(@Nullable OutfitDto savedOutfit) {
-                        Toast.makeText(OutfitActivity.this, R.string.outfit_saved_toast, Toast.LENGTH_SHORT).show();
-                        startActivity(MainActivity.outfitsIntent(OutfitActivity.this));
+                        Toast.makeText(OutfitActivity.this,
+                                wearToday ? R.string.outfit_worn_toast : R.string.outfit_saved_toast,
+                                Toast.LENGTH_SHORT).show();
+                        startActivity(wearToday
+                                ? MainActivity.tabIntent(OutfitActivity.this, MixynBottomBar.Tab.CALENDAR)
+                                : MainActivity.outfitsIntent(OutfitActivity.this));
                     }
 
                     @Override
                     protected void onError(@Nullable String code, @NonNull String message) {
-                        setSaving(false);
+                        setSaving(false, wearToday);
                         Toast.makeText(OutfitActivity.this, message, Toast.LENGTH_LONG).show();
                     }
                 });
@@ -386,18 +423,45 @@ public class OutfitActivity extends BaseActivity {
         return ids;
     }
 
-    private void setSaving(boolean saving) {
-        saveButton.setEnabled(!saving);
-        saveButton.setText(saving ? R.string.outfit_saving : R.string.action_save);
+    /** While the look is being sent neither button can be tapped; the one that was tapped says "Saving…". */
+    private void setSaving(boolean saving, boolean wearToday) {
+        setEnabled(saveButton, !saving);
+        setEnabled(wearButton, !saving);
+        saveButton.setText(saving && !wearToday ? R.string.outfit_saving : R.string.action_save);
+        wearButton.setText(saving && wearToday ? R.string.outfit_saving : R.string.outfit_wear_today);
+    }
+
+    /** A saved outfit: today in the calendar now shows it (and no longer another outfit, if one was there). */
+    private void wearToday() {
+        if (outfit == null) return;
+        long userId = new SessionStore(this).getUserId();
+        setEnabled(wearButton, false);
+        api.wearOutfit(userId, today(), Collections.singletonMap("outfitId", outfit.id))
+                .enqueue(new ApiCallback<>(this) {
+                    @Override
+                    protected void onSuccess(@Nullable CalendarDayDto day) {
+                        if (day == null) return;
+                        outfit = day.outfit;
+                        bind();
+                        Toast.makeText(OutfitActivity.this, R.string.outfit_worn_toast, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    protected void onError(@Nullable String code, @NonNull String message) {
+                        bind();
+                        Toast.makeText(OutfitActivity.this, message, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     // ----- Delete -----
 
-    /** Deleting can't be undone (the picture goes too), so it is asked once more. */
+    /** Deleting can't be undone (the picture and the calendar days go too), so it is asked once more. */
     private void confirmDelete() {
+        boolean worn = outfit != null && outfit.lastWornOn != null;
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.outfit_delete_title)
-                .setMessage(R.string.outfit_delete_body)
+                .setMessage(worn ? R.string.outfit_delete_body_worn : R.string.outfit_delete_body)
                 .setNegativeButton(R.string.add_item_cancel, null)
                 .setPositiveButton(R.string.outfit_delete_confirm, (d, w) -> delete())
                 .show();
