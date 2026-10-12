@@ -418,6 +418,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         // The top's image tells the layers around it where it is, whenever it changes.
         setUpPager(topPager, choices, 1f, null, (image, item) -> {
             PieceImageView piece = (PieceImageView) image;
+            piece.setOpening(item.opening);
             piece.setOnImageChanged(this::alignToTop);
         });
         // The new pages can only be asked where the top is once they are laid out.
@@ -468,6 +469,9 @@ public class OutfitCanvasActivity extends BaseActivity {
      */
     private void styleOuterwearPage(ImageView image, ItemDto item) {
         boolean isLong = LONG_OUTERWEAR.contains(item.type);
+        // Outerwear is always worn over something, so an open jacket never shows the inside of its back.
+        ((PieceImageView) image).setOpening(item.opening);
+        ((PieceImageView) image).leaveOpeningOut(true);
         whenLaidOut(image, () -> {
             int width = image.getWidth();
             int height = image.getHeight();
@@ -513,6 +517,13 @@ public class OutfitCanvasActivity extends BaseActivity {
         for (int i = 0; i < underPages.getChildCount(); i++) {
             if (underPages.getChildAt(i) instanceof PieceImageView piece) placeUnder(piece);
         }
+        // An open-front top (an open cardigan) shows the inside of its back in its opening. With a piece
+        // worn under it, that piece is what shows there; with nothing under it the top stays as it is.
+        PieceImageView top = topView();
+        RecyclerView tops = (RecyclerView) topPager.getChildAt(0);
+        for (int i = 0; i < tops.getChildCount(); i++) {
+            if (tops.getChildAt(i) instanceof PieceImageView piece) piece.leaveOpeningOut(under.on && piece == top);
+        }
     }
 
     private static void hang(PieceImageView piece, float shoulderLine) {
@@ -521,12 +532,14 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
-     * A piece worn under the top is drawn behind it: collar above the top's neckline, hem below its hem.
-     * While the top's image isn't there (it was just swapped), the piece keeps the place it had.
+     * A piece worn under the top is drawn behind it: collar above the top's neckline, hem below its hem,
+     * and whole where the top is open down the front. While the top's image isn't there (it was just
+     * swapped), the piece keeps the place it had.
      */
     private void placeUnder(PieceImageView piece) {
+        PieceImageView top = topView();
         RectF bounds = topBounds();
-        if (bounds != null) piece.drawBehind(bounds);
+        if (top != null && bounds != null) piece.drawBehind(bounds, top.isOpenFront() ? top.outline(bounds) : null);
     }
 
     /** Gives the bag and every accessory spot its rectangle on the canvas. */
@@ -593,7 +606,10 @@ public class OutfitCanvasActivity extends BaseActivity {
     private void takeOff(Layer layer) {
         layer.on = false;
         layer.pager.setVisibility(View.GONE);
-        if (layer == under) bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
+        if (layer == under) {
+            bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
+            alignToTop(); // an open-front top gets the inside of its back again
+        }
         if (layer == under || layer == outerwear) offerTops(); // its piece can be the top again
     }
 

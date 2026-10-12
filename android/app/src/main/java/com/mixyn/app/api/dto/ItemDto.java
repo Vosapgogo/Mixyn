@@ -15,6 +15,12 @@ public class ItemDto {
     public String alsoCategory;
     /** True for a thin top (T-shirt, shirt…) that can also be worn under another top. */
     public boolean underLayer;
+    /**
+     * For a piece photographed open down the front (an open cardigan): the x positions of its two front
+     * edges at the neckline and at the hem — neckLeft, neckRight, hemLeft, hemRight — in thousandths of
+     * the picture's width. Empty or null for closed pieces.
+     */
+    public List<Integer> opening;
     /** Up to three palette colors, the main one first. colorName / colorHex repeat the first. */
     public List<ColorDto> colors;
     public String colorName;
