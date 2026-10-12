@@ -15,9 +15,12 @@ public final class ItemDtos {
                 ? List.of() : Arrays.asList(commaSeparated.split(","));
     }
 
-    /** Body of PATCH /api/items/{id}: only the fields that are present are changed. */
+    /**
+     * Body of PATCH /api/items/{id}: only the fields that are present are changed.
+     * openFront: the user says the piece is worn open down the front (true) or closed (false).
+     */
     public record ItemUpdate(String type, List<String> colors, String name, List<String> tags,
-            List<String> seasons) {
+            List<String> seasons, Boolean openFront) {
     }
 
     public record ColorResponse(String code, String label, String hex) {

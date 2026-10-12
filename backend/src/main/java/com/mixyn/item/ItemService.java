@@ -70,9 +70,8 @@ public class ItemService {
         String file = storage.save(cutout);
         Item item = new Item(userId, file, tags.type(), tags.category(), tags.colors());
         // The opening was measured on the picture the AI saw, so it is dropped if that picture was cut again.
-        if (tags.opening() != null && !cutToBox) {
-            Opening o = tags.opening();
-            item.setOpening(List.of(o.neckLeft(), o.neckRight(), o.hemLeft(), o.hemRight()));
+        if (tags.opening() != null && !cutToBox && canBeOpen(item)) {
+            item.setOpening(tags.opening().numbers());
         }
         item = items.save(item);
         log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, type {}, category {}",
@@ -97,6 +96,11 @@ public class ItemService {
         throw new ApiException(HttpStatus.BAD_REQUEST, "not_single_item", message);
     }
 
+    /** Only tops and outerwear have a front that can be worn open. */
+    private static boolean canBeOpen(Item item) {
+        return item.fits(Category.TOP) || item.fits(Category.OUTERWEAR);
+    }
+
     /** The user corrects or enriches an item on its card. Null fields in the update are left as they are. */
     public Item updateItem(Long userId, Long itemId, ItemUpdate update) {
         Item item = ownItem(userId, itemId);
@@ -106,6 +110,20 @@ public class ItemService {
                 throw invalid("Choose a type from the list");
             }
             item.setType(type);
+            if (!canBeOpen(item)) {
+                item.setOpening(null); // trousers have no front to wear open
+            }
+        }
+        if (update.openFront() != null) {
+            if (update.openFront() && !canBeOpen(item)) {
+                throw invalid("Only tops and outerwear can be worn open");
+            }
+            if (!update.openFront()) {
+                item.setOpening(null);
+            } else if (item.getOpening().isEmpty()) {
+                // Nobody measured where this piece opens, so it gets a typical opening.
+                item.setOpening(Opening.TYPICAL.numbers());
+            }
         }
         if (update.colors() != null) {
             List<ItemColor> colors = ItemColor.fromCodes(update.colors());

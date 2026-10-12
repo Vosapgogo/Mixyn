@@ -45,8 +45,16 @@ public class TaggingService {
      * under it shows between them.
      */
     public record Opening(int neckLeft, int neckRight, int hemLeft, int hemRight) {
-        /** Used when the AI says the piece is open but its numbers make no sense: a typical open cardigan. */
-        static final Opening TYPICAL = new Opening(370, 630, 460, 540);
+        /**
+         * A typical open cardigan. Used when the AI says a piece is open but its numbers make no sense,
+         * and when the user marks a piece as open themselves.
+         */
+        public static final Opening TYPICAL = new Opening(370, 630, 460, 540);
+
+        /** The four numbers in the order the item stores them. */
+        public List<Integer> numbers() {
+            return List.of(neckLeft, neckRight, hemLeft, hemRight);
+        }
     }
 
     /** When only the neck of an opening is known, the gap at the hem is taken as this much of the neck's. */
