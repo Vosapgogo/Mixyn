@@ -41,7 +41,7 @@ PRD ref: `prd.md > The Core Journey`.
 5. **Item card** → `ItemDetailActivity` loads the image from `GET /images/{file}` and shows category and color. Edits are sent with `PATCH /api/items/{itemId}`.
 6. **Create outfit** → `OutfitCanvasActivity` loads all items once, groups them by category, and **picks a random outfit on the phone** (no server call needed). Each slot is a horizontal `ViewPager2`: swiping changes only that slot.
 7. **Generate with AI** → `POST /api/users/{id}/outfits/generate {hint}` → `StylistService` builds a text list of the user's items, asks Gemini for JSON ids, **validates** them, fills gaps, and returns `{top, bottom, shoes, outerwear, hintMatched, message}` → the app scrolls each slot to the returned item and shows a toast if `hintMatched` is false.
-8. **Save** → `POST /api/users/{id}/outfits {topId, bottomId, shoesId, outerwearId, source, hint}` → row in `outfits` → `OutfitsFragment` lists them via `GET /api/users/{id}/outfits`.
+8. **Next → Save** → the canvas draws the outfit into a PNG and opens `OutfitActivity` ("Your fit for today") → **Save** sends `POST /api/users/{id}/outfits` (multipart: the picture + which item is worn where) → rows in `outfits` and `outfit_pieces` → `OutfitsFragment` lists them via `GET /api/users/{id}/outfits`. **Wear it today** sends the same request with today's date, which also adds a row to `outfit_wears`; `CalendarFragment` reads the month via `GET /api/users/{id}/calendar`.
 
 ```
  Android app ──HTTP (10.0.2.2:8080)──▶ Spring Boot ──▶ PostgreSQL (users, items, outfits)
@@ -179,8 +179,13 @@ PRD ref: `prd.md > AI Stylist`.
 #### Outfits API
 `OutfitController`.
 - `POST /api/users/{userId}/outfits/generate` `{hint? (≤500 chars), history?: [{hint, look:{topId,bottomId,shoesId,outerwearId}}] (≤6), current?: {…ids}}` → stylist result (above). The backend keeps no conversation state: the app sends the session's memory each time, and it is only context for the model — the answer is validated the same way.
-- `POST /api/users/{userId}/outfits` `{topId, bottomId, shoesId, outerwearId, source: "MANUAL"|"AI", hint}` → `201 Outfit`. Ids are validated for ownership; slots may be null.
-- `GET /api/users/{userId}/outfits` → `200 [Outfit]` with nested items, newest first.
+- `POST /api/users/{userId}/outfits` — multipart with two parts: `picture` (the look as a PNG with a see-through background) and `outfit` (JSON `{look: {topId, bottomId, shoesId, outerwearId, underId, bagId, accessoryIds}, tags?, seasons?, wornOn?}`) → `201 Outfit`. `OutfitService.checkLook` is the trust boundary: every id must be an item of this user's wardrobe, wearable in the place it is given (`Slot.accepts`), and worn only once; any place may be empty but not all → otherwise `400 validation_failed`. The picture is cropped and scaled like an item photo (`ImageStorage.cropToItem`). With `wornOn` (the phone's today) the outfit is also put on that day, in the same transaction.
+- `GET /api/users/{userId}/outfits` → `200 [Outfit]`, newest first: `{id, imageUrl, pieces: [{slot, item}], tags, seasons, createdAt, lastWornOn}`.
+- `PATCH /api/outfits/{outfitId}` `{tags?, seasons?}` → `200 Outfit`; `DELETE /api/outfits/{outfitId}` → `204` (the outfit, its picture and its calendar days). Someone else's outfit is `404`.
+- `PUT /api/users/{userId}/calendar/{date}` `{outfitId}` → `200 {date, outfit}`: "Wear it today" on a saved outfit. One outfit per day (a unique constraint; a later one replaces it); a date after tomorrow by the server's clock is refused.
+- `GET /api/users/{userId}/calendar?from=&to=` → `200 [{date, outfit}]`, only the days something was worn.
+- Removing an item (`DELETE /api/items/{id}`) takes it out of the saved outfits that had it (`OutfitService.forgetItem`, same transaction); the outfits stay, with their picture as it was saved.
+- The outfit's categories and seasons come from the same fixed lists as an item's (`Labels`).
 PRD ref: `prd.md > Saving Outfits`.
 
 #### Errors and Health
@@ -200,7 +205,7 @@ PRD ref: `prd.md > Account and Session`.
 PRD ref: `prd.md > Account and Session`, `prd.md > Screens and Layout`.
 
 #### Main Screen and Navigation
-`MainActivity` has a `BottomNavigationView` with Home, Calendar, a central **+**, Friends, and Profile. Home hosts `WardrobeFragment` with a `TabLayout`: **Clothes** (`ClothesFragment`, a grid or the empty state) and **Outfits** (`OutfitsFragment`). Calendar and Friends are disabled and show a "Coming soon" toast. **Profile** opens `ProfileFragment`: name, email, city and **Log out**; anything else there is "coming soon". **+** opens `AddMenuSheet` (a BottomSheet) with Add clothes, Create outfit, and OutfitCHECK (disabled, "coming soon").
+`MainActivity` has a `BottomNavigationView` with Home, Calendar, a central **+**, Friends, and Profile. Home hosts `WardrobeFragment` with a `TabLayout`: **Clothes** (`ClothesFragment`, a grid or the empty state) and **Outfits** (`OutfitsFragment`, a two-column grid of the saved outfits' pictures or the empty state). **Calendar** opens `CalendarFragment`. Friends is disabled and shows a "Coming soon" toast. **Profile** opens `ProfileFragment`: name, email, city and **Log out**; anything else there is "coming soon". **+** opens `AddMenuSheet` (a BottomSheet) with Add clothes, Create outfit, and OutfitCHECK (disabled, "coming soon").
 PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`.
 
 #### Add Item Flow
@@ -215,7 +220,7 @@ PRD ref: `prd.md > AI Item Details`.
 
 #### Outfit Canvas
 `OutfitCanvasActivity`: the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal `ViewPager2` over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Over them lie optional **layers**, each its own pager, hidden until put on: outerwear, a bag, and accessories. Items without a category are not shown. (The layout started from design page 14; the layers and the bottom panel are the learner's later design.)
-- Header: back, a weather chip ("13° · cool", from `GET /api/me/weather`; hidden if unavailable) and **Next** (leads to saving the look, slice 6).
+- Header: back, a weather chip ("13° · cool", from `GET /api/me/weather`; hidden if unavailable) and **Next**, which takes the look to its card (see Outfit Card). For that the canvas draws its slots and layers into a bitmap with a see-through background (`drawOutfit`: the neighbors peeking in from the sides are hidden for the drawing) and `OutfitPicture` cuts it down to the outfit and writes a PNG into the cache folder. The pieces are loaded with `disallowHardwareConfig()`, because such a drawing needs bitmaps in ordinary memory.
 - Bottom panel: four equal tiles — **Under layer**, **Outerwear**, **Bag**, **Accessories**. A tile puts its layer on and enters *focus*: the slots and the other layers are faded and stop reacting, swipes change only that layer, and the panel shows **Remove** / **Done**. Accessories first opens a multi-choice sheet of the accessory types the closet has.
 - Outerwear shares one frame with the top and the bottom and is drawn as its left half (`setClipBounds`), hung from the shoulder line of the top underneath (`PieceImageView`): a jacket fits the top's part of the frame, a long type (`COAT`, `TRENCH_COAT`, `PUFFER_COAT`) the whole frame. Shoes are drawn at 70% so they sit below the trousers.
 - **Under layer**: a fourth tile puts a thin top (`T_SHIRT`, `SHIRT`, `LONG_SLEEVE`, `TANK_TOP`; `underLayer: true` in the item) behind the top, chosen in focus like the other layers (the top stays fully visible meanwhile). The top and bottom live in one `ConstraintLayout` frame so the layer can be drawn between them: bottom → under layer → top → outerwear; without an under layer the bottom is lifted back over the top's hem. `PieceImageView.drawBehind` takes the rectangle the top's image covers and draws the under piece at the top's width in two halves — the collar half a little above the top, the hem half a little below it, meeting behind the top's middle — clipped to a middle strip. The layer never offers the piece that is the top.
@@ -226,8 +231,18 @@ PRD ref: `prd.md > AI Item Details`.
 - **Ask AI** is a round button at the side of the canvas. It opens `AskAiSheet`: a multi-line request (a word, an occasion or a full description) and **Generate look**. The canvas keeps the session's conversation (each request + the look it produced, max 6) and sends it, with the outfit currently on screen (layers included), in every request; from the second request the sheet shows "Last request…" and **Start over**. The result moves each slot to the chosen piece, puts the chosen layers on and the others off, and shows the stylist's message, if any, as a toast.
 - Missing pieces: when a tile is tapped and the closet has nothing for that layer, a dialog says so and offers **Add to wardrobe** (opens `AddItemActivity` for a result: as soon as the piece is added the screen closes, the canvas reloads the wardrobe, keeps the outfit, names what the piece was recognized as and puts it on in focus) or **Skip**.
 - Weather tip: tapping the weather chip, or Next for the first time, opens `WeatherTipSheet` when the weather calls for pieces the closet has and the outfit lacks — a jacket (the outerwear layer), beanie, scarf and gloves when it feels cool, cold or freezing; a cap, hat or headscarf when hot (or warm and sunny). Each piece is a card (design page 15), ticked to begin with; the user unticks what they don't want. **Add to the outfit** puts the ticked pieces on and enters focus on those layers; **Not now** continues. If the closet has none of them, the chip opens the missing-pieces dialog instead; Next just goes on.
-- Still to come: a random starting look and empty-category placeholders (slice 5), **Save** (slice 6) — the saved outfit will also need the bag and accessory ids.
+- Still to come: a random starting look and empty-category placeholders (slice 5).
 PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md > Saving Outfits`.
+
+#### Outfit Card
+`OutfitActivity` (design page 17, with the learner's rows instead of the name chips): back and share ("coming soon"), a serif title, a subtitle, the look on a white 4:5 card with the "mixyn" mark, then — like the item card — a card with one row per piece (thumbnail, name from `ItemNames`, place), and a card with the colors (dots + names, every color of the pieces once), the category and the seasons (both chosen in `OptionsSheet`).
+- **From the canvas** ("Your fit for today", today's date · weather): nothing is stored yet; the chosen category and seasons live on the screen. **Save** uploads the picture with the pieces and opens Home on the Outfits tab; **Wear it today** does the same with `wornOn` and opens the Calendar.
+- **A saved outfit** ("Your outfit", "Saved 12 October · last worn…"), opened from the Outfits tab or a calendar day: changes are sent with `PATCH` and the card is redrawn from the answer; **Wear it today** sends `PUT …/calendar/{today}` and then reads "Worn today"; **Delete outfit** asks "Delete this outfit?" and then sends `DELETE`.
+PRD ref: `prd.md > Saving Outfits`.
+
+#### Calendar
+`CalendarFragment` (design page 18, without streaks, weather and OutfitCHECK badges): the month title with arrows (never past the current month), M–S letters, and a seven-column grid (`CalendarAdapter`) whose weeks share the screen height. A day with an outfit shows its picture and opens its card; today has a mocha frame; cells outside the month are blank blocks. The month is drawn at once and the outfits are filled in when `GET …/calendar` answers; it reloads whenever the tab comes back into view.
+PRD ref: `prd.md > Saving Outfits`.
 
 ## Data Model
 
@@ -239,7 +254,11 @@ PostgreSQL, created by JPA (`spring.jpa.hibernate.ddl-auto=update`, a PoC simpli
 
 **items**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (e.g. `3f2a….png`), `type varchar null` (an `ItemType` code), `category varchar null` (TOP, BOTTOM, SHOES, OUTERWEAR; follows the type), `colors varchar null` (up to 3 `ItemColor` codes, comma-separated; `color_name` is a legacy fallback), `scale int null` (display size %, default 100), `name varchar null`, `tags varchar null` (comma-separated), `season varchar null`, `created_at timestamptz`.
 
-**outfits**: `id bigserial PK`, `user_id → users.id`, `top_item_id`, `bottom_item_id`, `shoes_item_id`, `outerwear_item_id` (all `→ items.id`, nullable), `source varchar` (MANUAL/AI), `hint varchar null`, `created_at timestamptz`.
+**outfits**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (the picture of the look), `tags varchar null` (the outfit's categories, comma-separated), `season varchar null`, `created_at timestamptz`.
+
+**outfit_pieces** (the pieces of an outfit, one row each): `outfit_id → outfits.id`, `position int` (the order on the card), `slot varchar` (TOP, BOTTOM, SHOES, OUTERWEAR, UNDER, BAG, ACCESSORY), `item_id → items.id`. A table of its own instead of one column per place, because an outfit has any number of accessories and "which outfits have this item?" becomes one query.
+
+**outfit_wears** (the calendar): `id bigserial PK`, `user_id → users.id`, `outfit_id → outfits.id`, `worn_on date`, unique (`user_id`, `worn_on`) — one outfit per day.
 
 | Data | Lives in | Updated by | After closing and reopening |
 |---|---|---|---|
@@ -249,8 +268,10 @@ PostgreSQL, created by JPA (`spring.jpa.hibernate.ddl-auto=update`, a PoC simpli
 | Item photos | `/data/images` (Docker volume `images`) | Upload | Persist |
 | Item details | Postgres `items` | Upload (AI), `PATCH` (user) | Persist |
 | Current canvas selection | Memory in `OutfitCanvasActivity` | Swipes, Generate | Gone; a fresh random outfit next time (by design) |
-| Saved outfits | Postgres `outfits` | Save | Persist |
-| Hint text | Memory only (stored with a saved AI outfit) | Typing | Gone |
+| The look on its way to being saved | A PNG in the app's cache folder + memory in `OutfitActivity` | Next on the canvas | Gone |
+| Saved outfits | Postgres `outfits` + `outfit_pieces`; pictures with the item photos | Save, Wear it today; `PATCH`, `DELETE` | Persist |
+| Outfit calendar | Postgres `outfit_wears` | Wear it today | Persist |
+| Hint text | Memory only | Typing | Gone |
 
 ## File Structure
 
@@ -270,12 +291,12 @@ Mixyn/
 │       │   ├── common/         # ApiExceptionHandler, HealthController
 │       │   ├── user/           # User, Session, repositories, AuthController, AuthService, AuthInterceptor, UserDtos
 │       │   ├── item/           # Item, Category, ItemRepository, ItemService, ItemController, ItemDtos
-│       │   ├── outfit/         # Outfit, OutfitRepository, OutfitController, StylistService, OutfitDtos
+│       │   ├── outfit/         # Outfit, Slot, Wear, repositories, OutfitService, OutfitController, StylistService, OutfitDtos
 │       │   ├── ai/             # RembgClient, TaggingService, GeminiJson helpers, prompts
 │       │   └── storage/        # ImageStorage
 │       ├── main/resources/application.yml   # reads env: DB_*, REMBG_URL, GEMINI_*, IMAGE_DIR
 │       └── test/java/com/mixyn/
-│           └── outfit/StylistServiceTest.java  # validation: foreign ids, wrong category, empty slots
+│           └── outfit/         # StylistServiceTest, OutfitServiceTest: foreign ids, wrong place, the same piece twice
 ├── android/
 │   ├── build.gradle / settings.gradle
 │   └── app/src/main/
@@ -287,10 +308,11 @@ Mixyn/
 │       │       ├── splash/     # SplashActivity
 │       │       ├── welcome/    # WelcomeActivity
 │       │       ├── auth/       # AuthActivity
-│       │       ├── main/       # MainActivity, WardrobeFragment, ClothesFragment, OutfitsFragment, ProfileFragment, AddMenuSheet, adapters
+│       │       ├── main/       # MainActivity, WardrobeFragment, ClothesFragment, OutfitsFragment, CalendarFragment, ProfileFragment, AddMenuSheet, adapters
 │       │       ├── additem/    # AddItemActivity
 │       │       ├── item/       # ItemDetailActivity
-│       │       └── canvas/     # OutfitCanvasActivity, SlotPagerAdapter, PlaceholderView
+│       │       ├── canvas/     # OutfitCanvasActivity, SlotPagerAdapter, PlaceholderView
+│       │       └── outfit/     # OutfitActivity (the outfit card), OutfitPicture
 │       └── res/
 │           ├── layout/         # one XML per screen/fragment/row
 │           ├── values/         # colors.xml, themes.xml, strings.xml, dimens.xml

@@ -21,7 +21,7 @@ Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`.
 8. **Create outfit:** tap **+** → **Create outfit**. A random outfit from the wardrobe is already on the canvas.
 9. **Mix and match:** swipe left or right on any single piece to change only that piece.
 10. **Generate with AI:** optionally type a hint ("burgundy", "this oversized shirt") → tap **Generate with AI** → the canvas is replaced with an AI-picked look from the user's own items.
-11. **Save:** tap **Save** → the outfit appears in the **Outfits** tab.
+11. **Save:** tap **Next** → "Your fit for today" shows the look with its pieces, colors, category and seasons → **Save** → the outfit appears in the **Outfits** tab. **Wear it today** saves it too and puts it on today in the **Calendar**.
 12. **Returning visit:** splash → straight to the main screen, with wardrobe and saved outfits still there (loaded from the database).
 13. **Log out and back in:** Profile → **Log out** → Welcome. **Log In** with email + password → the same wardrobe and outfits come back.
 
@@ -34,12 +34,14 @@ Success = step 11: an outfit the user likes, built from their own clothes, saved
 - **Create Account** — Name, Email, Password, City. Success message after creating.
 - **Log In** — Email + Password.
 - **Main screen (Wardrobe)** — two tabs: **Clothes** (item grid, or the empty state) and **Outfits** (saved outfits).
-- **Bottom navigation** — Home, Calendar, large black central **+**, Friends, Profile. Calendar and Friends are visible but disabled, marked "coming soon."
+- **Bottom navigation** — Home, Calendar, large black central **+**, Friends, Profile. Friends is visible but disabled, marked "coming soon."
+- **Calendar** — one month at a time; a day on which an outfit was worn shows that outfit's picture, today has a frame.
 - **Profile** — shows the user's name, email, and city, plus **Log out**. Everything else on it is "coming soon."
 - **+ menu** — Add clothes, Create outfit, OutfitCHECK (OutfitCHECK visible but disabled, "coming soon").
 - **Add clothes flow** — gallery picker → processing screen → **View item**.
 - **Item card** — large item image on white; name field ("Add a name…" + Edit); Category (e.g. "Outerwear >"); Tags (Casual, Night out, Streetwear, Date night, Work, Favorites, Sports, Cozy); Color (swatch + name, e.g. "Khaki"); Season.
-- **Create outfit (canvas)** — white canvas with pieces stacked vertically like a silhouette: Top, Bottom, Shoes; Outerwear overlaps the Top. A hint text field + **Generate with AI**. **Save** at the bottom.
+- **Create outfit (canvas)** — white canvas with pieces stacked vertically like a silhouette: Top, Bottom, Shoes; Outerwear overlaps the Top. A hint text field + **Generate with AI**. **Next** leads to the outfit card.
+- **Outfit card** — "Your fit for today" with the date and weather; the look on a white card with the "mixyn" mark; then, like the item card, the clothes in the outfit (names), its colors, its category and its seasons; **Save** and **Wear it today**. A saved outfit opens as the same card, with **Delete outfit**.
 
 ## Look and Feel
 - **Mood:** Japandi — minimalist, clean, functional, but warm, cozy, and calming. Like a curated Instagram feed or a digital fashion magazine, not a heavy tech app.
@@ -68,7 +70,7 @@ Real accounts backed by a database — built from the start, not added later.
 Source: `scope.md > The POC Boundary` ("Upload clothes with AI background removal").
 - [ ] Empty Clothes tab shows the wardrobe illustration, "Your closet is empty," "Add your first piece. Snap a photo and we'll clean up the background for you," and **+ Add clothes**.
 - [ ] Central **+** opens a menu containing **Add clothes** and **Create outfit**; OutfitCHECK is shown but disabled with "coming soon."
-- [ ] Calendar and Friends in the bottom nav are visible but disabled with "coming soon"; tapping them doesn't navigate anywhere.
+- [ ] Friends in the bottom nav is visible but disabled with "coming soon"; tapping it doesn't navigate anywhere.
 - [ ] Add clothes lets the user pick a photo from the gallery (camera not required for the PoC).
 - [ ] A processing screen shows progress, then "Background removed · 1/1 completed" and a **View item** button.
 - [ ] The item card shows the photo with its original background fully removed, on a clean light background.
@@ -106,9 +108,14 @@ Source: `scope.md > The Unique Kernel`, `scope.md > What "Working" Looks Like` (
 
 ### Saving Outfits
 Source: `scope.md > The Core Loop`.
-- [ ] **Save** on the canvas stores the current outfit (manual or AI-generated).
-- [ ] The saved outfit appears in the **Outfits** tab, showing its pieces.
-- [ ] Saved outfits are still there after closing and reopening the app, and after logging out and back in.
+- [ ] **Next** on the canvas opens "Your fit for today": the look as on the canvas (layers included), the date and the weather.
+- [ ] Under the picture the card lists the clothes in the outfit by name, the outfit's colors (taken from its clothes), and lets the user choose its category (Casual, Work, Date night…) and its seasons.
+- [ ] **Save** stores the outfit (manual or AI-generated) and opens the **Outfits** tab, where it appears as a picture; tapping it opens its card.
+- [ ] On a saved outfit's card the category and seasons can be changed, and **Delete outfit** removes it after asking "Delete this outfit?".
+- [ ] **Wear it today** saves the outfit and puts it on today in the **Calendar**; on an already saved outfit it only puts it on today. A day holds one outfit: wearing another one replaces it.
+- [ ] The Calendar shows the month with the worn outfits on their days; tapping one opens its card.
+- [ ] Saved outfits and the calendar are still there after closing and reopening the app, and after logging out and back in.
+- [ ] Removing a piece from the wardrobe takes it out of the saved outfits that had it; the outfits stay.
 
 ## States and Boundaries
 - **First use** — no session → Welcome; empty wardrobe → illustrated empty state.
@@ -132,9 +139,10 @@ Source: `scope.md > The Core Loop`.
 - **PoC categories: Tops, Bottoms, Shoes, Outerwear** — outerwear "proves the app's layering logic." Hats and Bags deferred.
 - **Swipe per piece** — changing pants doesn't disturb the rest of the outfit.
 - **Graceful AI fallbacks** — an unmatched hint still produces a look; a missing category shows a placeholder, not a failure.
-- **Save works; "Wear it today" doesn't (yet)** — Save proves "the creation loop is complete and the data is stored."
+- **Save and "Wear it today" both work** — Save proves "the creation loop is complete and the data is stored"; Wear it today adds the day to the calendar (learner decision during the build; streaks stay out).
+- **The outfit card mirrors the item card** — instead of name chips under the look (design page 17), rows for the clothes, colors, category, seasons and delete (learner request).
 - **Gallery upload only** for the demo.
-- **Deferred features stay visible as "coming soon"** — Calendar, Friends, and OutfitCHECK appear disabled; Profile holds only account info and Log out, hinting at the full vision without building it.
+- **Deferred features stay visible as "coming soon"** — Friends and OutfitCHECK appear disabled; Profile holds only account info and Log out, hinting at the full vision without building it.
 - **Japandi look** — warm neutrals, white canvas, serif headers, clothes as the accent.
 
 ## What We're Building
@@ -145,15 +153,16 @@ Source: `scope.md > The Core Loop`.
 5. Item card with AI-filled Category and Color (editable) and optional Name, Tags, Season.
 6. Create outfit canvas: random starting outfit, per-piece swiping, outerwear layer, missing-category placeholders.
 7. AI stylist: one-click generation with an optional hint, only from owned items, with the unmatched-hint fallback.
-8. Save outfit → Outfits tab, persisting across sessions.
-9. Japandi styling across all of the above.
+8. Outfit card after Next → Save → Outfits tab, persisting across sessions; a saved outfit can be labeled and deleted.
+9. Wear it today → a simple outfit calendar (one outfit per day).
+10. Japandi styling across all of the above.
 
 ## Deferred From the POC
 - **Password reset, email verification, Google/Apple sign-in** — nice to have; email + password is enough to prove real accounts.
 - **Live weather by city** — deferred in scope; city is stored for later.
 - **Hats and Bags** — hats depend on weather triggers; bags don't demonstrate layering as strongly as outerwear.
 - **Camera capture** — gallery upload is enough for the demo.
-- **"Wear it today," Calendar, and streaks** — gamification, not the styling engine.
+- **Streaks, weather and OutfitCHECK photos in the calendar** — the calendar shows only the outfits worn.
 - **Collections** (Work, Casual, Date night) on saved outfits — saving to the Outfits tab proves the loop.
 - **OutfitCHECK, Friends, sharing, ratings, leaderboard** — social layer deferred in scope.
 - **AI auto-filling Tags, Season, and Name** — manual for now.
