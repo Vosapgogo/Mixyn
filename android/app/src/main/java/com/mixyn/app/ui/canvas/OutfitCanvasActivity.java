@@ -71,8 +71,6 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final float OUTERWEAR_SCALE = 1.08f;
     /** Shoes are drawn smaller than the slot allows, so they sit under the trousers instead of on them. */
     private static final float SHOES_SCALE = 0.7f;
-    /** These tops are thin enough to be worn under another top. */
-    private static final List<String> UNDER_TYPES = List.of("T_SHIRT", "SHIRT", "LONG_SLEEVE", "TANK_TOP");
     /**
      * Drawing order inside the body frame. Normally the bottom is drawn over the top's hem (tucked in);
      * with a piece under the top, the order is bottom, under layer, top, so its hem hangs over the bottom.
@@ -135,7 +133,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
     private boolean wardrobeLoaded;
 
-    /** The tops that can also be worn under another top (see UNDER_TYPES). */
+    /** The thin tops that can also be worn under another top (the backend marks them). */
     private final List<ItemDto> underPieces = new ArrayList<>();
     /** Every piece that can be worn as outerwear: jackets and coats, and cardigans (which are tops too). */
     private final List<ItemDto> outerwearPieces = new ArrayList<>();
@@ -315,7 +313,7 @@ public class OutfitCanvasActivity extends BaseActivity {
                         default -> { }
                     }
                     if (Categories.OUTERWEAR.equals(item.alsoCategory)) outerwearPieces.add(item);
-                    if (Categories.TOP.equals(item.category) && UNDER_TYPES.contains(item.type)) underPieces.add(item);
+                    if (Categories.TOP.equals(item.category) && item.underLayer) underPieces.add(item);
                 }
                 boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty()
                         && outerwearPieces.isEmpty();
@@ -774,7 +772,8 @@ public class OutfitCanvasActivity extends BaseActivity {
             if (spot.on) worn.add(currentItem(spot.pager));
         }
         body.put("current", lookIds(currentItem(topPager), currentItem(bottomPager), currentItem(shoesPager),
-                outerwear.on ? currentItem(outerwear.pager) : null, bag.on ? currentItem(bag.pager) : null, worn));
+                outerwear.on ? currentItem(outerwear.pager) : null, under.on ? currentItem(under.pager) : null,
+                bag.on ? currentItem(bag.pager) : null, worn));
         api.generateOutfit(userId, body).enqueue(new ApiCallback<>(this) {
             @Override
             protected void onSuccess(@Nullable GenerateResult look) {
@@ -785,6 +784,7 @@ public class OutfitCanvasActivity extends BaseActivity {
                 moveTo(shoesPager, look.shoes);
                 // The top is still scrolling to its new piece, so tell the layers which one it will be.
                 offerLayersExcept(look.top != null ? look.top : currentItem(topPager));
+                show(under, look.under);
                 show(outerwear, look.outerwear);
                 show(bag, look.bag);
                 List<ItemDto> chosen = look.accessories == null ? List.of() : look.accessories;
@@ -810,7 +810,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     private void remember(String hint, GenerateResult look) {
         Map<String, Object> turn = new HashMap<>();
         turn.put("hint", hint);
-        turn.put("look", lookIds(look.top, look.bottom, look.shoes, look.outerwear, look.bag,
+        turn.put("look", lookIds(look.top, look.bottom, look.shoes, look.outerwear, look.under, look.bag,
                 look.accessories == null ? List.of() : look.accessories));
         conversation.add(turn);
         while (conversation.size() > MAX_REMEMBERED_REQUESTS) conversation.remove(0);
@@ -825,12 +825,14 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     private static Map<String, Object> lookIds(@Nullable ItemDto top, @Nullable ItemDto bottom,
-            @Nullable ItemDto shoes, @Nullable ItemDto outer, @Nullable ItemDto bag, List<ItemDto> accessories) {
+            @Nullable ItemDto shoes, @Nullable ItemDto outer, @Nullable ItemDto under, @Nullable ItemDto bag,
+            List<ItemDto> accessories) {
         Map<String, Object> ids = new HashMap<>();
         ids.put("topId", top == null ? null : top.id);
         ids.put("bottomId", bottom == null ? null : bottom.id);
         ids.put("shoesId", shoes == null ? null : shoes.id);
         ids.put("outerwearId", outer == null ? null : outer.id);
+        ids.put("underId", under == null ? null : under.id);
         ids.put("bagId", bag == null ? null : bag.id);
         List<Long> accessoryIds = new ArrayList<>();
         for (ItemDto item : accessories) {

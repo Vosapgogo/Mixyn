@@ -5,8 +5,8 @@ import androidx.annotation.Nullable;
 import java.util.List;
 
 /**
- * The stylist's look. A slot is null when the wardrobe has nothing for it; the layers (outerwear, bag,
- * accessories) are null / empty when the stylist left them off.
+ * The stylist's look. A slot is null when the wardrobe has nothing for it; the layers (outerwear, the
+ * piece under the top, bag, accessories) are null / empty when the stylist left them off.
  */
 public class GenerateResult {
     @Nullable
@@ -17,6 +17,9 @@ public class GenerateResult {
     public ItemDto shoes;
     @Nullable
     public ItemDto outerwear;
+    /** The piece worn under the top. */
+    @Nullable
+    public ItemDto under;
     @Nullable
     public ItemDto bag;
     @Nullable

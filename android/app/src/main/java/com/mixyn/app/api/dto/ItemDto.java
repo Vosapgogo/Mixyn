@@ -13,6 +13,8 @@ public class ItemDto {
     public String category;
     /** A second slot the item can be worn in (a cardigan: "OUTERWEAR"); null for most items. */
     public String alsoCategory;
+    /** True for a thin top (T-shirt, shirt…) that can also be worn under another top. */
+    public boolean underLayer;
     /** Up to three palette colors, the main one first. colorName / colorHex repeat the first. */
     public List<ColorDto> colors;
     public String colorName;
