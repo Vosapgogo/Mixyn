@@ -285,6 +285,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         loadWeather();
     }
 
+    @Override
+    protected void onDestroy() {
+        background.shutdown();
+        super.onDestroy();
+    }
+
     /**
      * Next: the look goes to its card ("Your fit for today"), where it can be saved. The card gets the
      * pieces that are on and a picture of the outfit as it stands on the canvas.

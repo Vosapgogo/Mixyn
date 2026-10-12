@@ -179,8 +179,8 @@ public class OutfitActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         background.shutdown();
+        super.onDestroy();
     }
 
     // ----- Showing the outfit -----
