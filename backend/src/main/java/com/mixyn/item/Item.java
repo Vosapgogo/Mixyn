@@ -107,6 +107,11 @@ public class Item {
         return type == null ? null : type.getAlsoCategory();
     }
 
+    /** Whether it can be worn under another top (a T-shirt under a sweater). */
+    public boolean canGoUnder() {
+        return type != null && type.canGoUnder();
+    }
+
     /** Whether the item can stand in this outfit slot or layer. */
     public boolean fits(Category slot) {
         return slot != null && (slot == category || slot == getAlsoCategory());

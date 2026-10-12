@@ -39,15 +39,17 @@ import tools.jackson.databind.JsonNode;
 public class StylistService {
 
     /** What the model picked. Ids may be null, unknown, or point at the wrong kind of item. */
-    public record AiPick(Long topId, Long bottomId, Long shoesId, Long outerwearId, Long bagId,
+    public record AiPick(Long topId, Long bottomId, Long shoesId, Long outerwearId, Long underId, Long bagId,
             List<Long> accessoryIds, boolean hintMatched) {
     }
 
     /**
      * The validated result. A base slot is null only when the wardrobe has nothing for it; the layers
-     * (outerwear, bag, accessories) are null / empty unless the stylist validly chose them.
+     * (outerwear, the piece under the top, bag, accessories) are null / empty unless the stylist validly
+     * chose them.
      */
-    public record Look(Item top, Item bottom, Item shoes, Item outerwear, Item bag, List<Item> accessories,
+    public record Look(Item top, Item bottom, Item shoes, Item outerwear, Item under, Item bag,
+            List<Item> accessories,
             boolean hintMatched, String message, boolean byAi) {
     }
 
@@ -62,7 +64,11 @@ public class StylistService {
             has items). On top of that you MAY add optional layers when they suit the look: one OUTERWEAR item, \
             one BAG item, and up to 4 ACCESSORY items of different types (never two head coverings at once). \
             Use null / an empty list for a layer you leave off. An item listed as TOP/OUTERWEAR (a cardigan) \
-            can be the top, or the outer layer over another top, but never both in one outfit.
+            can be the top, or the outer layer over another top, but never both in one outfit. An item listed \
+            as TOP/UNDER (a T-shirt, shirt, long sleeve or tank top) can be the top, or be worn under another \
+            top as the under layer (underId), where its collar and hem show around the top: add one when it \
+            makes the look better, for example a shirt or T-shirt under a sweater, or for warmth in the cold. \
+            The under layer is never the same item as the top.
 
             %s%sUser's request now: %s
 
@@ -83,7 +89,7 @@ public class StylistService {
             - If there is no request, build a balanced everyday look.
             - If there is an earlier conversation, the new request continues it: keep in mind what the \
             user already asked for. When the new request changes only part of the outfit ("other shoes", \
-            "warmer", "without the blazer", "add a bag", "another scarf"), keep the other pieces of the \
+            "warmer", "without the blazer", "add a bag", "a T-shirt under it", "another scarf"), keep the other pieces of the \
             current outfit exactly as they are, layers included, and change only what is needed. When it is a completely new idea, start fresh.
             Set hintMatched to true if the outfit genuinely fits the request (or there is no request); \
             false only if the wardrobe has nothing suitable for it — then still return the best outfit you can.
@@ -99,11 +105,13 @@ public class StylistService {
                     "bottomId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "shoesId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "outerwearId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
+                    "underId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "bagId", Schema.builder().type(Type.Known.INTEGER).nullable(true).build(),
                     "accessoryIds", Schema.builder().type(Type.Known.ARRAY)
                             .items(Schema.builder().type(Type.Known.INTEGER).build()).build(),
                     "hintMatched", Schema.builder().type(Type.Known.BOOLEAN).build()))
-            .required(List.of("topId", "bottomId", "shoesId", "outerwearId", "bagId", "accessoryIds", "hintMatched"))
+            .required(List.of("topId", "bottomId", "shoesId", "outerwearId", "underId", "bagId", "accessoryIds",
+                    "hintMatched"))
             .build();
 
     private static final int MAX_HINT_LENGTH = 500;
@@ -128,7 +136,7 @@ public class StylistService {
                 .toList();
         String cleanHint = clean(hint);
         if (wardrobe.isEmpty()) {
-            return new Look(null, null, null, null, null, List.of(), true, null, false);
+            return new Look(null, null, null, null, null, null, List.of(), true, null, false);
         }
         String prompt = PROMPT.formatted(describeWeather(weather.forUser(userId).orElse(null)),
                 describeConversation(history, current),
@@ -172,8 +180,8 @@ public class StylistService {
 
     private static String describeIds(LookIds look) {
         return look == null ? "(unknown)"
-                : "top=" + look.topId() + ", bottom=" + look.bottomId() + ", shoes=" + look.shoesId()
-                        + ", outerwear=" + look.outerwearId() + ", bag=" + look.bagId()
+                : "top=" + look.topId() + ", under=" + look.underId() + ", bottom=" + look.bottomId()
+                        + ", shoes=" + look.shoesId() + ", outerwear=" + look.outerwearId() + ", bag=" + look.bagId()
                         + ", accessories=" + (look.accessoryIds() == null ? List.of() : look.accessoryIds());
     }
 
@@ -182,8 +190,7 @@ public class StylistService {
         return wardrobe.stream()
                 .map(item -> String.join(" | ",
                         String.valueOf(item.getId()),
-                        item.getAlsoCategory() == null ? item.getCategory().name()
-                                : item.getCategory().name() + "/" + item.getAlsoCategory().name(),
+                        slots(item),
                         item.getType() == null ? "-" : item.getType().getLabel(),
                         item.getColors().isEmpty() ? "-"
                                 : item.getColors().stream().map(ItemColor::getLabel).collect(Collectors.joining(", ")),
@@ -191,6 +198,15 @@ public class StylistService {
                         orDash(item.getTags()),
                         orDash(item.getSeason())))
                 .collect(Collectors.joining("\n"));
+    }
+
+    /** The category column: "SHOES", or both ways to wear the piece — "TOP/OUTERWEAR", "TOP/UNDER". */
+    private static String slots(Item item) {
+        String slots = item.getCategory().name();
+        if (item.getAlsoCategory() != null) {
+            slots += "/" + item.getAlsoCategory().name();
+        }
+        return item.canGoUnder() ? slots + "/UNDER" : slots;
     }
 
     private static String orDash(String value) {
@@ -203,7 +219,7 @@ public class StylistService {
             if (value.isIntegralNumber()) accessoryIds.add(value.asLong());
         }
         return new AiPick(id(node, "topId"), id(node, "bottomId"), id(node, "shoesId"), id(node, "outerwearId"),
-                id(node, "bagId"), accessoryIds, node.path("hintMatched").asBoolean(true));
+                id(node, "underId"), id(node, "bagId"), accessoryIds, node.path("hintMatched").asBoolean(true));
     }
 
     private static Long id(JsonNode node, String field) {
@@ -235,12 +251,13 @@ public class StylistService {
         if (outerwear == top) {
             outerwear = null; // the same cardigan can't be the top and the layer over it
         }
+        Item under = chooseUnder(wardrobe, aiAnswered ? pick.underId() : null, top);
         Item bag = choose(byCategory, Category.BAG, aiAnswered ? pick.bagId() : null, false, random);
         List<Item> accessories = chooseAccessories(byCategory.getOrDefault(Category.ACCESSORY, List.of()),
                 aiAnswered ? pick.accessoryIds() : null);
 
         if (!aiAnswered) {
-            return new Look(top, bottom, shoes, outerwear, bag, accessories, false, FALLBACK_MESSAGE, false);
+            return new Look(top, bottom, shoes, outerwear, under, bag, accessories, false, FALLBACK_MESSAGE, false);
         }
         boolean hintGiven = !hint.isEmpty();
         boolean matched = !hintGiven || pick.hintMatched();
@@ -248,7 +265,20 @@ public class StylistService {
                 : "Nothing in your closet quite fits "
                         + (hint.length() <= MAX_QUOTED_HINT ? "\u201C" + hint + "\u201D" : "that request")
                         + ". Here is another stylish option!";
-        return new Look(top, bottom, shoes, outerwear, bag, accessories, matched, message, true);
+        return new Look(top, bottom, shoes, outerwear, under, bag, accessories, matched, message, true);
+    }
+
+    /** The picked under layer, if it is this user's thin top and not the piece chosen as the top itself. */
+    private static Item chooseUnder(List<Item> wardrobe, Long pickedId, Item top) {
+        if (pickedId == null) {
+            return null;
+        }
+        for (Item item : wardrobe) {
+            if (pickedId.equals(item.getId()) && item.fits(Category.TOP) && item.canGoUnder() && item != top) {
+                return item;
+            }
+        }
+        return null;
     }
 
     /** The picked accessories that really are this user's accessories: one per type, at most MAX_ACCESSORIES. */

@@ -30,9 +30,12 @@ public final class ItemDtos {
     public record PhotoEdit(int rotation, boolean mirror, int scale) {
     }
 
-    /** alsoCategory: a second slot the item can be worn in (a cardigan as OUTERWEAR), usually null. */
+    /**
+     * alsoCategory: a second slot the item can be worn in (a cardigan as OUTERWEAR), usually null.
+     * underLayer: true for a thin top that can also be worn under another top.
+     */
     public record ItemResponse(Long id, String imageUrl, String type, String typeLabel, Category category,
-            Category alsoCategory, List<ColorResponse> colors, String colorName, String colorHex, int scale,
+            Category alsoCategory, boolean underLayer, List<ColorResponse> colors, String colorName, String colorHex, int scale,
             String name, List<String> tags, List<String> seasons, Instant createdAt) {
 
         public static ItemResponse from(Item item) {
@@ -44,7 +47,7 @@ public final class ItemDtos {
             ColorResponse main = colors.isEmpty() ? null : colors.get(0);
             return new ItemResponse(item.getId(), "/images/" + item.getImageFile(),
                     type == null ? null : type.name(), type == null ? null : type.getLabel(), item.getCategory(),
-                    item.getAlsoCategory(), colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, split(item.getSeason()),
+                    item.getAlsoCategory(), item.canGoUnder(), colors, main == null ? null : main.label(), main == null ? null : main.hex(), item.getScale(), item.getName(), tags, split(item.getSeason()),
                     item.getCreatedAt());
         }
     }

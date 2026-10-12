@@ -92,6 +92,11 @@ public enum ItemType {
         return alsoCategory;
     }
 
+    /** Thin tops that can also be worn under another top, as the outfit's under layer. */
+    public boolean canGoUnder() {
+        return this == T_SHIRT || this == SHIRT || this == LONG_SLEEVE || this == TANK_TOP;
+    }
+
     /** Types whose name contains the typed text ("bl" → Blazer, Blouse); names starting with it come first. */
     public static List<ItemType> search(String query) {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);

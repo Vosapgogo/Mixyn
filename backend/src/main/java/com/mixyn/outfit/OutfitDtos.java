@@ -14,7 +14,7 @@ public final class OutfitDtos {
     }
 
     /** Item ids of an outfit as the app shows it; any slot may be null (accessoryIds: null or empty). */
-    public record LookIds(Long topId, Long bottomId, Long shoesId, Long outerwearId, Long bagId,
+    public record LookIds(Long topId, Long bottomId, Long shoesId, Long outerwearId, Long underId, Long bagId,
             @Size(max = 8) List<Long> accessoryIds) {
     }
 
@@ -34,14 +34,15 @@ public final class OutfitDtos {
 
     /**
      * The stylist's look. Slots are full items, or null where the wardrobe has nothing to offer; the
-     * layers (outerwear, bag, accessories) are null / empty when the stylist left them off.
+     * layers (outerwear, the piece under the top, bag, accessories) are null / empty when the stylist
+     * left them off.
      */
     public record GenerateResponse(ItemResponse top, ItemResponse bottom, ItemResponse shoes, ItemResponse outerwear,
-            ItemResponse bag, List<ItemResponse> accessories, boolean hintMatched, String message, String source) {
+            ItemResponse under, ItemResponse bag, List<ItemResponse> accessories, boolean hintMatched, String message, String source) {
 
         static GenerateResponse from(Look look) {
             return new GenerateResponse(item(look.top()), item(look.bottom()), item(look.shoes()),
-                    item(look.outerwear()), item(look.bag()),
+                    item(look.outerwear()), item(look.under()), item(look.bag()),
                     look.accessories().stream().map(ItemResponse::from).toList(),
                     look.hintMatched(), look.message(), look.byAi() ? "AI" : "RANDOM");
         }
