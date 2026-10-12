@@ -131,6 +131,7 @@ PRD ref: `prd.md > Account and Session`.
 - `GET /api/users/{userId}/items` → `200 [Item]`, newest first.
 - `PATCH /api/items/{itemId}` `{type?, colors?, name?, tags?, seasons?}` → `200 Item`. This is how the user corrects AI results. Only present fields change; every value must come from its fixed list (`type` from `ItemType`, up to 3 `colors` from `ItemColor`, the 8 tags, the 5 seasons) or the request is `400 validation_failed`. Another user's item is `404`.
 - `POST /api/items/{itemId}/photo` `{rotation: 0|90|180|270, mirror, scale: 50..150}` → `200 Item` ("Edit photo" → Done). The picture is mirrored, then turned, and saved under a new file name; `scale` is only stored and applied by the app when drawing.
+- `DELETE /api/items/{itemId}` → `204`. Removes the item and its picture for good (the card's **Remove from wardrobe** row, after a confirmation). Someone else's item is `404`, like the other item calls.
 - `GET /api/item-types?q=` → `[{code, label, category}]` (29 types, names containing `q`, prefix matches first) and `GET /api/item-colors` → `[{code, label, hex}]` (18 colors). These fixed lists live in the backend enums `ItemType` and `ItemColor`; the AI's JSON schema and the app's pickers both use them, so nobody can invent a value.
 - `Item` JSON: `{id, imageUrl, type, typeLabel, category, colors[{code,label,hex}], colorName, colorHex, scale, name, tags[], seasons[], createdAt}`, where `imageUrl` = `/images/{file}` and `colorName`/`colorHex` repeat the first color.
 
