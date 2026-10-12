@@ -76,6 +76,9 @@
     <string name="tab_collections">Collections</string>
     <string name="menu">Menu</string>
     <string name="search_clear">Clear search</string>
+    <string name="filter_title">Filter</string>
+    <string name="filter_clear">Clear all</string>
+    <string name="filter_show">Show</string>
     <string name="empty_closet_title">Your closet is empty</string>
     <string name="empty_closet_body">Add your first piece. Snap a photo and we\'ll clean up the background for you.</string>
     <string name="action_add_clothes">Add clothes</string>

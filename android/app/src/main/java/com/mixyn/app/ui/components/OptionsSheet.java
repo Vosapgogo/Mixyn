@@ -1,5 +1,6 @@
 package com.mixyn.app.ui.components;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -144,16 +145,24 @@ public class OptionsSheet extends BottomSheetDialogFragment {
         }
     }
 
-    /** A chip is a plain TextView styled as Widget.Mixyn.Chip; "selected" is its normal view state. */
-    private TextView makeChip(Option option) {
-        TextView chip = new TextView(requireContext(), null, 0, R.style.Widget_Mixyn_Chip);
+    /**
+     * A chip for an option, ready to go into a ChipGroup: a plain TextView styled as Widget.Mixyn.Chip,
+     * with the option's dot if it has one. "Selected" is its normal view state.
+     */
+    public static TextView chip(Context context, Option option) {
+        TextView chip = new TextView(context, null, 0, R.style.Widget_Mixyn_Chip);
         chip.setLayoutParams(new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                getResources().getDimensionPixelSize(R.dimen.chip_height)));
+                context.getResources().getDimensionPixelSize(R.dimen.chip_height)));
         chip.setText(option.label);
         if (option.dotColor != 0) {
             chip.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    ColorDots.dot(requireContext(), option.dotColor, R.dimen.chip_dot_size), null, null, null);
+                    ColorDots.dot(context, option.dotColor, R.dimen.chip_dot_size), null, null, null);
         }
+        return chip;
+    }
+
+    private TextView makeChip(Option option) {
+        TextView chip = chip(requireContext(), option);
         chip.setSelected(selected.contains(option.value));
         chip.setOnClickListener(v -> {
             if (mode == Mode.CHIPS_SINGLE) {
