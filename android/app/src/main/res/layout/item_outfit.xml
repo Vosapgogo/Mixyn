@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One saved outfit in the Outfits grid: its picture on a white card, 4:5 like on the outfit's own card. -->
+<!-- One saved outfit in the Outfits grid: its picture on a half see-through card, 4:5 like on the outfit's own card. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -10,7 +10,7 @@
         android:id="@+id/outfit_image"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/bg_card"
+        android:background="@drawable/bg_card_translucent"
         android:contentDescription="@string/outfit_picture"
         android:foreground="?attr/selectableItemBackground"
         android:padding="@dimen/space_s"

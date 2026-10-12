@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A card you can half see through: the saved outfits in the Outfits grid. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/surface_translucent" />
+    <stroke android:width="@dimen/stroke" android:color="@color/line" />
+    <corners android:radius="@dimen/radius_card" />
+</shape>

@@ -10,6 +10,7 @@
     <!-- Surfaces -->
     <color name="sand_bg">#F4F1ED</color>          <!-- window background -->
     <color name="surface">#FBFAF7</color>          <!-- fields, cards, bottom bar, sheets -->
+    <color name="surface_translucent">#80FBFAF7</color> <!-- the same surface, half see-through: outfit cards in the grid -->
     <color name="line">#E3DDD5</color>             <!-- field and card outlines, dividers -->
     <color name="on_dark">#FFFFFF</color>          <!-- text on mocha / ink -->
     <color name="calendar_outside">#EBE4DC</color> <!-- calendar days that belong to the month before / after -->
