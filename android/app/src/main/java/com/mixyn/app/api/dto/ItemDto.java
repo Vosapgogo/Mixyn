@@ -11,6 +11,8 @@ public class ItemDto {
     public String typeLabel;
     /** TOP, BOTTOM, SHOES, OUTERWEAR, BAG, ACCESSORY — or null when the AI couldn't tell. */
     public String category;
+    /** A second slot the item can be worn in (a cardigan: "OUTERWEAR"); null for most items. */
+    public String alsoCategory;
     /** Up to three palette colors, the main one first. colorName / colorHex repeat the first. */
     public List<ColorDto> colors;
     public String colorName;

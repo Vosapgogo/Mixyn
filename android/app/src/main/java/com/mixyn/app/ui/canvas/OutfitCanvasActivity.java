@@ -48,7 +48,8 @@ import java.util.Set;
  * Create outfit. The wardrobe is loaded once and split by category. The base of every outfit is three
  * slots (top, bottom, shoes), each a pager over its category. Over them lie optional layers, hidden
  * until they are put on: outerwear (only its left half is drawn, like an open jacket), a bag, and
- * accessories, each in its own spot on the outfit.
+ * accessories, each in its own spot on the outfit. A cardigan can be the top or the outerwear, but
+ * not both at once: the outerwear layer never offers the piece that is the top right now.
  *
  * A layer is chosen in "focus": tapping Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -120,6 +121,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
     private boolean wardrobeLoaded;
 
+    /** Every piece that can be worn as outerwear: jackets and coats, and cardigans (which are tops too). */
+    private final List<ItemDto> outerwearPieces = new ArrayList<>();
     /** Every accessory in the wardrobe, and the types the user chose to wear ("SCARF", "CAP"…). */
     private final List<ItemDto> accessories = new ArrayList<>();
     private final Set<String> wornTypes = new LinkedHashSet<>();
@@ -167,11 +170,14 @@ public class OutfitCanvasActivity extends BaseActivity {
         View stage = findViewById(R.id.canvas_layers);
         whenLaidOut(stage, this::placeLayers);
 
-        // Outerwear hangs from the top's shoulder line, so it follows every change of the top.
+        // Outerwear follows every change of the top: it hangs from the top's shoulder line, and it
+        // never offers the piece that has just become the top.
         topPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrollStateChanged(int state) {
-                if (state == ViewPager2.SCROLL_STATE_IDLE) alignOuterwear();
+                if (state != ViewPager2.SCROLL_STATE_IDLE) return;
+                offerOuterwearExcept(currentItem(topPager));
+                alignOuterwear();
             }
         });
 
@@ -265,8 +271,8 @@ public class OutfitCanvasActivity extends BaseActivity {
                 List<ItemDto> tops = new ArrayList<>();
                 List<ItemDto> bottoms = new ArrayList<>();
                 List<ItemDto> shoes = new ArrayList<>();
-                List<ItemDto> jackets = new ArrayList<>();
                 List<ItemDto> bags = new ArrayList<>();
+                outerwearPieces.clear();
                 accessories.clear();
                 for (ItemDto item : items) {
                     if (item.category == null) continue; // not placed in a slot until the user chooses a type
@@ -274,15 +280,17 @@ public class OutfitCanvasActivity extends BaseActivity {
                         case Categories.TOP -> tops.add(item);
                         case Categories.BOTTOM -> bottoms.add(item);
                         case Categories.SHOES -> shoes.add(item);
-                        case Categories.OUTERWEAR -> jackets.add(item);
+                        case Categories.OUTERWEAR -> outerwearPieces.add(item);
                         case Categories.BAG -> bags.add(item);
                         case Categories.ACCESSORY -> {
                             if (AccessorySpot.of(item.type) != null) accessories.add(item);
                         }
                         default -> { }
                     }
+                    if (Categories.OUTERWEAR.equals(item.alsoCategory)) outerwearPieces.add(item);
                 }
-                boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty() && jackets.isEmpty();
+                boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty()
+                        && outerwearPieces.isEmpty();
                 findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
                 if (nothingToStyle) return;
                 // The top's image tells the outerwear where the shoulder line is, whenever it changes.
@@ -290,8 +298,7 @@ public class OutfitCanvasActivity extends BaseActivity {
                         ((PieceImageView) image).setOnImageChanged(OutfitCanvasActivity.this::alignOuterwear));
                 setUpPager(bottomPager, bottoms, 1f, null, null);
                 setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
-                setUpPager(outerwear.pager, jackets, OUTERWEAR_SCALE, outerwear,
-                        OutfitCanvasActivity.this::styleOuterwearPage);
+                offerOuterwearExcept(currentItem(topPager));
                 setUpPager(bag.pager, bags, 1f, bag, null);
                 showAccessories(List.of());
                 askAi.setEnabled(true);
@@ -338,6 +345,32 @@ public class OutfitCanvasActivity extends BaseActivity {
             page.setScaleX(scale);
             page.setScaleY(scale);
         });
+    }
+
+    /**
+     * Fills the outerwear layer with every outerwear piece except the one that is the top (a cardigan
+     * can't be worn under itself). If that piece was the outerwear on screen, the layer comes off.
+     * Does nothing when the layer already offers exactly these pieces.
+     */
+    private void offerOuterwearExcept(@Nullable ItemDto top) {
+        List<ItemDto> choices = new ArrayList<>();
+        for (ItemDto piece : outerwearPieces) {
+            if (top == null || piece.id != top.id) choices.add(piece);
+        }
+        if (outerwear.pager.getAdapter() instanceof SlotPagerAdapter adapter && sameIds(adapter.getItems(), choices)) {
+            return;
+        }
+        ItemDto worn = outerwear.on ? currentItem(outerwear.pager) : null;
+        if (worn != null && top != null && worn.id == top.id) takeOff(outerwear);
+        setUpPager(outerwear.pager, choices, OUTERWEAR_SCALE, outerwear, this::styleOuterwearPage);
+    }
+
+    private static boolean sameIds(List<ItemDto> a, List<ItemDto> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            if (a.get(i).id != b.get(i).id) return false;
+        }
+        return true;
     }
 
     /**
@@ -686,6 +719,8 @@ public class OutfitCanvasActivity extends BaseActivity {
                 moveTo(topPager, look.top);
                 moveTo(bottomPager, look.bottom);
                 moveTo(shoesPager, look.shoes);
+                // The top is still scrolling to its new piece, so tell the outerwear which one it will be.
+                offerOuterwearExcept(look.top != null ? look.top : currentItem(topPager));
                 show(outerwear, look.outerwear);
                 show(bag, look.bag);
                 List<ItemDto> chosen = look.accessories == null ? List.of() : look.accessories;

@@ -106,6 +106,7 @@
     <string name="category_outerwear">Outerwear</string>
     <string name="category_bag">Bag</string>
     <string name="category_accessory">Accessory</string>
+    <string name="category_pair">%1$s · %2$s</string>
     <string name="category_unknown">Choose a category</string>
     <string name="color_unknown">No color yet</string>
 

@@ -281,7 +281,11 @@ public class ItemDetailActivity extends BaseActivity
                 if (types == null) return;
                 ArrayList<Option> options = new ArrayList<>();
                 for (ItemTypeDto t : types) {
-                    options.add(new Option(t.code, t.label, getString(Categories.label(t.category)), 0));
+                    String slot = getString(Categories.label(t.category));
+                    if (t.alsoCategory != null) { // a cardigan: "Top · Outerwear"
+                        slot = getString(R.string.category_pair, slot, getString(Categories.label(t.alsoCategory)));
+                    }
+                    options.add(new Option(t.code, t.label, slot, 0));
                 }
                 show(KEY_TYPE, R.string.item_type_title, Mode.SEARCH_LIST, options,
                         item.type == null ? new ArrayList<>() : new ArrayList<>(List.of(item.type)),

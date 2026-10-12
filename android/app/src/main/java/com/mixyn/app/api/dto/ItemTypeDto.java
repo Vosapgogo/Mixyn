@@ -5,4 +5,5 @@ public class ItemTypeDto {
     public String code;      // "BLAZER"
     public String label;     // "Blazer"
     public String category;  // "OUTERWEAR"
+    public String alsoCategory; // a second way to wear it ("OUTERWEAR" for a cardigan), usually null
 }
