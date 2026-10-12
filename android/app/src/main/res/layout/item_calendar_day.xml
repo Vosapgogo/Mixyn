@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- One cell of the calendar: the day's number and, if an outfit was worn that day, its picture.
-     A cell before the first or after the last day of the month is just a filled block.
+     A cell before the first or after the last day of the month shows the neighboring month's day on beige.
      The adapter sets the height, so that the weeks of the month share the screen between them. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/day_cell"

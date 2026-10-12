@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A day of the month before or after the one on screen: a beige cell, so it steps back. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/calendar_outside" />
+    <stroke android:width="@dimen/stroke_hairline" android:color="@color/line" />
+</shape>
