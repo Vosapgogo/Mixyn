@@ -147,10 +147,12 @@
     <string name="canvas_ask_ai">Ask AI</string>
     <string name="canvas_next">Next</string>
     <string name="canvas_weather">%1$d° · %2$s</string>
+    <string name="canvas_under">Under layer</string>
     <string name="canvas_outerwear">Outerwear</string>
     <string name="canvas_bag">Bag</string>
     <string name="canvas_accessories">Accessories</string>
     <string name="canvas_accessories_title">Which accessories?</string>
+    <string name="canvas_focus_under">Swipe to choose what goes under the top</string>
     <string name="canvas_focus_outerwear">Swipe to choose your outerwear</string>
     <string name="canvas_focus_bag">Swipe to choose your bag</string>
     <string name="canvas_focus_accessories">Swipe each accessory to swap it</string>
@@ -181,6 +183,8 @@
     <string name="weather_tip_fine">You\'re dressed for the weather</string>
 
     <!-- "You don't have one yet" (canvas: a layer or the weather asks for a piece the closet lacks) -->
+    <string name="missing_under_title">Nothing to wear under it yet</string>
+    <string name="missing_under_body">Your closet has no other T-shirt, shirt, long sleeve or tank top to wear under this top. Add one now, or skip it for this outfit.</string>
     <string name="missing_outerwear_title">No outerwear yet</string>
     <string name="missing_outerwear_body">Your closet doesn\'t have a jacket or coat yet. Add one now, or skip it for this outfit.</string>
     <string name="missing_bag_title">No bags yet</string>

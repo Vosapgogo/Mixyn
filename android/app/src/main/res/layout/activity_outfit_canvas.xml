@@ -76,41 +76,59 @@
             android:paddingTop="@dimen/space_xxl"
             android:paddingBottom="@dimen/space_m">
 
-            <!-- Top and bottom, with the optional outerwear drawn over both: a jacket covers the top,
-                 a long coat reaches down over the bottom as well -->
-            <FrameLayout
+            <!-- The body of the outfit: top and bottom share one frame with two optional layers. In drawing
+                 order: bottom, the piece worn under the top (it reaches a little above and below the top),
+                 the top, and the outerwear over everything: a jacket covers the top, a long coat reaches
+                 down over the bottom as well. The activity lifts the bottom over the top again while
+                 nothing is worn under it. -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="78"
                 android:clipChildren="false">
 
-                <LinearLayout
+                <!-- Where the top's part of the frame ends and the bottom's begins -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/canvas_slot_split"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="@dimen/canvas_top_share" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/canvas_bottom"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/canvas_overlap"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/canvas_slot_split" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/canvas_under"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:clipChildren="false"
-                    android:orientation="vertical">
+                    android:contentDescription="@string/canvas_under"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                    <androidx.viewpager2.widget.ViewPager2
-                        android:id="@+id/canvas_top"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="36" />
-
-                    <androidx.viewpager2.widget.ViewPager2
-                        android:id="@+id/canvas_bottom"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_marginTop="@dimen/canvas_overlap"
-                        android:layout_weight="42" />
-                </LinearLayout>
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/canvas_top"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_constraintBottom_toTopOf="@id/canvas_slot_split"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/canvas_outerwear"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:contentDescription="@string/category_outerwear"
-                    android:visibility="gone" />
-            </FrameLayout>
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/canvas_shoes"
@@ -246,7 +264,7 @@
         </LinearLayout>
     </FrameLayout>
 
-    <!-- Bottom panel: three equal tiles for the optional layers. While one of them is being chosen
+    <!-- Bottom panel: four equal tiles for the optional layers. While one of them is being chosen
          the tiles give way to Remove / Done, and the rest of the outfit is locked. -->
     <FrameLayout
         android:layout_width="match_parent"
@@ -264,17 +282,27 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/canvas_outerwear_button"
-                style="@style/Widget.Mixyn.Button.Tile"
+                android:id="@+id/canvas_under_button"
+                style="@style/Widget.Mixyn.Button.Tile.Compact"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/tile_height"
+                android:layout_weight="1"
+                android:text="@string/canvas_under"
+                app:icon="@drawable/ic_shirt" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/canvas_outerwear_button"
+                style="@style/Widget.Mixyn.Button.Tile.Compact"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/tile_height"
+                android:layout_marginStart="@dimen/canvas_control_gap"
                 android:layout_weight="1"
                 android:text="@string/canvas_outerwear"
                 app:icon="@drawable/ic_jacket" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/canvas_bag_button"
-                style="@style/Widget.Mixyn.Button.Tile"
+                style="@style/Widget.Mixyn.Button.Tile.Compact"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/tile_height"
                 android:layout_marginStart="@dimen/canvas_control_gap"
@@ -284,7 +312,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/canvas_accessory_button"
-                style="@style/Widget.Mixyn.Button.Tile"
+                style="@style/Widget.Mixyn.Button.Tile.Compact"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/tile_height"
                 android:layout_marginStart="@dimen/canvas_control_gap"

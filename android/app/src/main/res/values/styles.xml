@@ -201,6 +201,11 @@
     </style>
 
     <!-- Size slider in "Edit photo" -->
+    <!-- The same tile where four share a row (canvas): a smaller label, so "Accessories" still fits -->
+    <style name="Widget.Mixyn.Button.Tile.Compact">
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.Caption</item>
+    </style>
+
     <style name="Widget.Mixyn.Slider" parent="Widget.Material3.Slider">
         <item name="trackColorActive">@color/mocha</item>
         <item name="trackColorInactive">@color/line</item>

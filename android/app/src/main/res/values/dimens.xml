@@ -40,6 +40,8 @@
     <dimen name="tip_card_image">88dp</dimen>
     <!-- Canvas: the gap between neighboring controls, the same in the header and in the bottom panel -->
     <dimen name="canvas_control_gap">@dimen/space_s</dimen>
+    <!-- Outfit canvas: the share of the top + bottom frame that belongs to the top (36 of 78 parts) -->
+    <item name="canvas_top_share" format="float" type="dimen">0.4615</item>
     <!-- Outfit canvas: how much the pieces overlap vertically, like clothes on a body -->
     <dimen name="canvas_overlap">-12dp</dimen>
     <dimen name="dash_length">4dp</dimen>
