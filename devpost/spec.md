@@ -142,6 +142,9 @@ PRD ref: `prd.md > Account and Session`.
 `RembgClient` uses Spring `RestClient` to send the photo to `${REMBG_URL}` and returns the PNG bytes. Timeout 60 s (to cover the first-run model download).
 PRD ref: `prd.md > Adding Clothes`.
 
+#### Cutout Service
+`CutoutService` turns a photo into a cutout. Normally that is rembg's own u2net cutout. It then measures how much of the piece the model was unsure about (mask values between 20 and 235, as a share of everything above 20). Under 45% the cutout is used as it is. Above that it is **repaired**: rembg is asked for the mask only (`om=true`) of a second model, `isnet-general-use`; the larger value per pixel is kept; `solidify` stretches the mask (≤ 20 → 0, ≥ 60 → 255, a soft ramp between) and clears every separate blob that is under 2% of the largest one or faint on average; and the cutout is rebuilt from the photo's own RGB with that mask as alpha, because rembg darkens the areas it is unsure about. If Java can't decode the photo (HEIC from another client) or the mask doesn't fit it, the first cutout stands. Both models are baked into the rembg image.
+
 #### Tagging Service
 `TaggingService` makes one Gemini call (through `GeminiJson`) with the cutout on a white background plus a short prompt. JSON output is constrained to:
 ```json
