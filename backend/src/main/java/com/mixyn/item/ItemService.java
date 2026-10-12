@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.mixyn.ai.RembgClient;
+import com.mixyn.ai.CutoutService;
 import com.mixyn.ai.TaggingService;
 import com.mixyn.ai.TaggingService.Box;
 import com.mixyn.ai.TaggingService.Opening;
@@ -31,13 +31,13 @@ public class ItemService {
     private static final Set<String> ALLOWED_SEASONS = Set.of("All", "Spring", "Summer", "Autumn", "Winter");
 
     private final ItemRepository items;
-    private final RembgClient rembg;
+    private final CutoutService cutouts;
     private final ImageStorage storage;
     private final TaggingService tagging;
 
-    public ItemService(ItemRepository items, RembgClient rembg, ImageStorage storage, TaggingService tagging) {
+    public ItemService(ItemRepository items, CutoutService cutouts, ImageStorage storage, TaggingService tagging) {
         this.items = items;
-        this.rembg = rembg;
+        this.cutouts = cutouts;
         this.storage = storage;
         this.tagging = tagging;
     }
@@ -55,7 +55,7 @@ public class ItemService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_image", "This file isn't a photo we can read");
         }
         long start = System.currentTimeMillis();
-        byte[] transparent = rembg.removeBackground(photo, filename == null ? "photo" : filename);
+        byte[] transparent = cutouts.cutOut(photo, filename == null ? "photo" : filename);
         long afterRembg = System.currentTimeMillis();
         byte[] cutout = storage.cropToItem(transparent);
         Tags tags = tagging.tag(cutout);

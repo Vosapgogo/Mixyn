@@ -16,7 +16,10 @@ import org.springframework.web.client.RestClientException;
 
 import com.mixyn.common.ApiException;
 
-/** Sends a photo to the rembg container and gets back a PNG with the background removed. */
+/**
+ * Talks to the rembg container: a photo goes in, and either one model's mask or the tool's own cutout
+ * comes back. CutoutService decides what to do with them.
+ */
 @Component
 public class RembgClient {
 
@@ -29,7 +32,18 @@ public class RembgClient {
         this.client = RestClient.builder().baseUrl(rembgUrl).requestFactory(factory).build();
     }
 
+    /** The tool's finished cutout: a PNG with the background removed, made with one model. */
     public byte[] removeBackground(byte[] photo, String filename) {
+        // Pinned: rembg's default model is a 1 GB non-commercial one; u2net is baked into our image.
+        return remove(photo, filename, "u2net", false);
+    }
+
+    /** Only the mask of one model: a gray PNG, white where the model sees the piece. */
+    public byte[] mask(byte[] photo, String filename, String model) {
+        return remove(photo, filename, model, true);
+    }
+
+    private byte[] remove(byte[] photo, String filename, String model, boolean onlyMask) {
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("file", new ByteArrayResource(photo) {
             @Override
@@ -37,8 +51,10 @@ public class RembgClient {
                 return filename; // rembg needs a filename to accept the part as a file
             }
         });
-        // Pinned: rembg's default model is a 1 GB non-commercial one; u2net is baked into our image.
-        form.add("model", "u2net");
+        form.add("model", model);
+        if (onlyMask) {
+            form.add("om", "true");
+        }
         try {
             byte[] png = client.post().uri("/api/remove")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
