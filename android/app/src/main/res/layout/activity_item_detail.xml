@@ -292,6 +292,48 @@
                     android:src="@drawable/ic_chevron_right"
                     app:tint="@color/ink_muted" />
             </LinearLayout>
+
+            <!-- Open or closed front: only for tops and outerwear (the activity hides it for the rest) -->
+            <View
+                android:id="@+id/item_front_divider"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/stroke"
+                android:background="@color/line" />
+            <LinearLayout
+                android:id="@+id/item_row_front"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/button_height"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/space_m"
+                android:paddingEnd="@dimen/space_s">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_jacket"
+                    app:tint="@color/ink_muted" />
+
+                <TextView
+                    android:id="@+id/item_front_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Mixyn.BodyStrong" />
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/ink_muted" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

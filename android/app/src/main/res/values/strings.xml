@@ -138,6 +138,9 @@
     <string name="item_color_limit">Up to %1$d colors — unselect one first</string>
     <string name="item_season_empty">Add season</string>
     <string name="item_season_title">Seasons</string>
+    <string name="item_front_title">Worn open or closed?</string>
+    <string name="item_front_open">Open front</string>
+    <string name="item_front_closed">Closed front</string>
     <string name="action_save">Save</string>
     <string name="action_done">Done</string>
     <string name="action_clear_selection">Clear selection</string>

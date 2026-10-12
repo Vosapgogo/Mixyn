@@ -59,6 +59,10 @@ public class ItemDetailActivity extends BaseActivity
     private static final String KEY_TAGS = "tags";
     private static final String KEY_COLOR = "color";
     private static final String KEY_SEASON = "season";
+    private static final String KEY_FRONT = "front";
+    /** The two answers of the "open or closed" sheet. */
+    private static final String FRONT_OPEN = "OPEN";
+    private static final String FRONT_CLOSED = "CLOSED";
     private static final int MAX_COLORS = 3; // same limit as the backend
 
     private final Gson gson = new Gson();
@@ -94,12 +98,14 @@ public class ItemDetailActivity extends BaseActivity
         findViewById(R.id.item_row_tags).setOnClickListener(v -> chooseTags());
         findViewById(R.id.item_row_color).setOnClickListener(v -> chooseColor());
         findViewById(R.id.item_row_season).setOnClickListener(v -> chooseSeason());
+        findViewById(R.id.item_row_front).setOnClickListener(v -> chooseFront());
 
         // Each sheet answers under its own key.
         listen(KEY_TYPE, values -> save("type", values.get(0)));
         listen(KEY_TAGS, values -> save("tags", values));
         listen(KEY_SEASON, values -> save("seasons", values));
         listen(KEY_COLOR, values -> save("colors", values));
+        listen(KEY_FRONT, values -> save("openFront", FRONT_OPEN.equals(values.get(0))));
         bind();
     }
 
@@ -155,6 +161,18 @@ public class ItemDetailActivity extends BaseActivity
                 R.string.item_color_empty);
 
         setRow(R.id.item_season_label, joined(item.seasons), R.string.item_season_empty);
+
+        // Open or closed front. On an outfit an open piece shows what is worn under it in its opening,
+        // so the AI's guess can be corrected here. Only tops and outerwear have such a front.
+        boolean hasFront = Categories.TOP.equals(item.category) || Categories.OUTERWEAR.equals(item.category);
+        findViewById(R.id.item_row_front).setVisibility(hasFront ? View.VISIBLE : View.GONE);
+        findViewById(R.id.item_front_divider).setVisibility(hasFront ? View.VISIBLE : View.GONE);
+        ((TextView) findViewById(R.id.item_front_label))
+                .setText(isOpenFront() ? R.string.item_front_open : R.string.item_front_closed);
+    }
+
+    private boolean isOpenFront() {
+        return item.opening != null && !item.opening.isEmpty();
     }
 
     /** ["Work", "Cozy"] → "Work, Cozy"; null or empty → null. */
@@ -330,6 +348,14 @@ public class ItemDetailActivity extends BaseActivity
         show(KEY_SEASON, R.string.item_season_title, Mode.CHIPS_MULTI,
                 optionsFrom(R.array.season_names, 0),
                 item.seasons == null ? new ArrayList<>() : new ArrayList<>(item.seasons), null);
+    }
+
+    private void chooseFront() {
+        ArrayList<Option> options = new ArrayList<>();
+        options.add(new Option(FRONT_CLOSED, getString(R.string.item_front_closed), null, 0));
+        options.add(new Option(FRONT_OPEN, getString(R.string.item_front_open), null, 0));
+        show(KEY_FRONT, R.string.item_front_title, Mode.CHIPS_SINGLE, options,
+                new ArrayList<>(List.of(isOpenFront() ? FRONT_OPEN : FRONT_CLOSED)), null);
     }
 
     private void show(String key, int title, Mode mode, ArrayList<Option> options, ArrayList<String> selected,
