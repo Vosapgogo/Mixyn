@@ -60,6 +60,13 @@ public class Item {
     /** How large the item is drawn inside its frame, in percent (set in "Edit photo"). Null means 100. */
     private Integer scale;
 
+    /**
+     * For a piece photographed open down the front (an open cardigan): where the opening is, as
+     * "neckLeft,neckRight,hemLeft,hemRight" in thousandths of the picture's width. Null for closed pieces.
+     */
+    @Column(length = 40)
+    private String opening;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -100,6 +107,20 @@ public class Item {
 
     public Category getCategory() {
         return category;
+    }
+
+    /** The opening of an open-front piece as four numbers (see the field), or an empty list. */
+    public List<Integer> getOpening() {
+        if (opening == null || opening.isBlank()) {
+            return List.of();
+        }
+        return java.util.Arrays.stream(opening.split(",")).map(Integer::valueOf).toList();
+    }
+
+    /** Four numbers, or null / an empty list for a closed piece. */
+    public void setOpening(List<Integer> numbers) {
+        this.opening = numbers == null || numbers.size() != 4 ? null
+                : numbers.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
     }
 
     /** The second way to wear it (a cardigan as an outer layer), or null. */

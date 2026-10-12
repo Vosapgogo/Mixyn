@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.mixyn.ai.RembgClient;
 import com.mixyn.ai.TaggingService;
 import com.mixyn.ai.TaggingService.Box;
+import com.mixyn.ai.TaggingService.Opening;
 import com.mixyn.ai.TaggingService.Subject;
 import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.common.ApiException;
@@ -60,13 +61,20 @@ public class ItemService {
         Tags tags = tagging.tag(cutout);
         long afterTagging = System.currentTimeMillis();
         rejectIfNotOneItem(tags.subject());
-        if (tags.onBody() && tags.box() != null) {
+        boolean cutToBox = tags.onBody() && tags.box() != null;
+        if (cutToBox) {
             Box box = tags.box();
             cutout = storage.cropToItem(
                     storage.cropToBox(cutout, box.top(), box.left(), box.bottom(), box.right(), Box.SCALE));
         }
         String file = storage.save(cutout);
-        Item item = items.save(new Item(userId, file, tags.type(), tags.category(), tags.colors()));
+        Item item = new Item(userId, file, tags.type(), tags.category(), tags.colors());
+        // The opening was measured on the picture the AI saw, so it is dropped if that picture was cut again.
+        if (tags.opening() != null && !cutToBox) {
+            Opening o = tags.opening();
+            item.setOpening(List.of(o.neckLeft(), o.neckRight(), o.hemLeft(), o.hemRight()));
+        }
+        item = items.save(item);
         log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, type {}, category {}",
                 item.getId(), afterRembg - start, afterTagging - afterRembg, item.getType(), item.getCategory());
         return item;
@@ -160,6 +168,14 @@ public class ItemService {
                 png = storage.mirror(png);
             }
             item.setImageFile(storage.save(storage.rotate(png, edit.rotation())));
+            // The opening of an open-front piece is measured across the upright picture.
+            List<Integer> opening = item.getOpening();
+            if (edit.rotation() != 0) {
+                item.setOpening(null);
+            } else if (!opening.isEmpty()) {
+                item.setOpening(List.of(Box.SCALE - opening.get(1), Box.SCALE - opening.get(0),
+                        Box.SCALE - opening.get(3), Box.SCALE - opening.get(2)));
+            }
         }
         Item saved = items.save(item);
         if (oldFile != null) {

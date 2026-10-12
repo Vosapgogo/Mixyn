@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.mixyn.ai.TaggingService.Box;
+import com.mixyn.ai.TaggingService.Opening;
 import com.mixyn.ai.TaggingService.Subject;
 import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.item.Category;
@@ -49,6 +50,33 @@ class TaggingServiceTest {
         assertFalse(tags.onBody());
         assertNull(tags.box());
         assertEquals(Category.OUTERWEAR, tags.type().getCategory());
+    }
+
+    @Test
+    void readsWhereAnOpenCardiganIsOpen() throws Exception {
+        Tags tags = TaggingService.validate(json.readTree("""
+                {"subject": "SINGLE_ITEM", "onBody": false, "box": [0, 0, 1000, 1000], "openFront": true,
+                 "opening": [380, 620, 470, 530], "type": "CARDIGAN", "category": "TOP", "colors": ["BROWN"]}"""));
+
+        assertEquals(new Opening(380, 620, 470, 530), tags.opening());
+    }
+
+    @Test
+    void givesAnOpenPieceATypicalOpeningWhenTheNumbersMakeNoSense() throws Exception {
+        // Both neck edges on the same side of the piece.
+        assertEquals(Opening.TYPICAL, openingOf("true", "[100, 300, 150, 250]"));
+        assertEquals(Opening.TYPICAL, openingOf("true", "[0, 0, 0, 0]"));
+        assertEquals(Opening.TYPICAL, openingOf("true", "\"wide\""));
+    }
+
+    @Test
+    void ignoresTheOpeningOfAClosedPiece() throws Exception {
+        assertNull(openingOf("false", "[380, 620, 470, 530]"));
+    }
+
+    private Opening openingOf(String openFront, String opening) throws Exception {
+        return TaggingService.validate(json.readTree("{\"subject\": \"SINGLE_ITEM\", \"openFront\": "
+                + openFront + ", \"opening\": " + opening + "}")).opening();
     }
 
     private Box boxOf(String box) throws Exception {

@@ -30,12 +30,23 @@ public class TaggingService {
     /**
      * What the AI detected. Any field may be null when the AI was unsure or unavailable.
      *
-     * @param onBody true when part of a person is visible in the photo (the piece is worn or held)
-     * @param box    where the piece itself is in the photo, or null when the AI gave no usable box
+     * @param onBody  true when part of a person is visible in the photo (the piece is worn or held)
+     * @param box     where the piece itself is in the photo, or null when the AI gave no usable box
+     * @param opening for a piece shown open down the front, where the opening is; null for a closed one
      */
     public record Tags(Subject subject, ItemType type, Category category, List<ItemColor> colors,
-            boolean onBody, Box box) {
-        public static final Tags NONE = new Tags(null, null, null, List.of(), false, null);
+            boolean onBody, Box box, Opening opening) {
+        public static final Tags NONE = new Tags(null, null, null, List.of(), false, null, null);
+    }
+
+    /**
+     * The opening of a piece shown open down the front (an open cardigan): the x positions of its two
+     * front edges at the neckline and at the hem, in thousandths of the photo's width. A piece worn
+     * under it shows between them.
+     */
+    public record Opening(int neckLeft, int neckRight, int hemLeft, int hemRight) {
+        /** Used when the AI says the piece is open but its numbers make no sense: a typical open cardigan. */
+        static final Opening TYPICAL = new Opening(370, 630, 460, 540);
     }
 
     /** A rectangle in the photo, in thousandths of its height (top, bottom) and width (left, right). */
@@ -65,6 +76,13 @@ public class TaggingService {
             - onBody: true if any part of a person is visible (head, neck, hands, legs), otherwise false.
             - box: the bounding box of the piece itself, not of the person, as [ymin, xmin, ymax, xmax]: \
             integers from 0 to 1000 relative to the image height and width.
+            - openFront: true only if the piece is shown open down the front (an open cardigan, an \
+            unbuttoned or unzipped shirt or jacket), so that between its two front edges you see the inside \
+            of its back, or nothing. False for anything closed or pulled over the head.
+            - opening: when openFront is true, where that opening is, as [neckLeft, neckRight, hemLeft, \
+            hemRight]: the x positions, from 0 to 1000 across the image width, of the left and the right \
+            front edge at the neckline, and then of the same two edges at the bottom hem. \
+            When openFront is false, [0, 0, 0, 0].
             - type: the single best match from the allowed list of clothing types. Rules:
               * Outerwear length matters: use COAT, TRENCH_COAT or PUFFER_COAT only for a long piece that \
             reaches well below the hips, and a jacket type (JACKET, PUFFER_JACKET, BLAZER) for a short one.
@@ -93,6 +111,10 @@ public class TaggingService {
                     "box", Schema.builder().type(Type.Known.ARRAY)
                             .items(Schema.builder().type(Type.Known.INTEGER).build())
                             .minItems(4L).maxItems(4L).build(),
+                    "openFront", Schema.builder().type(Type.Known.BOOLEAN).build(),
+                    "opening", Schema.builder().type(Type.Known.ARRAY)
+                            .items(Schema.builder().type(Type.Known.INTEGER).build())
+                            .minItems(4L).maxItems(4L).build(),
                     // The allowed values come straight from the ItemType list, so the model can't invent one.
                     "type", Schema.builder().type(Type.Known.STRING)
                             .enum_(Arrays.stream(ItemType.values()).map(Enum::name).toList()).build(),
@@ -102,7 +124,7 @@ public class TaggingService {
                             .items(Schema.builder().type(Type.Known.STRING)
                                     .enum_(Arrays.stream(ItemColor.values()).map(Enum::name).toList()).build())
                             .minItems(1L).maxItems((long) ItemColor.MAX_PER_ITEM).build()))
-            .required(List.of("subject", "onBody", "box", "type", "category", "colors"))
+            .required(List.of("subject", "onBody", "box", "openFront", "opening", "type", "category", "colors"))
             .build();
 
     private final GeminiJson gemini;
@@ -141,7 +163,31 @@ public class TaggingService {
         ItemType type = ItemType.fromCode(node.path("type").asString(""));
         // fromCodes drops anything that isn't in the palette and keeps at most three.
         return new Tags(subject, type, category, ItemColor.fromCodes(codes),
-                node.path("onBody").asBoolean(false), box(node.path("box")));
+                node.path("onBody").asBoolean(false), box(node.path("box")),
+                node.path("openFront").asBoolean(false) ? opening(node.path("opening")) : null);
+    }
+
+    /**
+     * The opening of an open-front piece. The AI's four numbers are kept only if they describe a gap
+     * around the middle of the piece that is no wider at the hem than a little over the neck's width;
+     * otherwise a typical opening stands in, because the piece is still open.
+     */
+    private static Opening opening(JsonNode node) {
+        if (!node.isArray() || node.size() != 4) {
+            return Opening.TYPICAL;
+        }
+        int[] v = new int[4];
+        for (int i = 0; i < 4; i++) {
+            if (!node.get(i).isIntegralNumber()) {
+                return Opening.TYPICAL;
+            }
+            v[i] = node.get(i).asInt();
+        }
+        int middle = Box.SCALE / 2;
+        boolean neck = v[0] >= 0 && v[0] < middle && v[1] > middle && v[1] <= Box.SCALE
+                && v[1] - v[0] >= 50 && v[1] - v[0] <= 700;
+        boolean hem = v[2] >= 0 && v[2] <= v[3] && v[3] <= Box.SCALE && v[3] - v[2] <= 700;
+        return neck && hem ? new Opening(v[0], v[1], v[2], v[3]) : Opening.TYPICAL;
     }
 
     /** [ymin, xmin, ymax, xmax] in thousandths, or null unless it is a real rectangle inside the photo. */
