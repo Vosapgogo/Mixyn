@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -142,21 +141,10 @@ public class ItemDetailActivity extends BaseActivity
 
         // Colors row: one dot per color, then the names: "Brown, White".
         LinearLayout swatches = findViewById(R.id.item_color_swatches);
-        swatches.removeAllViews();
+        List<ColorDto> colors = item.colors == null ? List.of() : item.colors;
+        ColorDots.fill(swatches, colors);
         List<String> colorNames = new ArrayList<>();
-        if (item.colors != null) {
-            for (ColorDto color : item.colors) {
-                colorNames.add(color.label);
-                ImageView dot = new ImageView(this);
-                dot.setImageDrawable(ColorDots.dot(this, Color.parseColor(color.hex), R.dimen.swatch_size));
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                if (swatches.getChildCount() > 0) {
-                    params.setMarginStart(getResources().getDimensionPixelSize(R.dimen.swatch_overlap));
-                }
-                swatches.addView(dot, params);
-            }
-        }
+        for (ColorDto color : colors) colorNames.add(color.label);
         swatches.setVisibility(colorNames.isEmpty() ? View.GONE : View.VISIBLE);
         setRow(R.id.item_color_label, String.join(getString(R.string.tags_joined_separator), colorNames),
                 R.string.item_color_empty);
