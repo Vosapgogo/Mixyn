@@ -83,6 +83,17 @@ public class OutfitService {
         storage.delete(outfit.getImageFile());
     }
 
+    /**
+     * An item is leaving the wardrobe: it is taken out of every saved outfit that has it. The outfits
+     * themselves stay, with their picture as it was saved.
+     */
+    public void forgetItem(Long itemId) {
+        for (Outfit outfit : outfits.findDistinctByPiecesItemId(itemId)) {
+            outfit.getPieces().removeIf(piece -> piece.getItemId().equals(itemId));
+            outfits.save(outfit);
+        }
+    }
+
     /** Someone else's outfit is reported as "not found", so ids can't be probed. */
     private Outfit ownOutfit(Long userId, Long outfitId) {
         return outfits.findById(outfitId)

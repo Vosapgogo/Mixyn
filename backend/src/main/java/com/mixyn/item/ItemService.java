@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mixyn.ai.CutoutService;
 import com.mixyn.ai.TaggingService;
@@ -16,6 +17,7 @@ import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.common.ApiException;
 import com.mixyn.item.ItemDtos.ItemUpdate;
 import com.mixyn.item.ItemDtos.PhotoEdit;
+import com.mixyn.outfit.OutfitService;
 import com.mixyn.storage.ImageStorage;
 
 @Service
@@ -29,12 +31,15 @@ public class ItemService {
     private final CutoutService cutouts;
     private final ImageStorage storage;
     private final TaggingService tagging;
+    private final OutfitService outfits;
 
-    public ItemService(ItemRepository items, CutoutService cutouts, ImageStorage storage, TaggingService tagging) {
+    public ItemService(ItemRepository items, CutoutService cutouts, ImageStorage storage, TaggingService tagging,
+            OutfitService outfits) {
         this.items = items;
         this.cutouts = cutouts;
         this.storage = storage;
         this.tagging = tagging;
+        this.outfits = outfits;
     }
 
     /**
@@ -182,9 +187,14 @@ public class ItemService {
         return saved;
     }
 
-    /** "Remove from wardrobe": the item and its picture are gone for good. */
+    /**
+     * "Remove from wardrobe": the item and its picture are gone for good. Saved outfits that had the
+     * piece lose it in the same transaction, so no outfit is left pointing at an item that isn't there.
+     */
+    @Transactional
     public void deleteItem(Long userId, Long itemId) {
         Item item = ownItem(userId, itemId);
+        outfits.forgetItem(itemId);
         items.delete(item);
         storage.delete(item.getImageFile());
     }
