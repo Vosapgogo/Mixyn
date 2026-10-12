@@ -67,6 +67,10 @@ public final class OutfitDtos {
             @Size(max = 5) List<String> seasons) {
     }
 
+    /** Body of PATCH /api/outfits/{id}: only the fields that are present are changed. */
+    public record OutfitUpdate(@Size(max = 8) List<String> tags, @Size(max = 5) List<String> seasons) {
+    }
+
     /** One piece of a saved outfit: the item and where it is worn (TOP, UNDER, ACCESSORY…). */
     public record PieceResponse(Slot slot, ItemResponse item) {
     }

@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.mixyn.outfit.OutfitDtos.GenerateRequest;
 import com.mixyn.outfit.OutfitDtos.GenerateResponse;
 import com.mixyn.outfit.OutfitDtos.OutfitResponse;
+import com.mixyn.outfit.OutfitDtos.OutfitUpdate;
 import com.mixyn.outfit.OutfitDtos.SaveRequest;
+import com.mixyn.user.AuthInterceptor;
 
 import jakarta.validation.Valid;
 
@@ -54,5 +58,12 @@ public class OutfitController {
     @GetMapping("/api/users/{userId}/outfits")
     public List<OutfitResponse> list(@PathVariable Long userId) {
         return outfits.list(userId).stream().map(OutfitResponse::from).toList();
+    }
+
+    /** Uses the outfit id only; the service checks the outfit belongs to the logged-in user. */
+    @PatchMapping("/api/outfits/{outfitId}")
+    public OutfitResponse update(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long outfitId,
+            @Valid @RequestBody OutfitUpdate update) {
+        return OutfitResponse.from(outfits.update(userId, outfitId, update.tags(), update.seasons()));
     }
 }

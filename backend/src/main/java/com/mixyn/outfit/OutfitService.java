@@ -64,6 +64,25 @@ public class OutfitService {
                 .toList();
     }
 
+    /** The user changes the categories or seasons on an outfit's card. Null fields stay as they are. */
+    public OutfitView update(Long userId, Long outfitId, List<String> tags, List<String> seasons) {
+        Outfit outfit = ownOutfit(userId, outfitId);
+        if (tags != null) {
+            outfit.setTags(Labels.joinTags(tags));
+        }
+        if (seasons != null) {
+            outfit.setSeason(Labels.joinSeasons(seasons));
+        }
+        return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId));
+    }
+
+    /** Someone else's outfit is reported as "not found", so ids can't be probed. */
+    private Outfit ownOutfit(Long userId, Long outfitId) {
+        return outfits.findById(outfitId)
+                .filter(outfit -> outfit.getUserId().equals(userId))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "not_found", "Outfit not found"));
+    }
+
     /**
      * The trust boundary of saving: the app names the pieces by id, and none of it is taken on trust.
      * Every id must be an item of this wardrobe (someone else's item and a made-up id look the same
