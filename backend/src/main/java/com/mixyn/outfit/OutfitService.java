@@ -1,5 +1,6 @@
 package com.mixyn.outfit;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mixyn.common.ApiException;
 import com.mixyn.item.Item;
@@ -16,7 +18,10 @@ import com.mixyn.outfit.Outfit.Piece;
 import com.mixyn.outfit.OutfitDtos.LookIds;
 import com.mixyn.storage.ImageStorage;
 
-/** Saved outfits: what the user keeps from the canvas, with a picture of the whole look. */
+/**
+ * Saved outfits: what the user keeps from the canvas, with a picture of the whole look. And the outfit
+ * calendar: which saved outfit was worn on which day.
+ */
 @Service
 public class OutfitService {
 
@@ -24,16 +29,26 @@ public class OutfitService {
     public record WornPiece(Slot slot, Item item) {
     }
 
-    /** A saved outfit together with its pieces, ready to be shown. */
-    public record OutfitView(Outfit outfit, List<WornPiece> pieces) {
+    /** A saved outfit together with its pieces, ready to be shown. lastWornOn is null if never worn. */
+    public record OutfitView(Outfit outfit, List<WornPiece> pieces, LocalDate lastWornOn) {
     }
 
+    /** One day of the calendar and the outfit worn on it. */
+    public record DayView(LocalDate date, OutfitView outfit) {
+    }
+
+    /** The longest stretch of the calendar one request may ask for. */
+    private static final int MAX_CALENDAR_DAYS = 366;
+
     private final OutfitRepository outfits;
+    private final WearRepository wears;
     private final ItemRepository items;
     private final ImageStorage storage;
 
-    public OutfitService(OutfitRepository outfits, ItemRepository items, ImageStorage storage) {
+    public OutfitService(OutfitRepository outfits, WearRepository wears, ItemRepository items,
+            ImageStorage storage) {
         this.outfits = outfits;
+        this.wears = wears;
         this.items = items;
         this.storage = storage;
     }
@@ -44,25 +59,110 @@ public class OutfitService {
      *
      * @param tags    the outfit's categories, or null for none
      * @param seasons the outfit's seasons, or null for none
+     * @param wornOn  "Wear it today": the day to put the new outfit on in the calendar, or null to
+     *                only save it. Both happen in one transaction: an outfit is never saved without
+     *                its day, or the other way round.
      */
-    public OutfitView save(Long userId, LookIds look, byte[] picture, List<String> tags, List<String> seasons) {
+    @Transactional
+    public OutfitView save(Long userId, LookIds look, byte[] picture, List<String> tags, List<String> seasons,
+            LocalDate wornOn) {
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
         List<Piece> pieces = checkLook(wardrobe, look);
         String tagList = tags == null ? null : Labels.joinTags(tags);
         String seasonList = seasons == null ? null : Labels.joinSeasons(seasons);
+        if (wornOn != null) {
+            checkDay(wornOn);
+        }
         Outfit outfit = new Outfit(userId, storage.save(trim(picture)), pieces);
         outfit.setTags(tagList);
         outfit.setSeason(seasonList);
-        return view(outfits.save(outfit), wardrobe);
+        outfit = outfits.save(outfit);
+        if (wornOn != null) {
+            putOnCalendar(userId, outfit.getId(), wornOn);
+        }
+        return view(outfit, wardrobe, wornOn);
     }
 
     /** The user's saved outfits, newest first. */
     public List<OutfitView> list(Long userId) {
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, LocalDate> lastWorn = lastWorn(wears.findByUserIdOrderByWornOn(userId));
         return outfits.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(outfit -> view(outfit, wardrobe))
+                .map(outfit -> view(outfit, wardrobe, lastWorn.get(outfit.getId())))
                 .toList();
     }
+
+    // ----- The outfit calendar -----
+
+    /**
+     * "Wear it today" on a saved outfit: that day of the calendar now shows this outfit. A day holds one
+     * outfit, so wearing another one on the same day replaces the first.
+     */
+    @Transactional
+    public DayView wear(Long userId, Long outfitId, LocalDate day) {
+        Outfit outfit = ownOutfit(userId, outfitId);
+        checkDay(day);
+        putOnCalendar(userId, outfitId, day);
+        return new DayView(day, view(outfit, items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId)));
+    }
+
+    /** The days from..to (both included) on which the user wore a saved outfit, oldest first. */
+    public List<DayView> calendar(Long userId, LocalDate from, LocalDate to) {
+        if (to.isBefore(from) || from.plusDays(MAX_CALENDAR_DAYS).isBefore(to)) {
+            throw invalid("Ask for up to a year of the calendar, from an earlier day to a later one");
+        }
+        List<Wear> all = wears.findByUserIdOrderByWornOn(userId);
+        Map<Long, LocalDate> lastWorn = lastWorn(all);
+        List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, Outfit> saved = new HashMap<>();
+        for (Outfit outfit : outfits.findByUserIdOrderByCreatedAtDesc(userId)) {
+            saved.put(outfit.getId(), outfit);
+        }
+        List<DayView> days = new ArrayList<>();
+        for (Wear wear : all) {
+            Outfit outfit = saved.get(wear.getOutfitId());
+            boolean inRange = !wear.getWornOn().isBefore(from) && !wear.getWornOn().isAfter(to);
+            if (inRange && outfit != null) {
+                days.add(new DayView(wear.getWornOn(), view(outfit, wardrobe, lastWorn.get(outfit.getId()))));
+            }
+        }
+        return days;
+    }
+
+    private void putOnCalendar(Long userId, Long outfitId, LocalDate day) {
+        Wear wear = wears.findByUserIdAndWornOn(userId, day).orElse(null);
+        if (wear == null) {
+            wears.save(new Wear(userId, outfitId, day));
+        } else {
+            wear.setOutfitId(outfitId);
+            wears.save(wear);
+        }
+    }
+
+    /**
+     * The day comes from the phone, because "today" depends on where the user is. Tomorrow by the
+     * server's clock can still be today for them; anything later can't have been worn yet.
+     */
+    private static void checkDay(LocalDate day) {
+        if (day.isAfter(LocalDate.now().plusDays(1))) {
+            throw invalid("A day that hasn't come yet can't be marked as worn");
+        }
+    }
+
+    private LocalDate lastWornOn(Long outfitId) {
+        return wears.findFirstByOutfitIdOrderByWornOnDesc(outfitId).map(Wear::getWornOn).orElse(null);
+    }
+
+    /** For every outfit that was ever worn, the last day it was. The wears must be in date order. */
+    private static Map<Long, LocalDate> lastWorn(List<Wear> inDateOrder) {
+        Map<Long, LocalDate> lastWorn = new HashMap<>();
+        for (Wear wear : inDateOrder) {
+            lastWorn.put(wear.getOutfitId(), wear.getWornOn());
+        }
+        return lastWorn;
+    }
+
+    // ----- Changing and deleting a saved outfit -----
 
     /** The user changes the categories or seasons on an outfit's card. Null fields stay as they are. */
     public OutfitView update(Long userId, Long outfitId, List<String> tags, List<String> seasons) {
@@ -73,12 +173,17 @@ public class OutfitService {
         if (seasons != null) {
             outfit.setSeason(Labels.joinSeasons(seasons));
         }
-        return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId));
+        return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId));
     }
 
-    /** "Delete outfit": the outfit and its picture are gone for good. The clothes stay in the wardrobe. */
+    /**
+     * "Delete outfit": the outfit and its picture are gone for good, and so are its days in the
+     * calendar. The clothes stay in the wardrobe.
+     */
+    @Transactional
     public void delete(Long userId, Long outfitId) {
         Outfit outfit = ownOutfit(userId, outfitId);
+        wears.deleteByOutfitId(outfitId);
         outfits.delete(outfit);
         storage.delete(outfit.getImageFile());
     }
@@ -153,7 +258,7 @@ public class OutfitService {
         }
     }
 
-    private static OutfitView view(Outfit outfit, List<Item> wardrobe) {
+    private static OutfitView view(Outfit outfit, List<Item> wardrobe, LocalDate lastWornOn) {
         Map<Long, Item> owned = byId(wardrobe);
         List<WornPiece> pieces = new ArrayList<>();
         for (Piece piece : outfit.getPieces()) {
@@ -162,7 +267,7 @@ public class OutfitService {
                 pieces.add(new WornPiece(piece.getSlot(), item));
             }
         }
-        return new OutfitView(outfit, pieces);
+        return new OutfitView(outfit, pieces, lastWornOn);
     }
 
     private static Map<Long, Item> byId(List<Item> wardrobe) {

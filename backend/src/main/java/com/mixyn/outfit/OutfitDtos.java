@@ -2,10 +2,12 @@ package com.mixyn.outfit;
 
 import com.mixyn.item.ItemDtos.ItemResponse;
 import com.mixyn.item.Labels;
+import com.mixyn.outfit.OutfitService.DayView;
 import com.mixyn.outfit.OutfitService.OutfitView;
 import com.mixyn.outfit.StylistService.Look;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -62,9 +64,15 @@ public final class OutfitDtos {
      * @param look    which item is worn where
      * @param tags    the outfit's categories, from the same list as item tags (optional)
      * @param seasons the outfit's seasons (optional)
+     * @param wornOn  "Wear it today": the user's today, e.g. "2026-10-12"; the outfit is saved and put
+     *                on that day of the calendar (optional)
      */
     public record SaveRequest(@Valid @NotNull LookIds look, @Size(max = 8) List<String> tags,
-            @Size(max = 5) List<String> seasons) {
+            @Size(max = 5) List<String> seasons, LocalDate wornOn) {
+    }
+
+    /** Body of PUT /api/users/{id}/calendar/{date}: the saved outfit worn on that day. */
+    public record WearRequest(@NotNull Long outfitId) {
     }
 
     /** Body of PATCH /api/outfits/{id}: only the fields that are present are changed. */
@@ -75,15 +83,27 @@ public final class OutfitDtos {
     public record PieceResponse(Slot slot, ItemResponse item) {
     }
 
-    /** A saved outfit. imageUrl is the picture of the whole look, served like an item photo. */
+    /**
+     * A saved outfit. imageUrl is the picture of the whole look, served like an item photo;
+     * lastWornOn is the last day it was worn according to the calendar, or null.
+     */
     public record OutfitResponse(Long id, String imageUrl, List<PieceResponse> pieces, List<String> tags,
-            List<String> seasons, Instant createdAt) {
+            List<String> seasons, Instant createdAt, LocalDate lastWornOn) {
 
         static OutfitResponse from(OutfitView view) {
             Outfit outfit = view.outfit();
             return new OutfitResponse(outfit.getId(), "/images/" + outfit.getImageFile(),
                     view.pieces().stream().map(p -> new PieceResponse(p.slot(), ItemResponse.from(p.item()))).toList(),
-                    Labels.split(outfit.getTags()), Labels.split(outfit.getSeason()), outfit.getCreatedAt());
+                    Labels.split(outfit.getTags()), Labels.split(outfit.getSeason()), outfit.getCreatedAt(),
+                    view.lastWornOn());
+        }
+    }
+
+    /** One day of the calendar: the date ("2026-10-12") and the outfit worn on it. */
+    public record DayResponse(LocalDate date, OutfitResponse outfit) {
+
+        static DayResponse from(DayView day) {
+            return new DayResponse(day.date(), OutfitResponse.from(day.outfit()));
         }
     }
 }
