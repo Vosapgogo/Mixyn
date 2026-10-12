@@ -214,6 +214,9 @@
     <string name="calendar_title">Calendar</string>
     <string name="calendar_previous">Previous month</string>
     <string name="calendar_next">Next month</string>
+    <string name="calendar_jump">Go to a month</string>
+    <string name="calendar_previous_year">Previous year</string>
+    <string name="calendar_next_year">Next year</string>
     <string name="calendar_day_outfit">The outfit worn on %1$s</string>
 
     <!-- Weather tip (canvas: tap the weather, or Next) -->

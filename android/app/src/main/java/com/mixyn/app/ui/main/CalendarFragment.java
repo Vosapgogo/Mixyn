@@ -21,6 +21,7 @@ import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.dto.CalendarDayDto;
 import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.session.SessionStore;
+import com.mixyn.app.ui.components.MixynLogoHeader;
 import com.mixyn.app.ui.outfit.OutfitActivity;
 
 import java.time.LocalDate;
@@ -33,7 +34,8 @@ import java.util.Map;
 
 /**
  * Calendar tab: a month of days, each showing the outfit that was worn on it ("Wear it today" on an
- * outfit's card is what puts it there). The arrows go to earlier months and back, never past this month.
+ * outfit's card is what puts it there). The arrows go to earlier months and back, never past this month;
+ * the calendar icon (or the month's name) opens a picker that jumps to any month of any year.
  * Tapping a day with an outfit opens that outfit's card.
  */
 public class CalendarFragment extends Fragment {
@@ -59,6 +61,13 @@ public class CalendarFragment extends Fragment {
         next = view.findViewById(R.id.calendar_next);
         view.findViewById(R.id.calendar_previous).setOnClickListener(v -> show(month.minusMonths(1)));
         next.setOnClickListener(v -> show(month.plusMonths(1)));
+
+        View.OnClickListener pickMonth = v -> MonthPickerSheet.newInstance(month)
+                .show(getChildFragmentManager(), MonthPickerSheet.REQUEST_KEY);
+        ((MixynLogoHeader) view.findViewById(R.id.calendar_header)).setOnActionClickListener(pickMonth);
+        title.setOnClickListener(pickMonth);
+        getChildFragmentManager().setFragmentResultListener(MonthPickerSheet.REQUEST_KEY, getViewLifecycleOwner(),
+                (key, result) -> show(YearMonth.parse(result.getString(MonthPickerSheet.RESULT_MONTH))));
 
         LinearLayout weekdays = view.findViewById(R.id.calendar_weekdays);
         for (String letter : getResources().getStringArray(R.array.weekday_letters)) {

@@ -6,13 +6,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- The calendar icon opens the month and year picker -->
     <com.mixyn.app.ui.components.MixynLogoHeader
+        android:id="@+id/calendar_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/icon_button_size"
         android:paddingStart="@dimen/screen_margin"
         android:paddingTop="@dimen/space_m"
         android:paddingEnd="@dimen/space_s"
+        app:actionDescription="@string/calendar_jump"
+        app:actionIcon="@drawable/ic_calendar"
         app:headerTitle="@string/calendar_title" />
 
     <!-- The month and the arrows to the months around it -->
