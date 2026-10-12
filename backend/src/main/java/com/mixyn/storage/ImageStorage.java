@@ -29,6 +29,9 @@ public class ImageStorage {
     private static final int MAX_SIDE = 1024;
     private static final int ALPHA_VISIBLE = 24; // pixels fainter than this count as background
     private static final int PADDING = 8;
+    private static final int BOX_MARGIN_PERCENT = 3;
+    /** A box narrower or shorter than 1/10 of the photo is not trusted. */
+    private static final int BOX_MIN_SHARE = 10;
 
     private final Path dir;
 
@@ -43,6 +46,35 @@ public class ImageStorage {
 
     public Path getDir() {
         return dir;
+    }
+
+    /**
+     * Cuts a cutout down to one part of it: used when the piece was photographed on a person, to keep
+     * the piece and drop the rest of the body. The rectangle is given in thousandths of the image
+     * (see TaggingService.Box) and gets a small margin, because the AI's boxes are a little tight.
+     * A box too small to be a real piece is ignored and the cutout comes back unchanged.
+     */
+    public byte[] cropToBox(byte[] transparentPng, int top, int left, int bottom, int right, int scale) {
+        try {
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(transparentPng));
+            if (image == null) {
+                throw invalidImage();
+            }
+            int marginX = image.getWidth() * BOX_MARGIN_PERCENT / 100;
+            int marginY = image.getHeight() * BOX_MARGIN_PERCENT / 100;
+            int x0 = Math.max(0, image.getWidth() * left / scale - marginX);
+            int y0 = Math.max(0, image.getHeight() * top / scale - marginY);
+            int x1 = Math.min(image.getWidth(), image.getWidth() * right / scale + marginX);
+            int y1 = Math.min(image.getHeight(), image.getHeight() * bottom / scale + marginY);
+            if (x1 - x0 < image.getWidth() / BOX_MIN_SHARE || y1 - y0 < image.getHeight() / BOX_MIN_SHARE) {
+                return transparentPng;
+            }
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            ImageIO.write(image.getSubimage(x0, y0, x1 - x0, y1 - y0), "png", bytes);
+            return bytes.toByteArray();
+        } catch (IOException e) {
+            throw invalidImage();
+        }
     }
 
     /** A cutout ready to store: PNG bytes of the cropped, resized item. */

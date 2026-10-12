@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.mixyn.ai.RembgClient;
 import com.mixyn.ai.TaggingService;
+import com.mixyn.ai.TaggingService.Box;
 import com.mixyn.ai.TaggingService.Subject;
 import com.mixyn.ai.TaggingService.Tags;
 import com.mixyn.common.ApiException;
@@ -43,8 +44,10 @@ public class ItemService {
     /**
      * The whole "add clothes" pipeline in one request:
      * check the file → remove the background → crop → ask the AI what it is (one item? category? color?) → save.
-     * If background removal fails, or the photo isn't a single item, nothing is saved;
+     * If background removal fails, or the photo isn't about a single item, nothing is saved;
      * if the AI is simply unavailable the item is still saved, without tags.
+     * A piece photographed on a person (a headscarf on a model) is accepted: background removal keeps
+     * the person too, so the cutout is then cut down to the box the AI drew around the piece.
      */
     public Item addItem(Long userId, byte[] photo, String filename) {
         if (!looksLikeImage(photo)) {
@@ -57,6 +60,11 @@ public class ItemService {
         Tags tags = tagging.tag(cutout);
         long afterTagging = System.currentTimeMillis();
         rejectIfNotOneItem(tags.subject());
+        if (tags.onBody() && tags.box() != null) {
+            Box box = tags.box();
+            cutout = storage.cropToItem(
+                    storage.cropToBox(cutout, box.top(), box.left(), box.bottom(), box.right(), Box.SCALE));
+        }
         String file = storage.save(cutout);
         Item item = items.save(new Item(userId, file, tags.type(), tags.category(), tags.colors()));
         log.info("Item {} added: background removal {} ms, crop + AI tagging {} ms, type {}, category {}",
@@ -65,8 +73,8 @@ public class ItemService {
     }
 
     /**
-     * A wardrobe item is one garment on its own. If the AI saw a person, several garments or something
-     * that isn't clothing, nothing is saved and the app explains what to upload instead.
+     * A wardrobe item is one piece. If the AI saw a whole outfit on a person, several separate pieces or
+     * something that isn't clothing, nothing is saved and the app explains what to upload instead.
      * When the AI gave no answer (subject == null) the upload is accepted: an outage must not block adding clothes.
      */
     private static void rejectIfNotOneItem(Subject subject) {
@@ -74,8 +82,8 @@ public class ItemService {
             return;
         }
         String message = switch (subject) {
-            case PERSON -> "This looks like a photo of a person. Add a photo of just one clothing item, not worn by anyone.";
-            case MULTIPLE_ITEMS -> "There are several items in this photo. Add one item per photo.";
+            case PERSON -> "This photo shows a whole outfit on a person. Add a photo where one piece is the clear subject.";
+            case MULTIPLE_ITEMS -> "There are several pieces in this photo. Add one piece per photo.";
             default -> "We couldn't find a clothing item in this photo. Add a photo of just one item.";
         };
         throw new ApiException(HttpStatus.BAD_REQUEST, "not_single_item", message);
