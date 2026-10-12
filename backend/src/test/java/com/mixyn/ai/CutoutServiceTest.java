@@ -1,11 +1,25 @@
 package com.mixyn.ai;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 /** The mask clean-up: an unsure mask goes in, the mask of a solid object comes out. */
 class CutoutServiceTest {
+
+    @Test
+    void tellsACleanCutoutFromOneTheModelWasUnsureAbout() {
+        // Clean: background, a two-pixel soft edge, then a solid piece.
+        int[] clean = {0, 0, 0, 90, 180, 255, 255, 255, 255, 255, 255, 255};
+        // Unsure: half-seen stripes across most of the piece.
+        int[] mushy = {0, 0, 255, 60, 80, 255, 40, 70, 120, 255, 90, 60};
+
+        assertTrue(CutoutService.unsureShare(clean) < CutoutService.UNSURE_LIMIT);
+        assertTrue(CutoutService.unsureShare(mushy) > CutoutService.UNSURE_LIMIT);
+        assertEquals(0, CutoutService.unsureShare(new int[] {0, 0, 5}));
+    }
 
     @Test
     void makesAHalfSeenPieceSolidAndClearsFaintBackground() {

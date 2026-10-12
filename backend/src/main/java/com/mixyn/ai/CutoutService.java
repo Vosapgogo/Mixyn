@@ -4,8 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import javax.imageio.ImageIO;
 
@@ -16,20 +14,33 @@ import org.springframework.stereotype.Service;
 /**
  * Cuts a piece out of its photo.
  *
- * One background-removal model is not enough: on a piece close in color to the backdrop (a cream
- * beanie on white) each model leaves whole stripes half see-through, but they fail in different places.
- * So two models are asked for a mask each and the stronger answer wins at every pixel. A piece of
- * clothing is solid, so "probably the piece" then becomes fully opaque and "barely anything" fully
- * clear, and stray specks away from the piece are dropped. The colors are taken from the photo itself:
- * the cutout the tool returns has its uncertain areas darkened.
+ * Normally that is just the background-removal tool's own cutout. But on a piece close in color to the
+ * backdrop (a cream striped beanie on white) the model is unsure about most of the piece: whole stripes
+ * come out half see-through, and darkened, because the tool dims whatever it is unsure about. Such a
+ * cutout is repaired: a second model, which fails in other places, is asked for its mask, the stronger
+ * answer wins at every pixel, "probably the piece" becomes fully opaque (clothing is solid), stray
+ * specks are dropped, and the colors are taken from the photo itself.
+ *
+ * The repair is kept for cutouts that need it. Used on every photo it leaves patches of backdrop
+ * around pieces the first model had cut out cleanly, and it doubles the waiting time.
  */
 @Service
 public class CutoutService {
 
-    /** Both are small (about 170 MB) and Apache 2.0 licensed; both are baked into the rembg image. */
-    static final List<String> MODELS = List.of("u2net", "isnet-general-use");
+    /** The second opinion. Like u2net it is about 170 MB, Apache 2.0, and baked into the rembg image. */
+    static final String SECOND_MODEL = "isnet-general-use";
 
-    /** Mask values (0–255) up to LOW count as background, from HIGH up as the piece; between them the edge is kept soft. */
+    /**
+     * A cutout needs repair when the model was unsure about this much of the piece. A clean cutout is
+     * unsure only along its edge (a few percent; under a third even for a bag on a thin chain), the
+     * striped beanie was unsure about two thirds.
+     */
+    static final double UNSURE_LIMIT = 0.45;
+    /** Mask values (0–255): above BARELY the model saw something, from SURE up it was sure. */
+    static final int BARELY = 20;
+    static final int SURE = 235;
+
+    /** Repair: values up to LOW become background, from HIGH up the piece; between them the edge stays soft. */
     static final int LOW = 20;
     static final int HIGH = 60;
     /** A separate blob is kept if it is at least this share of the largest one (the second shoe of a pair)… */
@@ -47,33 +58,31 @@ public class CutoutService {
 
     /** PNG bytes of the photo with its background made transparent. */
     public byte[] cutOut(byte[] photo, String filename) {
-        BufferedImage picture = read(photo);
-        if (picture == null) {
-            // A format Java can't decode (HEIC from another client): the tool's own cutout has to do.
-            return rembg.removeBackground(photo, filename);
+        byte[] cutout = rembg.removeBackground(photo, filename);
+        BufferedImage first = read(cutout);
+        BufferedImage picture = read(photo); // null for a format Java can't decode (HEIC from another client)
+        if (first == null || picture == null
+                || first.getWidth() != picture.getWidth() || first.getHeight() != picture.getHeight()) {
+            return cutout;
         }
         int width = picture.getWidth();
         int height = picture.getHeight();
-        // The two models run side by side; either may fail without failing the upload.
-        List<CompletableFuture<int[]>> answers = MODELS.stream()
-                .map(model -> CompletableFuture.supplyAsync(() -> mask(photo, filename, model, width, height)))
-                .toList();
-        int[] alpha = null;
-        for (CompletableFuture<int[]> answer : answers) {
-            int[] mask = answer.join();
-            if (mask == null) {
-                continue;
-            }
-            if (alpha == null) {
-                alpha = mask;
-            } else {
-                for (int i = 0; i < alpha.length; i++) {
-                    alpha[i] = Math.max(alpha[i], mask[i]);
-                }
-            }
+        int[] alpha = first.getRGB(0, 0, width, height, null, 0, width);
+        for (int i = 0; i < alpha.length; i++) {
+            alpha[i] >>>= 24;
         }
-        if (alpha == null) {
-            return rembg.removeBackground(photo, filename);
+        double unsure = unsureShare(alpha);
+        if (unsure < UNSURE_LIMIT) {
+            return cutout; // the usual case: nothing to repair
+        }
+        int[] second = mask(photo, filename, SECOND_MODEL, width, height);
+        if (second == null) {
+            return cutout;
+        }
+        log.info("The first model was unsure about {}% of the piece; repairing the cutout with {}",
+                Math.round(unsure * 100), SECOND_MODEL);
+        for (int i = 0; i < alpha.length; i++) {
+            alpha[i] = Math.max(alpha[i], second[i]);
         }
         solidify(alpha, width, height);
 
@@ -81,15 +90,28 @@ public class CutoutService {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (alpha[i] << 24) | (pixels[i] & 0xFFFFFF);
         }
-        BufferedImage cutout = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        cutout.setRGB(0, 0, width, height, pixels, 0, width);
+        BufferedImage repaired = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        repaired.setRGB(0, 0, width, height, pixels, 0, width);
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            ImageIO.write(cutout, "png", bytes);
+            ImageIO.write(repaired, "png", bytes);
             return bytes.toByteArray();
         } catch (IOException e) {
-            return rembg.removeBackground(photo, filename);
+            return cutout;
         }
+    }
+
+    /** Of the pixels where the model saw anything at all, the share it wasn't sure about. */
+    static double unsureShare(int[] alpha) {
+        long seen = 0;
+        long unsure = 0;
+        for (int a : alpha) {
+            if (a > BARELY) {
+                seen++;
+                if (a < SURE) unsure++;
+            }
+        }
+        return seen == 0 ? 0 : (double) unsure / seen;
     }
 
     /**
