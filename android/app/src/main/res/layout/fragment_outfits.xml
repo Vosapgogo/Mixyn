@@ -1,23 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Outfits tab: the saved outfits as cards, or the empty state when nothing is saved yet. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingStart="@dimen/screen_margin"
-    android:paddingEnd="@dimen/screen_margin">
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/outfits_grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/space_m"
+        android:paddingTop="@dimen/space_m"
+        android:paddingEnd="@dimen/space_m"
+        android:paddingBottom="@dimen/space_l"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/outfits_loading"
+        android:layout_width="@dimen/space_xl"
+        android:layout_height="@dimen/space_xl"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/mocha" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/outfits_error"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/empty_outfits_title"
-        android:textAppearance="@style/TextAppearance.Mixyn.Title" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_s"
+        android:layout_gravity="center"
         android:gravity="center"
-        android:text="@string/empty_outfits_body"
-        android:textAppearance="@style/TextAppearance.Mixyn.Body" />
-</LinearLayout>
+        android:padding="@dimen/screen_margin"
+        android:textAppearance="@style/TextAppearance.Mixyn.Body"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/outfits_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/empty_outfits_title"
+            android:textAppearance="@style/TextAppearance.Mixyn.Title" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:gravity="center"
+            android:text="@string/empty_outfits_body"
+            android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+    </LinearLayout>
+</FrameLayout>
