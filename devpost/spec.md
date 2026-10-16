@@ -239,6 +239,7 @@ PRD ref: `prd.md > Outfit Canvas and Carousel`, `prd.md > AI Stylist`, `prd.md >
 #### Outfit Card
 `OutfitActivity` (design page 17, with the learner's rows instead of the name chips): back and share ("coming soon"), a serif title, a subtitle, the look on a white 4:5 card with the "mixyn" mark, then — like the item card — a card with one row per piece (thumbnail, name from `ItemNames`, place), and a card with the colors (dots + names, every color of the pieces once), the category and the seasons (both chosen in `OptionsSheet`).
 - **From the canvas** ("Your fit for today", today's date · weather): nothing is stored yet; the chosen category and seasons live on the screen. **Save** uploads the picture with the pieces and opens Home on the Outfits tab; **Wear it today** does the same with `wornOn` and opens the Calendar.
+- Every piece in the list opens its item card; coming back, the card loads its pieces again (a saved outfit from `GET …/outfits`, a new look from the wardrobe, dropping a piece that was removed).
 - **A saved outfit** ("Your outfit", "Saved 12 October · last worn…"), opened from the Outfits tab or a calendar day: changes are sent with `PATCH` and the card is redrawn from the answer; **Wear it today** sends `PUT …/calendar/{today}` and then reads "Worn today"; **Delete outfit** asks "Delete this outfit?" and then sends `DELETE`.
 PRD ref: `prd.md > Saving Outfits`.
 
