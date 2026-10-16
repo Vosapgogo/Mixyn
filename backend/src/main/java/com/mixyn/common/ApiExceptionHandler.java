@@ -1,5 +1,6 @@
 package com.mixyn.common;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -13,9 +14,12 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<Map<String, String>> handleApi(ApiException e) {
-        return ResponseEntity.status(e.getStatus())
-                .body(Map.of("error", e.getCode(), "message", e.getMessage()));
+    public ResponseEntity<Map<String, Object>> handleApi(ApiException e) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("error", e.getCode());
+        body.put("message", e.getMessage());
+        body.putAll(e.getDetails());
+        return ResponseEntity.status(e.getStatus()).body(body);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
