@@ -102,6 +102,10 @@ public class Outfit {
         return imageFile;
     }
 
+    public void setImageFile(String imageFile) {
+        this.imageFile = imageFile;
+    }
+
     public List<Piece> getPieces() {
         return pieces;
     }

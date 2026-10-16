@@ -1,10 +1,15 @@
 package com.mixyn.outfit;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,6 +44,7 @@ public class OutfitService {
 
     /** The longest stretch of the calendar one request may ask for. */
     private static final int MAX_CALENDAR_DAYS = 366;
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH);
 
     private final OutfitRepository outfits;
     private final WearRepository wears;
@@ -73,6 +79,7 @@ public class OutfitService {
         if (wornOn != null) {
             checkDay(wornOn);
         }
+        refuseDuplicate(userId, pieces, null);
         Outfit outfit = new Outfit(userId, storage.save(trim(picture)), pieces);
         outfit.setTags(tagList);
         outfit.setSeason(seasonList);
@@ -174,6 +181,64 @@ public class OutfitService {
             outfit.setSeason(Labels.joinSeasons(seasons));
         }
         return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId));
+    }
+
+    /**
+     * "Update" after editing an outfit on the canvas: the outfit keeps its id, its date and its days in
+     * the calendar, and gets the new pieces, picture, categories and seasons. The new look is checked
+     * like a new one, and it may not become a copy of another saved outfit.
+     */
+    @Transactional
+    public OutfitView replace(Long userId, Long outfitId, LookIds look, byte[] picture, List<String> tags,
+            List<String> seasons) {
+        Outfit outfit = ownOutfit(userId, outfitId);
+        List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Piece> pieces = checkLook(wardrobe, look);
+        String tagList = tags == null ? null : Labels.joinTags(tags);
+        String seasonList = seasons == null ? null : Labels.joinSeasons(seasons);
+        refuseDuplicate(userId, pieces, outfitId);
+        String oldPicture = outfit.getImageFile();
+        outfit.getPieces().clear();
+        outfit.getPieces().addAll(pieces);
+        outfit.setImageFile(storage.save(trim(picture)));
+        outfit.setTags(tagList);
+        outfit.setSeason(seasonList);
+        OutfitView view = view(outfits.save(outfit), wardrobe, lastWornOn(outfitId));
+        storage.delete(oldPicture); // a new file name, so the app doesn't keep showing a cached picture
+        return view;
+    }
+
+    /** Saving the same pieces in the same places twice makes no sense; the user is told where the first one is. */
+    private void refuseDuplicate(Long userId, List<Piece> pieces, Long exceptOutfitId) {
+        Outfit same = duplicateOf(outfits.findByUserIdOrderByCreatedAtDesc(userId), pieces, exceptOutfitId);
+        if (same != null) {
+            throw new ApiException(HttpStatus.CONFLICT, "duplicate_outfit",
+                    "You already have this outfit, saved on " + savedOn(same) + ".",
+                    Map.of("outfitId", same.getId()));
+        }
+    }
+
+    /** The outfit (other than exceptOutfitId) with exactly these pieces in exactly these places, or null. */
+    static Outfit duplicateOf(List<Outfit> saved, List<Piece> pieces, Long exceptOutfitId) {
+        Set<String> wanted = placesOf(pieces);
+        for (Outfit outfit : saved) {
+            if (!outfit.getId().equals(exceptOutfitId) && placesOf(outfit.getPieces()).equals(wanted)) {
+                return outfit;
+            }
+        }
+        return null;
+    }
+
+    private static Set<String> placesOf(List<Piece> pieces) {
+        Set<String> places = new HashSet<>();
+        for (Piece piece : pieces) {
+            places.add(piece.getSlot() + ":" + piece.getItemId());
+        }
+        return places;
+    }
+
+    private static String savedOn(Outfit outfit) {
+        return outfit.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDate().format(DAY);
     }
 
     /**

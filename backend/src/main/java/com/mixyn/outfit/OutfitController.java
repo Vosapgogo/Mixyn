@@ -68,6 +68,19 @@ public class OutfitController {
         return outfits.list(userId).stream().map(OutfitResponse::from).toList();
     }
 
+    /**
+     * "Update" after editing an outfit on the canvas: the same two parts as saving a new one, and the
+     * outfit keeps its id and its days in the calendar. Uses the outfit id only; the service checks it
+     * belongs to the logged-in user.
+     */
+    @PutMapping("/api/outfits/{outfitId}")
+    public OutfitResponse replace(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long outfitId,
+            @RequestPart("picture") MultipartFile picture, @Valid @RequestPart("outfit") SaveRequest request)
+            throws IOException {
+        return OutfitResponse.from(outfits.replace(userId, outfitId, request.look(), picture.getBytes(),
+                request.tags(), request.seasons()));
+    }
+
     /** Uses the outfit id only; the service checks the outfit belongs to the logged-in user. */
     @PatchMapping("/api/outfits/{outfitId}")
     public OutfitResponse update(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long outfitId,

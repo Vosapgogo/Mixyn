@@ -1,10 +1,15 @@
 package com.mixyn.outfit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +22,9 @@ import com.mixyn.outfit.OutfitDtos.LookIds;
 
 /**
  * Tests the trust boundary of saving an outfit: whatever ids the app sends, an outfit is made only of
- * the user's own items, each in a place it can be worn. No Spring, no database, no network.
+ * the user's own items, each in a place it can be worn. Also what may not happen to saved outfits: the
+ * same outfit twice, and a piece whose new type leaves it in a place it can't be worn. No Spring, no
+ * database, no network.
  */
 class OutfitServiceTest {
 
@@ -83,6 +90,48 @@ class OutfitServiceTest {
     @Test
     void refusesAnEmptyOutfit() {
         assertRefused(new LookIds(null, null, null, null, null, null, List.of()));
+    }
+
+    // ----- The same outfit twice -----
+
+    @Test
+    void findsAnOutfitWithTheSamePiecesInTheSamePlaces() {
+        Outfit saved = outfit(1, new Piece(Slot.TOP, 10L), new Piece(Slot.BOTTOM, 20L));
+        // the same pieces, listed in another order
+        List<Piece> again = List.of(new Piece(Slot.BOTTOM, 20L), new Piece(Slot.TOP, 10L));
+
+        assertSame(saved, OutfitService.duplicateOf(List.of(saved), again, null));
+    }
+
+    @Test
+    void anotherPieceOrAnotherPlaceIsNotTheSameOutfit() {
+        Outfit saved = outfit(1, new Piece(Slot.TOP, 12L), new Piece(Slot.BOTTOM, 20L));
+
+        assertNull(OutfitService.duplicateOf(List.of(saved),
+                List.of(new Piece(Slot.TOP, 12L), new Piece(Slot.BOTTOM, 20L), new Piece(Slot.SHOES, 30L)), null));
+        // the cardigan as outerwear over the sweater is not the cardigan as the top
+        assertNull(OutfitService.duplicateOf(List.of(saved),
+                List.of(new Piece(Slot.OUTERWEAR, 12L), new Piece(Slot.BOTTOM, 20L)), null));
+    }
+
+    @Test
+    void anUpdatedOutfitIsNotACopyOfItself() {
+        Outfit saved = outfit(1, new Piece(Slot.TOP, 10L));
+
+        assertNull(OutfitService.duplicateOf(List.of(saved), List.of(new Piece(Slot.TOP, 10L)), 1L));
+    }
+
+    /** A saved outfit with these pieces, its id set by reflection, as JPA does. */
+    private static Outfit outfit(long id, Piece... pieces) {
+        Outfit outfit = new Outfit(USER, id + ".png", List.of(pieces));
+        try {
+            Field idField = Outfit.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(outfit, id);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        return outfit;
     }
 
     private void assertRefused(LookIds look) {
