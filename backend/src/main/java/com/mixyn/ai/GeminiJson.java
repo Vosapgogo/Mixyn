@@ -3,7 +3,9 @@ package com.mixyn.ai;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,10 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * The one place that talks to Gemini. It always asks for JSON that follows a schema and never throws:
  * any failure (no key, network, rate limit, bad JSON) comes back as "empty", so callers must have a fallback.
+ *
+ * A model that has just failed (overloaded, out of quota, too slow) is moved to the end of the list for
+ * a while: on the free tier one model can stay overloaded for a long time while the others answer in a
+ * few seconds, and trying it first on every request would use up the time the others need.
  */
 @Component
 public class GeminiJson {
@@ -33,9 +39,13 @@ public class GeminiJson {
     private static final String DEFAULT_MODELS = "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash";
     /** Stop trying further models once this much time has passed, so the user never waits too long. */
     private static final long TOTAL_BUDGET_MS = 14_000;
+    /** How long a model that failed is tried only after the others. */
+    static final long REST_MS = 10 * 60_000;
 
     private final Client client;
     private final List<String> models;
+    /** Models that failed recently, and until when they are tried last. */
+    private final Map<String, Long> restingUntil = new ConcurrentHashMap<>();
     private final JsonMapper json = JsonMapper.builder().build();
 
     public GeminiJson(@Value("${mixyn.gemini.api-key}") String apiKey,
@@ -76,7 +86,7 @@ public class GeminiJson {
         // The free tier is sometimes overloaded ("503 high demand") or very slow for one model while
         // the others answer fine, so each model in the list gets one try until one succeeds.
         long started = System.currentTimeMillis();
-        for (String model : models) {
+        for (String model : tryOrder(models, restingUntil, started)) {
             if (System.currentTimeMillis() - started > TOTAL_BUDGET_MS) {
                 break;
             }
@@ -84,12 +94,32 @@ public class GeminiJson {
                 GenerateContentResponse response = client.models.generateContent(model, content, config);
                 String text = response.text();
                 if (text != null && !text.isBlank()) {
+                    restingUntil.remove(model);
                     return Optional.of(json.readTree(text));
                 }
             } catch (Exception e) {
-                log.warn("Gemini model {} failed: {}", model, e.toString());
+                log.warn("Gemini model {} failed, trying it last for {} min: {}", model, REST_MS / 60_000, e.toString());
+                restingUntil.put(model, System.currentTimeMillis() + REST_MS);
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * The models in the order to try them now: the ones that haven't failed recently first, in the
+     * configured order, then the resting ones (still a last resort if there is time left).
+     */
+    static List<String> tryOrder(List<String> models, Map<String, Long> restingUntil, long now) {
+        List<String> ready = new ArrayList<>();
+        List<String> resting = new ArrayList<>();
+        for (String model : models) {
+            if (restingUntil.getOrDefault(model, 0L) > now) {
+                resting.add(model);
+            } else {
+                ready.add(model);
+            }
+        }
+        ready.addAll(resting);
+        return ready;
     }
 }
