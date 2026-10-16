@@ -141,7 +141,7 @@ public class StylistService {
         String prompt = PROMPT.formatted(describeWeather(weather.forUser(userId).orElse(null)),
                 describeConversation(history, current),
                 cleanHint.isEmpty() ? "(none)" : cleanHint, describe(wardrobe));
-        Optional<JsonNode> answer = gemini.generate(prompt, null, SCHEMA);
+        Optional<JsonNode> answer = gemini.generate(prompt, null, SCHEMA, true); // choosing a look is worth the thinking
         AiPick pick = answer.map(StylistService::parse).orElse(null);
         return buildLook(wardrobe, pick, cleanHint, random);
     }

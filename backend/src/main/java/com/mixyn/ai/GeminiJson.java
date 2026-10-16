@@ -20,6 +20,7 @@ import com.google.genai.types.HttpOptions;
 import com.google.genai.types.HttpRetryOptions;
 import com.google.genai.types.Part;
 import com.google.genai.types.Schema;
+import com.google.genai.types.ThinkingConfig;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -37,8 +38,10 @@ public class GeminiJson {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiJson.class);
     private static final String DEFAULT_MODELS = "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash";
+    /** How long one model may take before it counts as down. */
+    private static final int MODEL_TIMEOUT_MS = 12_000;
     /** Stop trying further models once this much time has passed, so the user never waits too long. */
-    private static final long TOTAL_BUDGET_MS = 14_000;
+    private static final long TOTAL_BUDGET_MS = 20_000;
     /** How long a model that failed is tried only after the others. */
     static final long REST_MS = 10 * 60_000;
 
@@ -50,12 +53,12 @@ public class GeminiJson {
 
     public GeminiJson(@Value("${mixyn.gemini.api-key}") String apiKey,
             @Value("${mixyn.gemini.model}") String model) {
-        // Free-tier answers usually take 2-5 s; a model that needs more than 8 s is treated as down.
+        // Free-tier answers usually take 2-6 s; a model that needs more than 12 s is treated as down.
         this.client = apiKey.isBlank() ? null : Client.builder()
                 .apiKey(apiKey)
                 // attempts(1): the SDK must not retry on its own, or the time limit would silently multiply.
                 .httpOptions(HttpOptions.builder()
-                        .timeout(8_000)
+                        .timeout(MODEL_TIMEOUT_MS)
                         .retryOptions(HttpRetryOptions.builder().attempts(1).build())
                         .build())
                 .build();
@@ -67,8 +70,13 @@ public class GeminiJson {
         }
     }
 
-    /** @param jpeg an optional image to show the model, or null for a text-only request */
-    public Optional<JsonNode> generate(String prompt, byte[] jpeg, Schema responseSchema) {
+    /**
+     * @param jpeg  an optional image to show the model, or null for a text-only request
+     * @param think whether the model may think before it answers. Thinking makes a flash model three
+     *              times slower (8-9 s instead of 3 s for an item photo on 2026-10-16), which pays off
+     *              for choosing an outfit but not for naming what a photo shows.
+     */
+    public Optional<JsonNode> generate(String prompt, byte[] jpeg, Schema responseSchema, boolean think) {
         if (client == null) {
             return Optional.empty();
         }
@@ -82,6 +90,9 @@ public class GeminiJson {
                 .responseMimeType("application/json")
                 .responseSchema(responseSchema)
                 .build();
+        GenerateContentConfig noThinking = config.toBuilder()
+                .thinkingConfig(ThinkingConfig.builder().thinkingBudget(0).build())
+                .build();
 
         // The free tier is sometimes overloaded ("503 high demand") or very slow for one model while
         // the others answer fine, so each model in the list gets one try until one succeeds.
@@ -91,7 +102,10 @@ public class GeminiJson {
                 break;
             }
             try {
-                GenerateContentResponse response = client.models.generateContent(model, content, config);
+                // Lite models don't think anyway, and they refuse a request that sets a thinking budget.
+                boolean plain = think || model.contains("-lite");
+                GenerateContentResponse response = client.models.generateContent(model, content,
+                        plain ? config : noThinking);
                 String text = response.text();
                 if (text != null && !text.isBlank()) {
                     restingUntil.remove(model);
