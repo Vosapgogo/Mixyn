@@ -41,4 +41,12 @@ public class OutfitDto {
     /** The last day it was worn according to the calendar ("2026-10-12"), or null. */
     @Nullable
     public String lastWornOn;
+    /** How many days of the calendar have this outfit, the ones worn in an earlier version of it included. */
+    public int wornDays;
+    /**
+     * Set only on an earlier version of an outfit, kept for the calendar days it was worn on before it
+     * was changed: the id of the outfit as it is now. Such a version can't be changed.
+     */
+    @Nullable
+    public Long replacedBy;
 }

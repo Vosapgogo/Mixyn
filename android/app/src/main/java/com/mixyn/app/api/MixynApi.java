@@ -86,6 +86,15 @@ public interface MixynApi {
     Call<OutfitDto> saveOutfit(@Path("userId") long userId, @Part MultipartBody.Part picture,
             @Part("outfit") Map<String, Object> outfit);
 
+    /**
+     * "Update" after editing a saved outfit on the canvas: the same two parts as saveOutfit (without
+     * "wornOn"). The outfit keeps its id and its days in the calendar.
+     */
+    @Multipart
+    @PUT("api/outfits/{outfitId}")
+    Call<OutfitDto> replaceOutfit(@Path("outfitId") long outfitId, @Part MultipartBody.Part picture,
+            @Part("outfit") Map<String, Object> outfit);
+
     /** The saved outfits, newest first. */
     @GET("api/users/{userId}/outfits")
     Call<List<OutfitDto>> outfits(@Path("userId") long userId);

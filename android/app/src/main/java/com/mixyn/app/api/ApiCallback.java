@@ -23,6 +23,9 @@ import retrofit2.Response;
 public abstract class ApiCallback<T> implements Callback<T> {
 
     private final Activity activity;
+    /** The backend's error body of the last failed request, for the details some errors carry. */
+    @Nullable
+    private ApiError error;
 
     protected ApiCallback(Activity activity) {
         this.activity = activity;
@@ -40,7 +43,7 @@ public abstract class ApiCallback<T> implements Callback<T> {
             onSuccess(response.body());
             return;
         }
-        ApiError error = parseError(response);
+        error = parseError(response);
         String code = error != null ? error.error : null;
         SessionStore session = new SessionStore(activity);
         if (response.code() == 401 && "unauthorized".equals(code) && session.isLoggedIn()) {
@@ -52,6 +55,12 @@ public abstract class ApiCallback<T> implements Callback<T> {
         String message = error != null && error.message != null
                 ? error.message : activity.getString(R.string.error_generic);
         onError(code, message);
+    }
+
+    /** In onError: the saved outfit the error is about (a duplicate, a conflict), or null. */
+    @Nullable
+    protected Long errorOutfitId() {
+        return error == null ? null : error.outfitId;
     }
 
     @Override
