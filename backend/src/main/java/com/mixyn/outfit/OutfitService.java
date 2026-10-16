@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mixyn.common.ApiException;
 import com.mixyn.item.Item;
+import com.mixyn.item.ItemColor;
 import com.mixyn.item.ItemRepository;
+import com.mixyn.item.ItemType;
 import com.mixyn.item.Labels;
 import com.mixyn.outfit.Outfit.Piece;
 import com.mixyn.outfit.OutfitDtos.LookIds;
@@ -40,6 +42,18 @@ public class OutfitService {
 
     /** One day of the calendar and the outfit worn on it. */
     public record DayView(LocalDate date, OutfitView outfit) {
+    }
+
+    /** A piece of an outfit that has to move to another place because its type changed. */
+    record Move(Outfit outfit, int position, Slot to) {
+    }
+
+    /** A saved outfit in which a piece can't take its new place, because another piece is there. */
+    record Conflict(Outfit outfit, Slot from, Slot to, Item taking) {
+    }
+
+    /** What changing a piece's type does to the saved outfits that have it. */
+    record TypeChange(List<Move> moves, List<Conflict> conflicts) {
     }
 
     /** The longest stretch of the calendar one request may ask for. */
@@ -235,6 +249,90 @@ public class OutfitService {
             places.add(piece.getSlot() + ":" + piece.getItemId());
         }
         return places;
+    }
+
+    // ----- A piece's type changes -----
+
+    /**
+     * Called before a piece gets a new type on its card. In a saved outfit where the piece can't be worn
+     * in its place any more (a T-shirt that is really a skirt is no top), it moves to the place its new
+     * type takes. If that place is already taken in some outfit (the outfit has a bottom), nothing
+     * changes anywhere and the user is told which outfit to change first.
+     */
+    @Transactional
+    public void fitTypeChange(Item item, ItemType newType) {
+        List<Outfit> withItem = outfits.findDistinctByPiecesItemId(item.getId());
+        if (withItem.isEmpty()) {
+            return;
+        }
+        TypeChange change = planTypeChange(item, newType, withItem,
+                byId(items.findByUserIdOrderByCreatedAtDesc(item.getUserId())));
+        if (!change.conflicts().isEmpty()) {
+            Conflict first = change.conflicts().get(0);
+            int others = change.conflicts().size() - 1;
+            throw new ApiException(HttpStatus.CONFLICT, "type_conflict",
+                    "Can't change it to " + newType.getLabel() + ": in your outfit from " + savedOn(first.outfit())
+                            + " it is " + first.from().role() + ", and that outfit already has " + first.to().one()
+                            + ": " + describe(first.taking()) + "."
+                            + (others == 0 ? "" : " The same goes for " + others + (others == 1 ? " more outfit." : " more outfits."))
+                            + " Change the outfit first.",
+                    Map.of("outfitId", first.outfit().getId()));
+        }
+        for (Move move : change.moves()) {
+            move.outfit().getPieces().set(move.position(), new Piece(move.to(), item.getId()));
+            outfits.save(move.outfit());
+        }
+    }
+
+    /**
+     * For every outfit with the piece: does it still fit its place with the new type, can it move to
+     * the place the new type takes, or is that place taken by another piece (a conflict)? An accessory
+     * place is taken only by another accessory of the same type: an outfit can have several accessories.
+     */
+    static TypeChange planTypeChange(Item item, ItemType newType, List<Outfit> withItem, Map<Long, Item> wardrobe) {
+        List<Move> moves = new ArrayList<>();
+        List<Conflict> conflicts = new ArrayList<>();
+        Slot to = Slot.of(newType);
+        for (Outfit outfit : withItem) {
+            List<Piece> pieces = outfit.getPieces();
+            for (int i = 0; i < pieces.size(); i++) {
+                Piece piece = pieces.get(i);
+                if (!piece.getItemId().equals(item.getId()) || piece.getSlot().accepts(newType)) {
+                    continue;
+                }
+                Item taking = null;
+                for (Piece other : pieces) {
+                    Item otherItem = wardrobe.get(other.getItemId());
+                    boolean samePlace = other.getSlot() == to && !other.getItemId().equals(item.getId())
+                            && (to != Slot.ACCESSORY || (otherItem != null && otherItem.getType() == newType));
+                    if (samePlace) {
+                        taking = otherItem;
+                    }
+                }
+                if (taking != null) {
+                    conflicts.add(new Conflict(outfit, piece.getSlot(), to, taking));
+                } else {
+                    moves.add(new Move(outfit, i, to));
+                }
+            }
+        }
+        return new TypeChange(moves, conflicts);
+    }
+
+    /** What a piece is called in a message: its name, else its main color and type ("Navy skirt"). */
+    private static String describe(Item item) {
+        if (item == null) {
+            return "another piece";
+        }
+        if (item.getName() != null && !item.getName().isBlank()) {
+            return item.getName();
+        }
+        if (item.getType() == null) {
+            return "a " + item.getCategory().name().toLowerCase(Locale.ROOT);
+        }
+        List<ItemColor> colors = item.getColors();
+        return colors.isEmpty() ? item.getType().getLabel()
+                : colors.get(0).getLabel() + " " + item.getType().getLabel().toLowerCase(Locale.ROOT);
     }
 
     private static String savedOn(Outfit outfit) {

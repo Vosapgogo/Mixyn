@@ -101,13 +101,20 @@ public class ItemService {
         return item.fits(Category.TOP) || item.fits(Category.OUTERWEAR);
     }
 
-    /** The user corrects or enriches an item on its card. Null fields in the update are left as they are. */
+    /**
+     * The user corrects or enriches an item on its card. Null fields in the update are left as they are.
+     * A new type also moves the piece in the saved outfits that have it, in the same transaction.
+     */
+    @Transactional
     public Item updateItem(Long userId, Long itemId, ItemUpdate update) {
         Item item = ownItem(userId, itemId);
         if (update.type() != null) {
             ItemType type = ItemType.fromCode(update.type());
             if (type == null) {
                 throw invalid("Choose a type from the list");
+            }
+            if (type != item.getType()) {
+                outfits.fitTypeChange(item, type); // may refuse: a saved outfit has no room for the new kind
             }
             item.setType(type);
             if (!canBeOpen(item)) {

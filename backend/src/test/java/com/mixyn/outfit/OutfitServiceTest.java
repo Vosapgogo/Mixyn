@@ -121,6 +121,87 @@ class OutfitServiceTest {
         assertNull(OutfitService.duplicateOf(List.of(saved), List.of(new Piece(Slot.TOP, 10L)), 1L));
     }
 
+    // ----- A piece's type changes -----
+
+    @Test
+    void aNewTypeThatStillFitsItsPlaceChangesNothing() {
+        Outfit look = outfit(1, new Piece(Slot.TOP, 11L), new Piece(Slot.BOTTOM, 20L));
+
+        OutfitService.TypeChange change = OutfitService.planTypeChange(tee, ItemType.LONG_SLEEVE, List.of(look), byId());
+
+        assertTrue(change.moves().isEmpty());
+        assertTrue(change.conflicts().isEmpty());
+    }
+
+    @Test
+    void aPieceMovesToItsNewPlaceWhenThatPlaceIsFree() {
+        // a T-shirt that is really a skirt, in an outfit without a bottom
+        Outfit look = outfit(1, new Piece(Slot.TOP, 11L), new Piece(Slot.SHOES, 30L));
+
+        OutfitService.TypeChange change = OutfitService.planTypeChange(tee, ItemType.SKIRT, List.of(look), byId());
+
+        assertTrue(change.conflicts().isEmpty());
+        assertEquals(1, change.moves().size());
+        assertEquals(Slot.BOTTOM, change.moves().get(0).to());
+        assertEquals(0, change.moves().get(0).position());
+    }
+
+    @Test
+    void aPieceCantMoveWhereTheOutfitAlreadyHasAPiece() {
+        Outfit look = outfit(1, new Piece(Slot.TOP, 11L), new Piece(Slot.BOTTOM, 20L));
+
+        OutfitService.TypeChange change = OutfitService.planTypeChange(tee, ItemType.SKIRT, List.of(look), byId());
+
+        assertTrue(change.moves().isEmpty());
+        assertEquals(1, change.conflicts().size());
+        assertEquals(Slot.TOP, change.conflicts().get(0).from());
+        assertEquals(Slot.BOTTOM, change.conflicts().get(0).to());
+        assertSame(jeans, change.conflicts().get(0).taking());
+    }
+
+    @Test
+    void aPieceUnderTheTopThatIsNoLongerThinHasNowhereToGo() {
+        // the T-shirt under the sweater turns out to be a hoodie: it can't be under, and the top is taken
+        Outfit look = outfit(1, new Piece(Slot.TOP, 10L), new Piece(Slot.UNDER, 11L));
+
+        OutfitService.TypeChange change = OutfitService.planTypeChange(tee, ItemType.HOODIE, List.of(look), byId());
+
+        assertEquals(1, change.conflicts().size());
+        assertSame(sweater, change.conflicts().get(0).taking());
+    }
+
+    @Test
+    void anotherAccessoryOfAnotherTypeLeavesRoom() {
+        // a cap that is really a scarf: the outfit's other accessory is a cap, so the scarf fits beside it
+        Outfit look = outfit(1, new Piece(Slot.TOP, 10L), new Piece(Slot.ACCESSORY, 61L), new Piece(Slot.BAG, 50L));
+        Item otherCap = item(62, ItemType.CAP);
+        Outfit withTwo = outfit(2, new Piece(Slot.ACCESSORY, 61L), new Piece(Slot.ACCESSORY, 62L));
+        Map<Long, Item> owned = byId();
+        owned.put(62L, otherCap);
+
+        // the cap becomes a scarf: still an accessory, nothing moves in either outfit
+        OutfitService.TypeChange change = OutfitService.planTypeChange(cap, ItemType.SCARF, List.of(look, withTwo), owned);
+
+        assertTrue(change.moves().isEmpty());
+        assertTrue(change.conflicts().isEmpty());
+    }
+
+    @Test
+    void aBagThatIsReallyAnAccessoryMovesNextToTheOthers() {
+        Outfit look = outfit(1, new Piece(Slot.BAG, 50L), new Piece(Slot.ACCESSORY, 60L));
+
+        OutfitService.TypeChange change = OutfitService.planTypeChange(tote, ItemType.BELT, List.of(look), byId());
+
+        assertTrue(change.conflicts().isEmpty());
+        assertEquals(Slot.ACCESSORY, change.moves().get(0).to());
+    }
+
+    private Map<Long, Item> byId() {
+        Map<Long, Item> owned = new HashMap<>();
+        for (Item item : wardrobe) owned.put(item.getId(), item);
+        return owned;
+    }
+
     /** A saved outfit with these pieces, its id set by reflection, as JPA does. */
     private static Outfit outfit(long id, Piece... pieces) {
         Outfit outfit = new Outfit(USER, id + ".png", List.of(pieces));
