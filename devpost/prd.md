@@ -116,6 +116,10 @@ Source: `scope.md > The Core Loop`.
 - [ ] The Calendar shows the month with the worn outfits on their days; tapping one opens its card.
 - [ ] Saved outfits and the calendar are still there after closing and reopening the app, and after logging out and back in.
 - [ ] Removing a piece from the wardrobe takes it out of the saved outfits that had it; the outfits stay.
+- [ ] **Edit** on a saved outfit opens the canvas with it on; after Next the user chooses **Save as new** (the outfit stays as it was) or **Update** (the same outfit gets the new look).
+- [ ] Days on which an outfit was already worn keep showing it as it was, also after it is updated; such a day opens the outfit "As you wore it", which can't be changed and can open the outfit as it is now. Deleting the outfit removes those days too.
+- [ ] The same outfit (the same pieces in the same places) can't be saved twice; the user is told and can open the one that exists.
+- [ ] Changing a piece's type on its card checks the saved outfits: where the piece can't be worn in its place any more and its new place is free, it moves there; if that place is taken (a T-shirt turned skirt, in an outfit with jeans), an error names the outfit and nothing changes.
 - [ ] In the calendar, the cells before the 1st and after the last day show the neighboring months' dates on beige and can't be tapped; the calendar icon (or the month's name) opens a picker with a year and its months, and months that haven't come yet can't be chosen.
 
 ### Search and Filters
