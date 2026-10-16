@@ -27,6 +27,7 @@ import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.MixynApi;
 import com.mixyn.app.api.dto.CalendarDayDto;
 import com.mixyn.app.api.dto.ColorDto;
+import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.base.BaseActivity;
@@ -37,6 +38,7 @@ import com.mixyn.app.ui.components.MixynBottomBar;
 import com.mixyn.app.ui.components.OptionsSheet;
 import com.mixyn.app.ui.components.OptionsSheet.Mode;
 import com.mixyn.app.ui.components.OptionsSheet.Option;
+import com.mixyn.app.ui.item.ItemDetailActivity;
 import com.mixyn.app.ui.main.MainActivity;
 
 import java.io.File;
@@ -70,6 +72,9 @@ import okhttp3.RequestBody;
  *
  * "Wear it today" puts the outfit on today in the calendar. For a look from the canvas that also saves
  * it, in the same request.
+ *
+ * Every piece in the list opens its own card. The user may change the piece there (or remove it from
+ * the wardrobe), so coming back the card loads the pieces again.
  */
 public class OutfitActivity extends BaseActivity {
 
@@ -100,6 +105,8 @@ public class OutfitActivity extends BaseActivity {
     private ArrayList<String> draftSeasons = new ArrayList<>();
     private MaterialButton saveButton;
     private MaterialButton wearButton;
+    /** A piece's card was opened from here: on the way back the pieces may have changed. */
+    private boolean pieceOpened;
     /** A button that can't be tapped is faded to this. */
     private static final float DISABLED_ALPHA = 0.5f;
 
@@ -167,6 +174,63 @@ public class OutfitActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (pieceOpened) {
+            pieceOpened = false;
+            reloadPieces();
+        }
+    }
+
+    /**
+     * Back from a piece's card: a saved outfit is read again from the backend (it lists its pieces as
+     * they are now); a look that isn't saved yet takes its pieces from the wardrobe again, and drops a
+     * piece that has left it, so Save doesn't send it.
+     */
+    private void reloadPieces() {
+        long userId = new SessionStore(this).getUserId();
+        if (outfit != null) {
+            long id = outfit.id;
+            api.outfits(userId).enqueue(new ApiCallback<>(this) {
+                @Override
+                protected void onSuccess(@Nullable List<OutfitDto> outfits) {
+                    if (outfits == null) return;
+                    for (OutfitDto fresh : outfits) {
+                        if (fresh.id == id) outfit = fresh;
+                    }
+                    bind();
+                }
+
+                @Override
+                protected void onError(@Nullable String code, @NonNull String message) {
+                    // The card keeps showing what it had.
+                }
+            });
+            return;
+        }
+        api.items(userId).enqueue(new ApiCallback<>(this) {
+            @Override
+            protected void onSuccess(@Nullable List<ItemDto> wardrobe) {
+                if (wardrobe == null) return;
+                Map<Long, ItemDto> byId = new HashMap<>();
+                for (ItemDto item : wardrobe) byId.put(item.id, item);
+                List<OutfitDto.Piece> still = new ArrayList<>();
+                for (OutfitDto.Piece piece : draftPieces) {
+                    ItemDto now = byId.get(piece.item.id);
+                    if (now != null) still.add(new OutfitDto.Piece(piece.slot, now));
+                }
+                draftPieces = still;
+                bind();
+            }
+
+            @Override
+            protected void onError(@Nullable String code, @NonNull String message) {
+                // The card keeps showing what it had.
+            }
+        });
+    }
+
+    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (outfit != null) {
@@ -213,6 +277,10 @@ public class OutfitActivity extends BaseActivity {
             ((TextView) row.findViewById(R.id.piece_name)).setText(name);
             // A piece with no name, type or color is called by its place; saying it twice adds nothing.
             ((TextView) row.findViewById(R.id.piece_slot)).setText(name.equals(slot) ? "" : slot);
+            row.findViewById(R.id.piece_row).setOnClickListener(v -> {
+                pieceOpened = true;
+                ItemDetailActivity.start(this, piece.item);
+            });
             list.addView(row);
         }
 

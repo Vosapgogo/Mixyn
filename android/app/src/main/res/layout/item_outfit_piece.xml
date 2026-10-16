@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One piece in the list on an outfit's card: its photo, its name, and where it is worn. -->
+<!-- One piece in the list on an outfit's card: its photo, its name, and where it is worn.
+     Tapping the row opens the piece's own card. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,8 +12,9 @@
         style="@style/Widget.Mixyn.CardDivider" />
 
     <LinearLayout
+        android:id="@+id/piece_row"
         style="@style/Widget.Mixyn.CardRow"
-        android:paddingEnd="@dimen/space_m">
+        android:background="?attr/selectableItemBackground">
 
         <ImageView
             android:id="@+id/piece_image"
@@ -30,6 +32,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/space_xs"
+            android:layout_marginEnd="@dimen/space_xs"
             android:textAppearance="@style/TextAppearance.Mixyn.RowValue" />
+
+        <ImageView
+            style="@style/Widget.Mixyn.CardRowIcon"
+            android:src="@drawable/ic_chevron_right" />
     </LinearLayout>
 </LinearLayout>
