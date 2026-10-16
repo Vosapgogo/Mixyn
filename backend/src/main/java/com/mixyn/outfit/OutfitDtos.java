@@ -85,17 +85,18 @@ public final class OutfitDtos {
 
     /**
      * A saved outfit. imageUrl is the picture of the whole look, served like an item photo;
-     * lastWornOn is the last day it was worn according to the calendar, or null.
+     * lastWornOn is the last day it was worn according to the calendar, or null; replacedBy is set on
+     * an earlier version kept for the calendar (the id of the outfit as it is now), else null.
      */
     public record OutfitResponse(Long id, String imageUrl, List<PieceResponse> pieces, List<String> tags,
-            List<String> seasons, Instant createdAt, LocalDate lastWornOn) {
+            List<String> seasons, Instant createdAt, LocalDate lastWornOn, Long replacedBy) {
 
         static OutfitResponse from(OutfitView view) {
             Outfit outfit = view.outfit();
             return new OutfitResponse(outfit.getId(), "/images/" + outfit.getImageFile(),
                     view.pieces().stream().map(p -> new PieceResponse(p.slot(), ItemResponse.from(p.item()))).toList(),
                     Labels.split(outfit.getTags()), Labels.split(outfit.getSeason()), outfit.getCreatedAt(),
-                    view.lastWornOn());
+                    view.lastWornOn(), outfit.getReplacedBy());
         }
     }
 

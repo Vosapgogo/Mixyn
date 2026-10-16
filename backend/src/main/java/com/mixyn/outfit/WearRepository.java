@@ -15,5 +15,7 @@ public interface WearRepository extends JpaRepository<Wear, Long> {
     /** The last day an outfit was worn, if it ever was. */
     Optional<Wear> findFirstByOutfitIdOrderByWornOnDesc(Long outfitId);
 
+    List<Wear> findByOutfitId(Long outfitId);
+
     void deleteByOutfitId(Long outfitId);
 }

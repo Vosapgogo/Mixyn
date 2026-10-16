@@ -81,6 +81,14 @@ public class Outfit {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Set on an earlier version of an outfit: the id of the outfit as it is now. When an outfit that
+     * was worn is changed, its worn days move to such a copy, so the calendar keeps showing what was
+     * worn on them. A copy isn't listed with the saved outfits and can't be changed.
+     */
+    @Column(name = "replaced_by")
+    private Long replacedBy;
+
     protected Outfit() {
     }
 
@@ -88,6 +96,20 @@ public class Outfit {
         this.userId = userId;
         this.imageFile = imageFile;
         this.pieces.addAll(pieces);
+    }
+
+    /** A copy of this outfit as it is right now (pieces, picture, labels, date), kept for the days it was worn. */
+    Outfit versionAsWorn() {
+        List<Piece> copied = new ArrayList<>();
+        for (Piece piece : pieces) {
+            copied.add(new Piece(piece.getSlot(), piece.getItemId()));
+        }
+        Outfit before = new Outfit(userId, imageFile, copied);
+        before.tags = tags;
+        before.season = season;
+        before.createdAt = createdAt;
+        before.replacedBy = id;
+        return before;
     }
 
     public Long getId() {
@@ -128,5 +150,10 @@ public class Outfit {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    /** The outfit as it is now, if this is an earlier version of it; null for an outfit as it is. */
+    public Long getReplacedBy() {
+        return replacedBy;
     }
 }

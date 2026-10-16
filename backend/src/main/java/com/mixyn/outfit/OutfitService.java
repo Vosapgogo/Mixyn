@@ -28,6 +28,10 @@ import com.mixyn.storage.ImageStorage;
 /**
  * Saved outfits: what the user keeps from the canvas, with a picture of the whole look. And the outfit
  * calendar: which saved outfit was worn on which day.
+ *
+ * The calendar is a record of what was worn, so changing an outfit never changes a day that is already
+ * in it: before a worn outfit gets its new look, its days move to a copy of the outfit as it was (see
+ * Outfit.getReplacedBy). Copies are left out of the Outfits list and can't be changed themselves.
  */
 @Service
 public class OutfitService {
@@ -108,7 +112,7 @@ public class OutfitService {
     public List<OutfitView> list(Long userId) {
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
         Map<Long, LocalDate> lastWorn = lastWorn(wears.findByUserIdOrderByWornOn(userId));
-        return outfits.findByUserIdOrderByCreatedAtDesc(userId).stream()
+        return outfits.findByUserIdAndReplacedByIsNullOrderByCreatedAtDesc(userId).stream()
                 .map(outfit -> view(outfit, wardrobe, lastWorn.get(outfit.getId())))
                 .toList();
     }
@@ -121,7 +125,7 @@ public class OutfitService {
      */
     @Transactional
     public DayView wear(Long userId, Long outfitId, LocalDate day) {
-        Outfit outfit = ownOutfit(userId, outfitId);
+        Outfit outfit = ownCurrentOutfit(userId, outfitId);
         checkDay(day);
         putOnCalendar(userId, outfitId, day);
         return new DayView(day, view(outfit, items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId)));
@@ -187,7 +191,7 @@ public class OutfitService {
 
     /** The user changes the categories or seasons on an outfit's card. Null fields stay as they are. */
     public OutfitView update(Long userId, Long outfitId, List<String> tags, List<String> seasons) {
-        Outfit outfit = ownOutfit(userId, outfitId);
+        Outfit outfit = ownCurrentOutfit(userId, outfitId);
         if (tags != null) {
             outfit.setTags(Labels.joinTags(tags));
         }
@@ -198,33 +202,45 @@ public class OutfitService {
     }
 
     /**
-     * "Update" after editing an outfit on the canvas: the outfit keeps its id, its date and its days in
-     * the calendar, and gets the new pieces, picture, categories and seasons. The new look is checked
-     * like a new one, and it may not become a copy of another saved outfit.
+     * "Update" after editing an outfit on the canvas: the outfit keeps its id and its date, and gets the
+     * new pieces, picture, categories and seasons. The new look is checked like a new one, and it may not
+     * become a copy of another saved outfit. If the outfit was worn, its days first move to a copy of it
+     * as it was, with the old picture: those days keep showing what was worn on them.
      */
     @Transactional
     public OutfitView replace(Long userId, Long outfitId, LookIds look, byte[] picture, List<String> tags,
             List<String> seasons) {
-        Outfit outfit = ownOutfit(userId, outfitId);
+        Outfit outfit = ownCurrentOutfit(userId, outfitId);
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
         List<Piece> pieces = checkLook(wardrobe, look);
         String tagList = tags == null ? null : Labels.joinTags(tags);
         String seasonList = seasons == null ? null : Labels.joinSeasons(seasons);
         refuseDuplicate(userId, pieces, outfitId);
         String oldPicture = outfit.getImageFile();
+        List<Wear> worn = wears.findByOutfitId(outfitId);
+        if (!worn.isEmpty()) {
+            Outfit asWorn = outfits.save(outfit.versionAsWorn()); // it keeps the old picture file
+            for (Wear wear : worn) {
+                wear.setOutfitId(asWorn.getId());
+            }
+            wears.saveAll(worn);
+        }
         outfit.getPieces().clear();
         outfit.getPieces().addAll(pieces);
         outfit.setImageFile(storage.save(trim(picture)));
         outfit.setTags(tagList);
         outfit.setSeason(seasonList);
-        OutfitView view = view(outfits.save(outfit), wardrobe, lastWornOn(outfitId));
-        storage.delete(oldPicture); // a new file name, so the app doesn't keep showing a cached picture
+        OutfitView view = view(outfits.save(outfit), wardrobe, null); // its worn days are the old version's now
+        if (worn.isEmpty()) {
+            storage.delete(oldPicture); // a new file name, so the app doesn't keep showing a cached picture
+        }
         return view;
     }
 
     /** Saving the same pieces in the same places twice makes no sense; the user is told where the first one is. */
     private void refuseDuplicate(Long userId, List<Piece> pieces, Long exceptOutfitId) {
-        Outfit same = duplicateOf(outfits.findByUserIdOrderByCreatedAtDesc(userId), pieces, exceptOutfitId);
+        Outfit same = duplicateOf(outfits.findByUserIdAndReplacedByIsNullOrderByCreatedAtDesc(userId), pieces,
+                exceptOutfitId);
         if (same != null) {
             throw new ApiException(HttpStatus.CONFLICT, "duplicate_outfit",
                     "You already have this outfit, saved on " + savedOn(same) + ".",
@@ -261,7 +277,10 @@ public class OutfitService {
      */
     @Transactional
     public void fitTypeChange(Item item, ItemType newType) {
-        List<Outfit> withItem = outfits.findDistinctByPiecesItemId(item.getId());
+        // Earlier versions are a record of what was worn: they stay as they were.
+        List<Outfit> withItem = outfits.findDistinctByPiecesItemId(item.getId()).stream()
+                .filter(outfit -> outfit.getReplacedBy() == null)
+                .toList();
         if (withItem.isEmpty()) {
             return;
         }
@@ -341,14 +360,18 @@ public class OutfitService {
 
     /**
      * "Delete outfit": the outfit and its picture are gone for good, and so are its days in the
-     * calendar. The clothes stay in the wardrobe.
+     * calendar, the ones worn in an earlier version of it included. The clothes stay in the wardrobe.
      */
     @Transactional
     public void delete(Long userId, Long outfitId) {
-        Outfit outfit = ownOutfit(userId, outfitId);
-        wears.deleteByOutfitId(outfitId);
-        outfits.delete(outfit);
-        storage.delete(outfit.getImageFile());
+        Outfit outfit = ownCurrentOutfit(userId, outfitId);
+        List<Outfit> gone = new ArrayList<>(outfits.findByReplacedBy(outfitId));
+        gone.add(outfit);
+        for (Outfit version : gone) {
+            wears.deleteByOutfitId(version.getId());
+            outfits.delete(version);
+            storage.delete(version.getImageFile());
+        }
     }
 
     /**
@@ -367,6 +390,17 @@ public class OutfitService {
         return outfits.findById(outfitId)
                 .filter(outfit -> outfit.getUserId().equals(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "not_found", "Outfit not found"));
+    }
+
+    /** The same, for a change: an earlier version (kept for the calendar) can't be changed, only the outfit now. */
+    private Outfit ownCurrentOutfit(Long userId, Long outfitId) {
+        Outfit outfit = ownOutfit(userId, outfitId);
+        if (outfit.getReplacedBy() != null) {
+            throw new ApiException(HttpStatus.CONFLICT, "old_version",
+                    "This is how the outfit was on the days you wore it, so it can't be changed.",
+                    Map.of("outfitId", outfit.getReplacedBy()));
+        }
+        return outfit;
     }
 
     /**
