@@ -186,6 +186,8 @@
     <string name="canvas_focus_layers">Swipe your layers to swap them</string>
     <string name="canvas_focus_remove">Remove</string>
     <string name="canvas_added">Added to your closet: %1$s</string>
+    <string name="canvas_edit_filled_in">This outfit had nothing here, so your closet filled it in: %1$s. Swipe to choose another.</string>
+    <string name="canvas_edit_left_out">Left out of the outfit: %1$s. It can\'t be worn where it was any more.</string>
     <string name="canvas_empty_title">Nothing to style yet</string>
     <string name="canvas_empty_body">Add a few clothes first, then come back to build an outfit.</string>
     <string name="ask_ai_title">Ask the stylist</string>
@@ -202,6 +204,8 @@
     <!-- Outfit card (after Next on the canvas, and a saved outfit opened from Outfits) -->
     <string name="outfit_new_title">Your fit for today</string>
     <string name="outfit_saved_title">Your outfit</string>
+    <string name="outfit_edit_title">Your changes</string>
+    <string name="outfit_edit_subtitle">To your outfit saved %1$s</string>
     <string name="outfit_date_weather">%1$s · %2$s</string>
     <string name="outfit_weather">%1$d° %2$s</string>
     <string name="outfit_saved_on">Saved %1$s</string>
@@ -215,6 +219,21 @@
     <string name="outfit_category_empty">Add category</string>
     <string name="outfit_category_title">Category</string>
     <string name="outfit_saving">Saving…</string>
+    <string name="outfit_edit">Edit</string>
+    <string name="outfit_save_as_new">Save as new</string>
+    <string name="outfit_update">Update</string>
+    <string name="outfit_updated_toast">Outfit updated</string>
+    <string name="outfit_updated_kept_toast">Outfit updated. The days you wore it keep the old look.</string>
+    <string name="outfit_old_title">As you wore it</string>
+    <string name="outfit_old_subtitle">Worn %1$s. The outfit has changed since.</string>
+    <string name="outfit_see_now">See it now</string>
+    <string name="outfit_gone_title">This outfit is gone</string>
+    <string name="outfit_gone_body">It was deleted while you were changing it. Save your changes as a new outfit?</string>
+    <string name="outfit_duplicate_title">Already saved</string>
+    <string name="outfit_open">Open it</string>
+    <string name="outfit_not_found">This outfit is no longer there</string>
+    <string name="outfit_piece_left_out">%1$s can\'t be worn where it was any more, so it was taken out of this look.</string>
+    <string name="action_ok">OK</string>
     <string name="outfit_saved_toast">Saved to your outfits</string>
     <string name="outfit_wear_today">Wear it today</string>
     <string name="outfit_worn_today">Worn today</string>

@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.gson.Gson;
 import com.mixyn.app.R;
 import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
@@ -70,6 +71,10 @@ import java.util.concurrent.Executors;
  * canvas offers to go and add a piece. The round Ask AI button sends an optional hint to the backend
  * stylist, which may change the slots and all the layers at once. The weather chip and Next offer the
  * layers the weather calls for; after that Next takes the look to its card, where it is saved.
+ *
+ * Opened with Edit on a saved outfit, the canvas starts with that outfit on, and Next takes the changed
+ * look to a card where it can be saved as new or update the outfit. A piece that can't be put back where
+ * it was (its type changed since) is left out, and the user is told.
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
@@ -102,6 +107,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final String TIP_OUTERWEAR = "OUTERWEAR";
 
     private static final String KEY_ACCESSORIES = "canvas_accessories";
+    private static final String EXTRA_EDIT = "edit";
 
     /** One optional layer over the outfit: its pager and whether it is part of the outfit right now. */
     private static final class Layer {
@@ -156,6 +162,11 @@ public class OutfitCanvasActivity extends BaseActivity {
     private Layer wantedLayer;
     /** False until the wardrobe has arrived: before that, "the closet has no bag" would be a guess. */
     private boolean wardrobeLoaded;
+    /** The saved outfit being changed (Edit), or null for a new look. */
+    @Nullable
+    private OutfitDto editing;
+    /** Whether that outfit has been put on the canvas yet (once, when the wardrobe first arrives). */
+    private boolean editingShown;
 
     /** Every top in the wardrobe. The top slot offers them all except the ones worn as a layer. */
     private List<ItemDto> topPieces = new ArrayList<>();
@@ -185,12 +196,20 @@ public class OutfitCanvasActivity extends BaseActivity {
         context.startActivity(new Intent(context, OutfitCanvasActivity.class));
     }
 
+    /** Opens the canvas with this saved outfit on, to change it. */
+    public static void edit(Context context, OutfitDto outfit) {
+        context.startActivity(new Intent(context, OutfitCanvasActivity.class)
+                .putExtra(EXTRA_EDIT, new Gson().toJson(outfit)));
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outfit_canvas);
         api = ApiClient.get(this);
         userId = new SessionStore(this).getUserId();
+        String toEdit = getIntent().getStringExtra(EXTRA_EDIT);
+        if (toEdit != null) editing = new Gson().fromJson(toEdit, OutfitDto.class);
 
         topPager = findViewById(R.id.canvas_top);
         bottomPager = findViewById(R.id.canvas_bottom);
@@ -311,6 +330,8 @@ public class OutfitCanvasActivity extends BaseActivity {
                 next.setEnabled(true);
                 if (picture == null) {
                     Toast.makeText(this, R.string.error_outfit_picture, Toast.LENGTH_LONG).show();
+                } else if (editing != null) {
+                    OutfitActivity.startEdited(this, editing, pieces, weatherNow, picture);
                 } else {
                     OutfitActivity.startNew(this, pieces, weatherNow, picture);
                 }
@@ -434,6 +455,11 @@ public class OutfitCanvasActivity extends BaseActivity {
                         if (item.id == addedItemId) showAdded(item);
                     }
                     addedItemId = -1;
+                }
+                if (editing != null && !editingShown) {
+                    editingShown = true;
+                    // The pages are laid out on the next frame; only then do the slots know their pieces' places.
+                    topPager.post(() -> wearSaved(editing));
                 }
             }
 
@@ -698,10 +724,15 @@ public class OutfitCanvasActivity extends BaseActivity {
         if (layer == under || layer == outerwear) offerTops(); // its piece can be the top again
     }
 
-    /** Puts the layer on at this item, or takes it off when there is no item. */
+    /**
+     * Puts the layer on at this item, or takes it off when there is no item, or when the layer doesn't
+     * offer it (it would show whatever piece it was on instead).
+     */
     private void show(Layer layer, @Nullable ItemDto item) {
-        if (item == null) takeOff(layer);
-        else putOn(layer, item);
+        boolean offered = item != null && layer.pager.getAdapter() instanceof SlotPagerAdapter adapter
+                && adapter.indexOf(item.id) >= 0;
+        if (offered) putOn(layer, item);
+        else takeOff(layer);
     }
 
     /** Outerwear / Bag: put the layer on if it isn't, then let the user swipe through it. */
@@ -966,22 +997,8 @@ public class OutfitCanvasActivity extends BaseActivity {
             protected void onSuccess(@Nullable GenerateResult look) {
                 setStyling(false);
                 if (look == null) return;
-                // A piece worn as a layer isn't offered as the top, and the new top may be just that
-                // piece: the layers come off first and go back on once the top is chosen.
-                takeOff(under);
-                takeOff(outerwear);
-                moveTo(topPager, look.top);
-                moveTo(bottomPager, look.bottom);
-                moveTo(shoesPager, look.shoes);
-                // The top is still scrolling to its new piece, so tell the layers which one it will be.
-                offerLayersExcept(look.top != null ? look.top : currentItem(topPager));
-                show(under, look.under);
-                show(outerwear, look.outerwear);
-                show(bag, look.bag);
-                List<ItemDto> chosen = look.accessories == null ? List.of() : look.accessories;
-                wornTypes.clear();
-                for (ItemDto item : chosen) wornTypes.add(item.type);
-                showAccessories(chosen);
+                wearLook(look.top, look.bottom, look.shoes, look.outerwear, look.under, look.bag,
+                        look.accessories == null ? List.of() : look.accessories, true);
                 remember(hint, look);
                 if (look.message != null) {
                     Toast.makeText(OutfitCanvasActivity.this, look.message, Toast.LENGTH_LONG).show();
@@ -994,6 +1011,75 @@ public class OutfitCanvasActivity extends BaseActivity {
                 Toast.makeText(OutfitCanvasActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    // ----- Putting a whole look on -----
+
+    /**
+     * Moves every slot to its piece and puts exactly the given layers on (null = that layer off). Used
+     * for the stylist's look and for a saved outfit being edited.
+     *
+     * @param animate let the slots slide to their pieces (the stylist), or jump there (an outfit to edit)
+     */
+    private void wearLook(@Nullable ItemDto top, @Nullable ItemDto bottom, @Nullable ItemDto shoes,
+            @Nullable ItemDto outer, @Nullable ItemDto underPiece, @Nullable ItemDto bagPiece,
+            List<ItemDto> accessoryPieces, boolean animate) {
+        // A piece worn as a layer isn't offered as the top, and the new top may be just that piece:
+        // the layers come off first and go back on once the top is chosen.
+        takeOff(under);
+        takeOff(outerwear);
+        moveTo(topPager, top, animate);
+        moveTo(bottomPager, bottom, animate);
+        moveTo(shoesPager, shoes, animate);
+        // The top may still be scrolling to its new piece, so tell the layers which one it will be.
+        offerLayersExcept(top != null ? top : currentItem(topPager));
+        show(under, underPiece);
+        show(outerwear, outer);
+        show(bag, bagPiece);
+        wornTypes.clear();
+        for (ItemDto item : accessoryPieces) wornTypes.add(item.type);
+        showAccessories(accessoryPieces);
+        if (!animate) topPager.post(this::alignToTop);
+    }
+
+    /**
+     * Edit: puts the saved outfit on. Its pieces go back where they were; a piece the canvas can't put
+     * there any more (its type changed, or two accessories want the same spot) is left out, and the
+     * user is told which.
+     */
+    private void wearSaved(OutfitDto outfit) {
+        Map<String, ItemDto> bySlot = new HashMap<>();
+        List<ItemDto> accessoryPieces = new ArrayList<>();
+        for (OutfitDto.Piece piece : outfit.pieces) {
+            if (OutfitDto.Piece.ACCESSORY.equals(piece.slot)) accessoryPieces.add(piece.item);
+            else bySlot.put(piece.slot, piece.item);
+        }
+        wearLook(bySlot.get(OutfitDto.Piece.TOP), bySlot.get(OutfitDto.Piece.BOTTOM),
+                bySlot.get(OutfitDto.Piece.SHOES), bySlot.get(OutfitDto.Piece.OUTERWEAR),
+                bySlot.get(OutfitDto.Piece.UNDER), bySlot.get(OutfitDto.Piece.BAG), accessoryPieces, false);
+
+        Set<Long> worn = new HashSet<>();
+        for (OutfitDto.Piece piece : wornPieces()) worn.add(piece.item.id);
+        List<String> leftOut = new ArrayList<>();
+        for (OutfitDto.Piece piece : outfit.pieces) {
+            if (!worn.contains(piece.item.id)) leftOut.add(ItemNames.of(this, piece.item));
+        }
+        // The top, bottom and shoes always show a piece. If the outfit had none (it was removed from the
+        // wardrobe, or its type changed), the slot shows one from the closet, which the user should know.
+        List<String> filledIn = new ArrayList<>();
+        for (String slot : List.of(OutfitDto.Piece.TOP, OutfitDto.Piece.BOTTOM, OutfitDto.Piece.SHOES)) {
+            ItemDto shown = currentItem(slot.equals(OutfitDto.Piece.TOP) ? topPager
+                    : slot.equals(OutfitDto.Piece.BOTTOM) ? bottomPager : shoesPager);
+            if (!bySlot.containsKey(slot) && shown != null) filledIn.add(ItemNames.of(this, shown));
+        }
+        List<String> notes = new ArrayList<>();
+        if (!leftOut.isEmpty()) {
+            notes.add(getString(R.string.canvas_edit_left_out, String.join(getString(R.string.tags_joined_separator), leftOut)));
+        }
+        if (!filledIn.isEmpty()) {
+            notes.add(getString(R.string.canvas_edit_filled_in, String.join(getString(R.string.tags_joined_separator), filledIn)));
+        }
+        if (!notes.isEmpty()) Toast.makeText(this, String.join("\n", notes), Toast.LENGTH_LONG).show();
     }
 
     // ----- The stylist's memory of this session -----
@@ -1040,11 +1126,15 @@ public class OutfitCanvasActivity extends BaseActivity {
         return adapter.getItem(pager.getCurrentItem());
     }
 
-    /** Scrolls a slot to the piece the stylist chose (it is always one of this slot's own pieces). */
-    private void moveTo(ViewPager2 pager, @Nullable ItemDto item) {
+    /** Moves a slot to this piece, if the slot has it; otherwise the slot stays where it is. */
+    private void moveTo(ViewPager2 pager, @Nullable ItemDto item, boolean animate) {
         if (item == null || !(pager.getAdapter() instanceof SlotPagerAdapter adapter)) return;
         int index = adapter.indexOf(item.id);
-        if (index >= 0) pager.setCurrentItem(index, true);
+        if (index < 0) return;
+        pager.setCurrentItem(index, animate);
+        // An instant move doesn't re-run the page transformer, so the pages would keep the size and
+        // fading of the place they were in before.
+        if (!animate) pager.post(pager::requestTransform);
     }
 
     /** While the stylist works, the Ask AI button can't be tapped and shows a spinner instead of its icon. */

@@ -177,6 +177,7 @@
                         style="@style/Widget.Mixyn.CardRowLabel" />
 
                     <ImageView
+                        android:id="@+id/outfit_category_chevron"
                         style="@style/Widget.Mixyn.CardRowIcon"
                         android:src="@drawable/ic_chevron_right" />
                 </LinearLayout>
@@ -197,6 +198,7 @@
                         style="@style/Widget.Mixyn.CardRowLabel" />
 
                     <ImageView
+                        android:id="@+id/outfit_season_chevron"
                         style="@style/Widget.Mixyn.CardRowIcon"
                         android:src="@drawable/ic_chevron_right" />
                 </LinearLayout>
@@ -218,8 +220,9 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Save keeps the look in Outfits; Wear it today also puts it on today in the calendar.
-         A saved outfit has only Wear it today. -->
+    <!-- Two actions; what they are depends on how the card was opened:
+         a new look: Save / Wear it today; an edited outfit: Save as new / Update;
+         a saved outfit: Edit / Wear it today. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -230,7 +233,7 @@
         android:paddingBottom="@dimen/space_m">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/outfit_save"
+            android:id="@+id/outfit_side_action"
             style="@style/Widget.Mixyn.Button.Outline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -239,7 +242,7 @@
             app:icon="@drawable/ic_bookmark" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/outfit_wear"
+            android:id="@+id/outfit_main_action"
             style="@style/Widget.Mixyn.Button.Primary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -31,6 +31,7 @@ import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.base.BaseActivity;
+import com.mixyn.app.ui.canvas.OutfitCanvasActivity;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.ColorDots;
 import com.mixyn.app.ui.components.ItemNames;
@@ -64,14 +65,21 @@ import okhttp3.RequestBody;
  * An outfit's card: the picture of the look, the clothes in it, its colors (taken from the clothes),
  * its category and its seasons.
  *
- * It opens in one of two ways. From the canvas (Next) it shows the look that was just put together,
- * "Your fit for today": nothing is stored yet, the category and seasons chosen here go to the backend
- * together with the picture when the user taps Save. From the Outfits tab or the calendar it shows a
- * saved outfit: every change is sent right away and the card is redrawn from the answer, and the outfit
- * can be deleted.
+ * It opens in one of three ways (CardMode):
+ * - NEW, from the canvas (Next): the look that was just put together, "Your fit for today". Nothing is
+ *   stored yet; the category and seasons chosen here go to the backend with the picture on Save.
+ *   "Wear it today" also saves it, and puts it on today in the calendar, in the same request.
+ * - SAVED, from the Outfits tab or the calendar: every change is sent right away and the card is
+ *   redrawn from the answer. Edit takes the outfit back to the canvas; it can also be deleted.
+ * - EDITED, from the canvas after Edit: the changed look, with the category and seasons of the outfit
+ *   it came from. "Save as new" keeps that outfit as it was; "Update" replaces it. Days on which the
+ *   outfit was already worn keep showing it as it was (the backend keeps that version for them).
+ * - OLD, from such a day in the calendar: the outfit as it was worn. It can be looked at, not changed;
+ *   "See it now" opens the outfit as it is now.
  *
- * "Wear it today" puts the outfit on today in the calendar. For a look from the canvas that also saves
- * it, in the same request.
+ * Things that can go wrong on the way are each told apart: the same outfit is already saved (it can
+ * be opened), the outfit being updated was deleted meanwhile (the changes can be saved as new), and a
+ * piece whose type changed so that it can't be worn where it is (it is taken out of the look).
  *
  * Every piece in the list opens its own card. The user may change the piece there (or remove it from
  * the wardrobe), so coming back the card loads the pieces again.
@@ -82,6 +90,7 @@ public class OutfitActivity extends BaseActivity {
     private static final String EXTRA_PICTURE = "picture";
     private static final String EXTRA_WEATHER = "weather";
     private static final String EXTRA_OUTFIT = "outfit";
+    private static final String EXTRA_ORIGINAL = "original";
     private static final String STATE_TAGS = "tags";
     private static final String STATE_SEASONS = "seasons";
     private static final String KEY_CATEGORY = "outfit_category";
@@ -90,12 +99,17 @@ public class OutfitActivity extends BaseActivity {
     private static final DateTimeFormatter WEEKDAY_AND_DAY = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH);
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH);
 
+    private enum CardMode { NEW, EDITED, SAVED, OLD }
+
     private final Gson gson = new Gson();
     private final ExecutorService background = Executors.newSingleThreadExecutor();
     private MixynApi api;
     /** The saved outfit, or null while this is still a look from the canvas. */
     @Nullable
     private OutfitDto outfit;
+    /** For a changed look: the saved outfit it was changed from. */
+    @Nullable
+    private OutfitDto original;
     /** The clothes of a look that isn't saved yet, and the file with its picture. */
     private List<OutfitDto.Piece> draftPieces = new ArrayList<>();
     @Nullable
@@ -103,8 +117,9 @@ public class OutfitActivity extends BaseActivity {
     /** What the user chose for a look that isn't saved yet. */
     private ArrayList<String> draftTags = new ArrayList<>();
     private ArrayList<String> draftSeasons = new ArrayList<>();
-    private MaterialButton saveButton;
-    private MaterialButton wearButton;
+    /** The quiet button on the left (Save, Save as new, Edit) and the main one (Wear it today, Update). */
+    private MaterialButton sideButton;
+    private MaterialButton mainButton;
     /** A piece's card was opened from here: on the way back the pieces may have changed. */
     private boolean pieceOpened;
     /** A button that can't be tapped is faded to this. */
@@ -123,10 +138,44 @@ public class OutfitActivity extends BaseActivity {
                 .putExtra(EXTRA_PICTURE, picture.getAbsolutePath()));
     }
 
+    /** Opens the look on the canvas that was changed from a saved outfit (Edit). */
+    public static void startEdited(Context context, OutfitDto original, List<OutfitDto.Piece> pieces,
+            @Nullable String weather, File picture) {
+        context.startActivity(new Intent(context, OutfitActivity.class)
+                .putExtra(EXTRA_ORIGINAL, new Gson().toJson(original))
+                .putExtra(EXTRA_PIECES, new Gson().toJson(pieces))
+                .putExtra(EXTRA_WEATHER, weather)
+                .putExtra(EXTRA_PICTURE, picture.getAbsolutePath()));
+    }
+
     /** Opens a saved outfit. */
     public static void start(Context context, OutfitDto outfit) {
         context.startActivity(new Intent(context, OutfitActivity.class)
                 .putExtra(EXTRA_OUTFIT, new Gson().toJson(outfit)));
+    }
+
+    /** Opens a saved outfit known only by its id (an error pointed to it): its data is loaded first. */
+    public static void open(BaseActivity from, long outfitId) {
+        long userId = new SessionStore(from).getUserId();
+        ApiClient.get(from).outfits(userId).enqueue(new ApiCallback<>(from) {
+            @Override
+            protected void onSuccess(@Nullable List<OutfitDto> outfits) {
+                if (outfits != null) {
+                    for (OutfitDto outfit : outfits) {
+                        if (outfit.id == outfitId) {
+                            start(from, outfit);
+                            return;
+                        }
+                    }
+                }
+                Toast.makeText(from, R.string.outfit_not_found, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            protected void onError(@Nullable String code, @NonNull String message) {
+                Toast.makeText(from, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -134,8 +183,8 @@ public class OutfitActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outfit);
         api = ApiClient.get(this);
-        saveButton = findViewById(R.id.outfit_save);
-        wearButton = findViewById(R.id.outfit_wear);
+        sideButton = findViewById(R.id.outfit_side_action);
+        mainButton = findViewById(R.id.outfit_main_action);
 
         String saved = savedInstanceState != null
                 ? savedInstanceState.getString(EXTRA_OUTFIT) : getIntent().getStringExtra(EXTRA_OUTFIT);
@@ -145,24 +194,43 @@ public class OutfitActivity extends BaseActivity {
             draftPieces = gson.fromJson(getIntent().getStringExtra(EXTRA_PIECES),
                     new TypeToken<List<OutfitDto.Piece>>() { }.getType());
             draftPicture = getIntent().getStringExtra(EXTRA_PICTURE);
+            String from = getIntent().getStringExtra(EXTRA_ORIGINAL);
+            if (from != null) original = gson.fromJson(from, OutfitDto.class);
             if (savedInstanceState != null) {
                 draftTags = savedInstanceState.getStringArrayList(STATE_TAGS);
                 draftSeasons = savedInstanceState.getStringArrayList(STATE_SEASONS);
+            } else if (original != null) {
+                // A changed outfit starts with the category and seasons it had.
+                if (original.tags != null) draftTags = new ArrayList<>(original.tags);
+                if (original.seasons != null) draftSeasons = new ArrayList<>(original.seasons);
             }
         }
 
         findViewById(R.id.outfit_back).setOnClickListener(v -> finish());
         findViewById(R.id.outfit_share).setOnClickListener(v ->
                 Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show());
-        findViewById(R.id.outfit_row_category).setOnClickListener(v -> choose(KEY_CATEGORY,
-                R.string.outfit_category_title, R.array.tag_names, R.array.tag_colors, tags()));
-        findViewById(R.id.outfit_row_season).setOnClickListener(v -> choose(KEY_SEASON,
-                R.string.item_season_title, R.array.season_names, 0, seasons()));
+        findViewById(R.id.outfit_row_category).setOnClickListener(v -> {
+            if (mode() != CardMode.OLD) {
+                choose(KEY_CATEGORY, R.string.outfit_category_title, R.array.tag_names, R.array.tag_colors, tags());
+            }
+        });
+        findViewById(R.id.outfit_row_season).setOnClickListener(v -> {
+            if (mode() != CardMode.OLD) {
+                choose(KEY_SEASON, R.string.item_season_title, R.array.season_names, 0, seasons());
+            }
+        });
         findViewById(R.id.outfit_delete).setOnClickListener(v -> confirmDelete());
-        saveButton.setOnClickListener(v -> save(false));
-        wearButton.setOnClickListener(v -> {
-            if (outfit == null) save(true);
-            else wearToday();
+        sideButton.setOnClickListener(v -> {
+            if (mode() == CardMode.SAVED) OutfitCanvasActivity.edit(this, outfit);
+            else save(false);
+        });
+        mainButton.setOnClickListener(v -> {
+            switch (mode()) {
+                case NEW -> save(true);
+                case EDITED -> update();
+                case SAVED -> wearToday();
+                case OLD -> open(this, outfit.replacedBy);
+            }
         });
 
         // Each sheet answers under its own key. An empty answer ("Clear selection") is a choice too.
@@ -217,7 +285,15 @@ public class OutfitActivity extends BaseActivity {
                 List<OutfitDto.Piece> still = new ArrayList<>();
                 for (OutfitDto.Piece piece : draftPieces) {
                     ItemDto now = byId.get(piece.item.id);
-                    if (now != null) still.add(new OutfitDto.Piece(piece.slot, now));
+                    if (now == null) continue; // removed from the wardrobe
+                    if (canBeWorn(piece.slot, now)) {
+                        still.add(new OutfitDto.Piece(piece.slot, now));
+                    } else {
+                        // Its type changed: a skirt is no top. Save would be refused with it in the look.
+                        Toast.makeText(OutfitActivity.this,
+                                getString(R.string.outfit_piece_left_out, ItemNames.of(OutfitActivity.this, now)),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
                 draftPieces = still;
                 bind();
@@ -228,6 +304,12 @@ public class OutfitActivity extends BaseActivity {
                 // The card keeps showing what it had.
             }
         });
+    }
+
+    /** The same rule as the backend's: can this piece be worn in this place of an outfit? */
+    private static boolean canBeWorn(String slot, ItemDto item) {
+        if (OutfitDto.Piece.UNDER.equals(slot)) return item.underLayer;
+        return slot.equals(item.category) || slot.equals(item.alsoCategory);
     }
 
     @Override
@@ -258,11 +340,26 @@ public class OutfitActivity extends BaseActivity {
         }
     }
 
+    private CardMode mode() {
+        if (outfit != null) return outfit.replacedBy != null ? CardMode.OLD : CardMode.SAVED;
+        return original != null ? CardMode.EDITED : CardMode.NEW;
+    }
+
     private void bind() {
-        boolean saved = outfit != null;
-        ((TextView) findViewById(R.id.outfit_title))
-                .setText(saved ? R.string.outfit_saved_title : R.string.outfit_new_title);
-        ((TextView) findViewById(R.id.outfit_subtitle)).setText(saved ? savedLine() : todayLine());
+        CardMode mode = mode();
+        ((TextView) findViewById(R.id.outfit_title)).setText(switch (mode) {
+            case NEW -> R.string.outfit_new_title;
+            case EDITED -> R.string.outfit_edit_title;
+            case SAVED -> R.string.outfit_saved_title;
+            case OLD -> R.string.outfit_old_title;
+        });
+        ((TextView) findViewById(R.id.outfit_subtitle)).setText(switch (mode) {
+            case NEW -> todayLine();
+            case EDITED -> getString(R.string.outfit_edit_subtitle, savedOn(original));
+            case SAVED -> savedLine();
+            case OLD -> getString(R.string.outfit_old_subtitle,
+                    outfit.lastWornOn == null ? savedOn(outfit) : LocalDate.parse(outfit.lastWornOn).format(DAY));
+        });
 
         LinearLayout list = findViewById(R.id.outfit_pieces);
         list.removeAllViews();
@@ -296,12 +393,32 @@ public class OutfitActivity extends BaseActivity {
         setRow(R.id.outfit_category_label, tags(), R.string.outfit_category_empty);
         setRow(R.id.outfit_season_label, seasons(), R.string.item_season_empty);
 
-        findViewById(R.id.outfit_delete).setVisibility(saved ? View.VISIBLE : View.GONE);
-        saveButton.setVisibility(saved ? View.GONE : View.VISIBLE);
-        boolean wornToday = saved && today().equals(outfit.lastWornOn);
-        wearButton.setText(wornToday ? R.string.outfit_worn_today : R.string.outfit_wear_today);
-        wearButton.setIconResource(wornToday ? R.drawable.ic_check : 0);
-        setEnabled(wearButton, !wornToday);
+        findViewById(R.id.outfit_delete).setVisibility(mode == CardMode.SAVED ? View.VISIBLE : View.GONE);
+        // An earlier version only shows what was worn: its category and seasons can't be changed.
+        int chevrons = mode == CardMode.OLD ? View.GONE : View.VISIBLE;
+        findViewById(R.id.outfit_category_chevron).setVisibility(chevrons);
+        findViewById(R.id.outfit_season_chevron).setVisibility(chevrons);
+        showButtons(false);
+    }
+
+    /** The two buttons as this mode has them; while saving, both are off and the tapped one says "Saving…". */
+    private void showButtons(boolean saving) {
+        CardMode mode = mode();
+        sideButton.setVisibility(mode == CardMode.OLD ? View.GONE : View.VISIBLE);
+        sideButton.setText(saving && savingWith == sideButton ? R.string.outfit_saving : switch (mode) {
+            case NEW -> R.string.action_save;
+            case EDITED -> R.string.outfit_save_as_new;
+            case SAVED, OLD -> R.string.outfit_edit;
+        });
+        sideButton.setIconResource(mode == CardMode.SAVED ? R.drawable.ic_edit : R.drawable.ic_bookmark);
+        boolean wornToday = mode == CardMode.SAVED && today().equals(outfit.lastWornOn);
+        mainButton.setText(saving && savingWith == mainButton ? R.string.outfit_saving
+                : mode == CardMode.EDITED ? R.string.outfit_update
+                : mode == CardMode.OLD ? R.string.outfit_see_now
+                : wornToday ? R.string.outfit_worn_today : R.string.outfit_wear_today);
+        mainButton.setIconResource(wornToday ? R.drawable.ic_check : 0);
+        setEnabled(sideButton, !saving);
+        setEnabled(mainButton, !saving && !wornToday);
     }
 
     /** Today as the phone sees it, in the form the backend uses for calendar days: "2026-10-12". */
@@ -321,9 +438,14 @@ public class OutfitActivity extends BaseActivity {
         return weather == null ? today : getString(R.string.outfit_date_weather, today, weather);
     }
 
+    /** "12 October": the day an outfit was saved. */
+    private static String savedOn(OutfitDto saved) {
+        return Instant.parse(saved.createdAt).atZone(ZoneId.systemDefault()).toLocalDate().format(DAY);
+    }
+
     /** "Saved 12 October", and when it was last worn if it ever was: "… · last worn 14 October". */
     private String savedLine() {
-        String savedOn = Instant.parse(outfit.createdAt).atZone(ZoneId.systemDefault()).toLocalDate().format(DAY);
+        String savedOn = savedOn(outfit);
         if (outfit.lastWornOn == null) return getString(R.string.outfit_saved_on, savedOn);
         if (today().equals(outfit.lastWornOn)) return getString(R.string.outfit_saved_worn_today, savedOn);
         return getString(R.string.outfit_saved_worn, savedOn, LocalDate.parse(outfit.lastWornOn).format(DAY));
@@ -431,7 +553,7 @@ public class OutfitActivity extends BaseActivity {
      */
     private void save(boolean wearToday) {
         if (draftPicture == null) return;
-        setSaving(true, wearToday);
+        setSaving(wearToday ? mainButton : sideButton);
         String path = draftPicture;
         // Reading the picture file is slow work, so it stays off the main (UI) thread.
         background.execute(() -> {
@@ -439,7 +561,7 @@ public class OutfitActivity extends BaseActivity {
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 if (png == null) {
-                    setSaving(false, wearToday);
+                    setSaving(null);
                     Toast.makeText(this, R.string.error_outfit_picture, Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -464,8 +586,8 @@ public class OutfitActivity extends BaseActivity {
 
                     @Override
                     protected void onError(@Nullable String code, @NonNull String message) {
-                        setSaving(false, wearToday);
-                        Toast.makeText(OutfitActivity.this, message, Toast.LENGTH_LONG).show();
+                        setSaving(null);
+                        refused(code, message, errorOutfitId());
                     }
                 });
             });
@@ -491,19 +613,91 @@ public class OutfitActivity extends BaseActivity {
         return ids;
     }
 
-    /** While the look is being sent neither button can be tapped; the one that was tapped says "Saving…". */
-    private void setSaving(boolean saving, boolean wearToday) {
-        setEnabled(saveButton, !saving);
-        setEnabled(wearButton, !saving);
-        saveButton.setText(saving && !wearToday ? R.string.outfit_saving : R.string.action_save);
-        wearButton.setText(saving && wearToday ? R.string.outfit_saving : R.string.outfit_wear_today);
+    /** The button whose request is on its way, or null when nothing is being sent. */
+    @Nullable
+    private MaterialButton savingWith;
+
+    private void setSaving(@Nullable MaterialButton tapped) {
+        savingWith = tapped;
+        showButtons(tapped != null);
+    }
+
+    /**
+     * Save or Update was refused. The same outfit already saved is a dialog that can open it; the
+     * outfit being updated having been deleted is a dialog that offers to save the changes as new;
+     * anything else (a piece that isn't in the wardrobe any more…) is said as the backend says it.
+     */
+    private void refused(@Nullable String code, String message, @Nullable Long outfitId) {
+        if ("duplicate_outfit".equals(code) && outfitId != null) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.outfit_duplicate_title)
+                    .setMessage(message)
+                    .setNegativeButton(R.string.action_ok, null)
+                    .setPositiveButton(R.string.outfit_open, (d, w) -> open(this, outfitId))
+                    .show();
+        } else if ("not_found".equals(code) && mode() == CardMode.EDITED) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.outfit_gone_title)
+                    .setMessage(R.string.outfit_gone_body)
+                    .setNegativeButton(R.string.add_item_cancel, null)
+                    .setPositiveButton(R.string.outfit_save_as_new, (d, w) -> save(false))
+                    .show();
+        } else {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // ----- Update (a changed outfit) -----
+
+    /**
+     * Sends the changed look in place of the outfit it came from: same id and date. If that outfit was
+     * worn, the days it was worn keep the old look: the backend keeps that version for them.
+     */
+    private void update() {
+        if (draftPicture == null || original == null) return;
+        setSaving(mainButton);
+        String path = draftPicture;
+        long outfitId = original.id;
+        background.execute(() -> {
+            byte[] png = OutfitPicture.read(path);
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                if (png == null) {
+                    setSaving(null);
+                    Toast.makeText(this, R.string.error_outfit_picture, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                MultipartBody.Part picture = MultipartBody.Part.createFormData("picture", "outfit.png",
+                        RequestBody.create(MediaType.parse("image/png"), png));
+                Map<String, Object> body = new HashMap<>();
+                body.put("look", lookIds());
+                body.put("tags", draftTags);
+                body.put("seasons", draftSeasons);
+                api.replaceOutfit(outfitId, picture, body).enqueue(new ApiCallback<>(this) {
+                    @Override
+                    protected void onSuccess(@Nullable OutfitDto updated) {
+                        boolean worn = original != null && original.wornDays > 0;
+                        Toast.makeText(OutfitActivity.this,
+                                worn ? R.string.outfit_updated_kept_toast : R.string.outfit_updated_toast,
+                                Toast.LENGTH_LONG).show();
+                        startActivity(MainActivity.outfitsIntent(OutfitActivity.this));
+                    }
+
+                    @Override
+                    protected void onError(@Nullable String code, @NonNull String message) {
+                        setSaving(null);
+                        refused(code, message, errorOutfitId());
+                    }
+                });
+            });
+        });
     }
 
     /** A saved outfit: today in the calendar now shows it (and no longer another outfit, if one was there). */
     private void wearToday() {
         if (outfit == null) return;
         long userId = new SessionStore(this).getUserId();
-        setEnabled(wearButton, false);
+        setEnabled(mainButton, false);
         api.wearOutfit(userId, today(), Collections.singletonMap("outfitId", outfit.id))
                 .enqueue(new ApiCallback<>(this) {
                     @Override
@@ -526,7 +720,8 @@ public class OutfitActivity extends BaseActivity {
 
     /** Deleting can't be undone (the picture and the calendar days go too), so it is asked once more. */
     private void confirmDelete() {
-        boolean worn = outfit != null && outfit.lastWornOn != null;
+        // Counts the days of earlier versions too: they go with the outfit.
+        boolean worn = outfit != null && outfit.wornDays > 0;
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.outfit_delete_title)
                 .setMessage(worn ? R.string.outfit_delete_body_worn : R.string.outfit_delete_body)
