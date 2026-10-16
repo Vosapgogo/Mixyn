@@ -40,8 +40,11 @@ public class OutfitService {
     public record WornPiece(Slot slot, Item item) {
     }
 
-    /** A saved outfit together with its pieces, ready to be shown. lastWornOn is null if never worn. */
-    public record OutfitView(Outfit outfit, List<WornPiece> pieces, LocalDate lastWornOn) {
+    /**
+     * A saved outfit together with its pieces, ready to be shown. lastWornOn is null if never worn (in
+     * this version); wornDays counts its days in the calendar, the ones of its earlier versions included.
+     */
+    public record OutfitView(Outfit outfit, List<WornPiece> pieces, LocalDate lastWornOn, int wornDays) {
     }
 
     /** One day of the calendar and the outfit worn on it. */
@@ -105,16 +108,45 @@ public class OutfitService {
         if (wornOn != null) {
             putOnCalendar(userId, outfit.getId(), wornOn);
         }
-        return view(outfit, wardrobe, wornOn);
+        return view(outfit, wardrobe, wornOn, wornOn == null ? 0 : 1);
     }
 
     /** The user's saved outfits, newest first. */
     public List<OutfitView> list(Long userId) {
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
-        Map<Long, LocalDate> lastWorn = lastWorn(wears.findByUserIdOrderByWornOn(userId));
+        List<Wear> all = wears.findByUserIdOrderByWornOn(userId);
+        Map<Long, LocalDate> lastWorn = lastWorn(all);
+        Map<Long, Integer> days = wornDays(all, outfits.findByUserIdOrderByCreatedAtDesc(userId));
         return outfits.findByUserIdAndReplacedByIsNullOrderByCreatedAtDesc(userId).stream()
-                .map(outfit -> view(outfit, wardrobe, lastWorn.get(outfit.getId())))
+                .map(outfit -> view(outfit, wardrobe, lastWorn.get(outfit.getId()), days.getOrDefault(outfit.getId(), 0)))
                 .toList();
+    }
+
+    /**
+     * How many calendar days every outfit has, counted for the outfit as it is now: a day worn in an
+     * earlier version counts for the outfit it became.
+     */
+    private static Map<Long, Integer> wornDays(List<Wear> all, List<Outfit> every) {
+        Map<Long, Long> nowOf = new HashMap<>();
+        for (Outfit outfit : every) {
+            if (outfit.getReplacedBy() != null) {
+                nowOf.put(outfit.getId(), outfit.getReplacedBy());
+            }
+        }
+        Map<Long, Integer> days = new HashMap<>();
+        for (Wear wear : all) {
+            days.merge(nowOf.getOrDefault(wear.getOutfitId(), wear.getOutfitId()), 1, Integer::sum);
+        }
+        return days;
+    }
+
+    /** The same for one outfit: its own days and those of its earlier versions. */
+    private int wornDays(Long outfitId) {
+        long days = wears.countByOutfitId(outfitId);
+        for (Outfit version : outfits.findByReplacedBy(outfitId)) {
+            days += wears.countByOutfitId(version.getId());
+        }
+        return (int) days;
     }
 
     // ----- The outfit calendar -----
@@ -128,7 +160,8 @@ public class OutfitService {
         Outfit outfit = ownCurrentOutfit(userId, outfitId);
         checkDay(day);
         putOnCalendar(userId, outfitId, day);
-        return new DayView(day, view(outfit, items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId)));
+        return new DayView(day, view(outfit, items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId),
+                wornDays(outfitId)));
     }
 
     /** The days from..to (both included) on which the user wore a saved outfit, oldest first. */
@@ -139,8 +172,10 @@ public class OutfitService {
         List<Wear> all = wears.findByUserIdOrderByWornOn(userId);
         Map<Long, LocalDate> lastWorn = lastWorn(all);
         List<Item> wardrobe = items.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Outfit> every = outfits.findByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, Integer> wornDays = wornDays(all, every);
         Map<Long, Outfit> saved = new HashMap<>();
-        for (Outfit outfit : outfits.findByUserIdOrderByCreatedAtDesc(userId)) {
+        for (Outfit outfit : every) {
             saved.put(outfit.getId(), outfit);
         }
         List<DayView> days = new ArrayList<>();
@@ -148,7 +183,8 @@ public class OutfitService {
             Outfit outfit = saved.get(wear.getOutfitId());
             boolean inRange = !wear.getWornOn().isBefore(from) && !wear.getWornOn().isAfter(to);
             if (inRange && outfit != null) {
-                days.add(new DayView(wear.getWornOn(), view(outfit, wardrobe, lastWorn.get(outfit.getId()))));
+                days.add(new DayView(wear.getWornOn(), view(outfit, wardrobe, lastWorn.get(outfit.getId()),
+                        wornDays.getOrDefault(outfit.getId(), 0))));
             }
         }
         return days;
@@ -198,7 +234,8 @@ public class OutfitService {
         if (seasons != null) {
             outfit.setSeason(Labels.joinSeasons(seasons));
         }
-        return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId));
+        return view(outfits.save(outfit), items.findByUserIdOrderByCreatedAtDesc(userId), lastWornOn(outfitId),
+                wornDays(outfitId));
     }
 
     /**
@@ -230,7 +267,8 @@ public class OutfitService {
         outfit.setImageFile(storage.save(trim(picture)));
         outfit.setTags(tagList);
         outfit.setSeason(seasonList);
-        OutfitView view = view(outfits.save(outfit), wardrobe, null); // its worn days are the old version's now
+        // Its worn days are the old version's now, but they still count for it.
+        OutfitView view = view(outfits.save(outfit), wardrobe, null, wornDays(outfitId));
         if (worn.isEmpty()) {
             storage.delete(oldPicture); // a new file name, so the app doesn't keep showing a cached picture
         }
@@ -455,7 +493,7 @@ public class OutfitService {
         }
     }
 
-    private static OutfitView view(Outfit outfit, List<Item> wardrobe, LocalDate lastWornOn) {
+    private static OutfitView view(Outfit outfit, List<Item> wardrobe, LocalDate lastWornOn, int wornDays) {
         Map<Long, Item> owned = byId(wardrobe);
         List<WornPiece> pieces = new ArrayList<>();
         for (Piece piece : outfit.getPieces()) {
@@ -464,7 +502,7 @@ public class OutfitService {
                 pieces.add(new WornPiece(piece.getSlot(), item));
             }
         }
-        return new OutfitView(outfit, pieces, lastWornOn);
+        return new OutfitView(outfit, pieces, lastWornOn, wornDays);
     }
 
     private static Map<Long, Item> byId(List<Item> wardrobe) {

@@ -17,5 +17,7 @@ public interface WearRepository extends JpaRepository<Wear, Long> {
 
     List<Wear> findByOutfitId(Long outfitId);
 
+    long countByOutfitId(Long outfitId);
+
     void deleteByOutfitId(Long outfitId);
 }
