@@ -36,6 +36,7 @@ import com.mixyn.app.ui.components.OptionsSheet.Mode;
 import com.mixyn.app.ui.components.OptionsSheet.Option;
 import com.mixyn.app.ui.main.AddMenuSheet;
 import com.mixyn.app.ui.main.MainActivity;
+import com.mixyn.app.ui.outfit.OutfitActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +49,8 @@ import retrofit2.Call;
 /**
  * The item card: the cleaned photo plus everything known about the piece. The AI filled in type and color;
  * here the user corrects them, edits the photo (size, rotate, mirror), and optionally adds a name, tags and a season.
- * Every change is sent to the backend right away and the card is redrawn from its answer.
+ * Every change is sent to the backend right away and the card is redrawn from its answer. A new type
+ * that a saved outfit has no room for is refused by the backend; the card then says which outfit.
  */
 public class ItemDetailActivity extends BaseActivity
         implements EditPhotoSheet.Listener, MixynBottomBar.Listener {
@@ -197,9 +199,28 @@ public class ItemDetailActivity extends BaseActivity
             @Override
             protected void onError(@Nullable String code, @NonNull String message) {
                 bind(); // drop any preview that wasn't saved
-                Toast.makeText(ItemDetailActivity.this, message, Toast.LENGTH_LONG).show();
+                Long outfitId = errorOutfitId();
+                if ("type_conflict".equals(code) && outfitId != null) {
+                    showTypeConflict(message, outfitId);
+                } else {
+                    Toast.makeText(ItemDetailActivity.this, message, Toast.LENGTH_LONG).show();
+                }
             }
         };
+    }
+
+    /**
+     * The new type would leave the piece in a saved outfit where it can't be worn, and that outfit
+     * already has a piece in the place the new type takes (a T-shirt turned skirt, in an outfit with
+     * jeans). Nothing was changed; the user can open the outfit and change it first.
+     */
+    private void showTypeConflict(String message, long outfitId) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.item_type_conflict_title)
+                .setMessage(message)
+                .setNegativeButton(R.string.action_ok, null)
+                .setPositiveButton(R.string.item_open_outfit, (d, w) -> OutfitActivity.open(this, outfitId))
+                .show();
     }
 
     // ----- Edit photo (EditPhotoSheet.Listener) -----

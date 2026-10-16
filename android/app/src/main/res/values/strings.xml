@@ -163,6 +163,8 @@
     <string name="item_remove_confirm">Remove</string>
     <string name="item_removed">Removed from your wardrobe</string>
     <string name="item_front_title">Worn open or closed?</string>
+    <string name="item_type_conflict_title">Can\'t change the type</string>
+    <string name="item_open_outfit">Open the outfit</string>
     <string name="item_front_open">Open front</string>
     <string name="item_front_closed">Closed front</string>
     <string name="action_save">Save</string>
