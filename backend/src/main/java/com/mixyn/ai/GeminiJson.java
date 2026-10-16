@@ -37,7 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class GeminiJson {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiJson.class);
-    private static final String DEFAULT_MODELS = "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash";
+    private static final String DEFAULT_MODELS = "gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite";
     /** How long one model may take before it counts as down. */
     private static final int MODEL_TIMEOUT_MS = 12_000;
     /** Stop trying further models once this much time has passed, so the user never waits too long. */
