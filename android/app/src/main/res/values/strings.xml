@@ -192,6 +192,10 @@
     <string name="canvas_edit_left_out">Left out of the outfit: %1$s. It can\'t be worn where it was any more.</string>
     <string name="canvas_empty_title">Nothing to style yet</string>
     <string name="canvas_empty_body">Add a few clothes first, then come back to build an outfit.</string>
+    <!-- An empty top / bottom / shoes slot: tapping it opens Add clothes -->
+    <string name="canvas_missing_top">Add a top to complete the look</string>
+    <string name="canvas_missing_bottom">Add bottoms to complete the look</string>
+    <string name="canvas_missing_shoes">Add shoes to complete the look</string>
     <string name="ask_ai_title">Ask the stylist</string>
     <string name="ask_ai_body">Leave it empty for a surprise, or tell the stylist where you\'re going or what you feel like wearing.</string>
     <string name="ask_ai_hint_label">Occasion or mood</string>

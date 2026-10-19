@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SlotPlaceholderView: a small round + over "Add shoes to complete the look". -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:gravity="center"
+    tools:orientation="vertical"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <ImageView
+        android:layout_width="@dimen/slot_placeholder_plus_size"
+        android:layout_height="@dimen/slot_placeholder_plus_size"
+        android:background="@drawable/bg_circle_button"
+        android:importantForAccessibility="no"
+        android:padding="@dimen/space_xs"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_plus"
+        app:tint="@color/ink_muted" />
+
+    <TextView
+        android:id="@+id/placeholder_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:breakStrategy="balanced"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label"
+        android:textColor="@color/ink_muted" />
+</merge>

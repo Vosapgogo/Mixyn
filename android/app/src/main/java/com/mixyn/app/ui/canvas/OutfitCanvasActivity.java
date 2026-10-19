@@ -67,7 +67,8 @@ import java.util.concurrent.Executors;
  * the outfit. A piece is worn in one place at a time: a layer never offers the piece that is the top
  * right now, and the top slot never offers a piece that is on as the under layer or the outerwear.
  *
- * A new look starts on a random piece in each slot, with no layers on.
+ * A new look starts on a random piece in each slot, with no layers on. A slot the closet has nothing
+ * for shows a dashed placeholder instead ("Add shoes to complete the look") that opens Add clothes.
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -81,8 +82,6 @@ import java.util.concurrent.Executors;
  */
 public class OutfitCanvasActivity extends BaseActivity {
 
-    /** Share of the screen width left on each side of a piece, where its neighbors peek in. */
-    private static final float SIDE_PEEK = 0.22f;
     private static final float NEIGHBOR_ALPHA = 0.25f;
     private static final float NEIGHBOR_SCALE = 0.8f;
     /** Outerwear is drawn a touch larger than the top it covers, like a jacket worn over a sweater. */
@@ -142,6 +141,10 @@ public class OutfitCanvasActivity extends BaseActivity {
     private Layer bag;
     /** How much of the body frame (top + bottom) the top takes. */
     private float topShare;
+    /** Share of the screen width left on each side of a piece, where its neighbors peek in. */
+    private float sidePeek;
+    /** What the top, bottom and shoes slots show instead of their pager while the closet has nothing for them. */
+    private final Map<ViewPager2, View> placeholders = new HashMap<>();
     private final Map<AccessorySpot, Layer> accessorySpots = new EnumMap<>(AccessorySpot.class);
     private final List<Layer> layers = new ArrayList<>();
     private ImageButton askAi;
@@ -150,8 +153,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     private final Set<Layer> focused = new HashSet<>();
     private OnBackPressedCallback leaveFocusOnBack;
     /**
-     * "Add to wardrobe" from a missing-piece dialog: when the user comes back with a new piece, the
-     * wardrobe is loaded again and the piece is put on (see showAdded).
+     * "Add to wardrobe" from a missing-piece dialog, or the + in an empty slot: when the user comes back
+     * with a new piece, the wardrobe is loaded again and the piece is put on (see showAdded).
      */
     private final ActivityResultLauncher<Intent> addPiece =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -222,6 +225,16 @@ public class OutfitCanvasActivity extends BaseActivity {
         weatherChip = findViewById(R.id.canvas_weather);
 
         topShare = ResourcesCompat.getFloat(getResources(), R.dimen.canvas_top_share);
+        sidePeek = (1 - ResourcesCompat.getFloat(getResources(), R.dimen.canvas_piece_share)) / 2;
+
+        placeholders.put(topPager, findViewById(R.id.canvas_top_placeholder));
+        placeholders.put(bottomPager, findViewById(R.id.canvas_bottom_placeholder));
+        placeholders.put(shoesPager, findViewById(R.id.canvas_shoes_placeholder));
+        // The + in an empty slot: add a piece, then come straight back to the outfit with it in that slot.
+        placeholders.values().forEach(placeholder -> placeholder.setOnClickListener(v -> {
+            wantedLayer = null;
+            addPiece.launch(AddItemActivity.forResult(this));
+        }));
 
         under = new Layer(findViewById(R.id.canvas_under), true, null);
         outerwear = new Layer(findViewById(R.id.canvas_outerwear), true, null);
@@ -365,7 +378,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     /**
      * Draws the outfit as it stands on the canvas into a picture with a see-through background: the
      * slots and the layers over them, and nothing else of the screen. Only the piece each pager is on
-     * belongs to the outfit, so the pieces peeking in from the sides are hidden while it is drawn.
+     * belongs to the outfit, so the pieces peeking in from the sides and the placeholders of empty
+     * slots are hidden while it is drawn.
      */
     private Bitmap drawOutfit() {
         View slots = findViewById(R.id.canvas_slots);
@@ -382,6 +396,11 @@ public class OutfitCanvasActivity extends BaseActivity {
                 hidden.put(page, page.getAlpha());
                 page.setAlpha(0f);
             }
+        }
+        // An empty slot's "Add shoes…" isn't part of the outfit either.
+        for (View placeholder : placeholders.values()) {
+            hidden.put(placeholder, placeholder.getAlpha());
+            placeholder.setAlpha(0f);
         }
         Bitmap picture = Bitmap.createBitmap(slots.getWidth(), slots.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(picture);
@@ -482,14 +501,21 @@ public class OutfitCanvasActivity extends BaseActivity {
      * One slot or layer = one pager. In a base slot (layer == null) and in a wide layer, side padding
      * leaves room for the previous and next piece, faded and smaller; a layer shows them only in focus.
      * A pager that already shows pieces (the wardrobe was reloaded) stays on the piece it was showing.
+     * A base slot with no pieces gives way to its placeholder.
      */
     private void setUpPager(ViewPager2 pager, List<ItemDto> items, float slotScale, @Nullable Layer layer,
             @Nullable SlotPagerAdapter.PageStyle pageStyle) {
+        View placeholder = placeholders.get(pager);
+        if (placeholder != null) {
+            // Hidden, the empty pager can't take the taps meant for the placeholder.
+            pager.setVisibility(items.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            placeholder.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        }
         // The side padding must be in place before the pages are laid out, or the first piece
         // would sit against the left edge instead of the center.
         RecyclerView pages = (RecyclerView) pager.getChildAt(0);
         boolean wide = layer == null || layer.wide;
-        int side = wide ? Math.round(getResources().getDisplayMetrics().widthPixels * SIDE_PEEK) : 0;
+        int side = wide ? Math.round(getResources().getDisplayMetrics().widthPixels * sidePeek) : 0;
         pages.setPadding(side, 0, side, 0);
         pages.setClipToPadding(!wide);
         pages.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -887,6 +913,9 @@ public class OutfitCanvasActivity extends BaseActivity {
             // The piece under the top only shows around the top, so the top stays as it is for that.
             boolean faded = locked && !(slot == topPager && focused.contains(under));
             slot.setAlpha(faded ? LOCKED_ALPHA : 1f);
+            View placeholder = placeholders.get(slot);
+            placeholder.setEnabled(!locked);
+            placeholder.setAlpha(locked ? LOCKED_ALPHA : 1f);
         }
         for (Layer layer : layers) {
             boolean inFocus = focused.contains(layer);

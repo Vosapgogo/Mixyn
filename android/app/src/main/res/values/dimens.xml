@@ -46,6 +46,12 @@
     <item name="canvas_top_share" format="float" type="dimen">0.4615</item>
     <!-- Outfit canvas: how much the pieces overlap vertically, like clothes on a body -->
     <dimen name="canvas_overlap">-12dp</dimen>
+    <!-- Outfit canvas: the share of the screen width a piece takes; its neighbors peek in at both sides -->
+    <item name="canvas_piece_share" format="float" type="dimen">0.56</item>
+    <!-- Outfit canvas: an empty shoe slot is as wide as shoes are drawn there (70% of a piece) -->
+    <item name="canvas_shoes_share" format="float" type="dimen">0.40</item>
+    <!-- Outfit canvas: the round + in an empty slot -->
+    <dimen name="slot_placeholder_plus_size">32dp</dimen>
     <dimen name="dash_length">4dp</dimen>
     <!-- How much the screen behind "Edit photo" is darkened: enough to show the sheet's edge and rounded
          corners, light enough to keep the photo preview clear (other sheets use the default 0.6). -->

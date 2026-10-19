@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Create outfit: the pieces stacked like a silhouette (top, bottom, shoes) with optional layers over
      them (outerwear, a bag, accessories). Every slot and layer is its own horizontal pager, so swiping
-     one piece never moves the others. -->
+     one piece never moves the others. A slot the closet has nothing for shows a dashed placeholder. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -128,13 +128,62 @@
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Shown instead of the top or the bottom while the closet has none: tapping one opens
+                     Add clothes. A piece's width, in that piece's part of the frame. -->
+                <com.mixyn.app.ui.canvas.SlotPlaceholderView
+                    android:id="@+id/canvas_top_placeholder"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/canvas_missing_top"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toTopOf="@id/canvas_slot_split"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_percent="@dimen/canvas_piece_share" />
+
+                <com.mixyn.app.ui.canvas.SlotPlaceholderView
+                    android:id="@+id/canvas_bottom_placeholder"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/canvas_missing_bottom"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/canvas_slot_split"
+                    app:layout_constraintWidth_percent="@dimen/canvas_piece_share" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/canvas_shoes"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="22" />
+                android:layout_weight="22">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/canvas_shoes"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <com.mixyn.app.ui.canvas.SlotPlaceholderView
+                    android:id="@+id/canvas_shoes_placeholder"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/canvas_missing_shoes"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_percent="@dimen/canvas_shoes_share" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
 
         <!-- The bag and the accessories. Each pager is hidden until its layer is put on; the activity
