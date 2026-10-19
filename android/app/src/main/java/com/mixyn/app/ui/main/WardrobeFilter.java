@@ -11,6 +11,7 @@ import com.mixyn.app.R;
 import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.OutfitDto;
+import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.FilterSheet;
 import com.mixyn.app.ui.components.ItemNames;
 import com.mixyn.app.ui.components.OptionsSheet.Option;
@@ -37,8 +38,9 @@ import java.util.Set;
  * among its pieces (black and white: both are in the look). Its category and season work like a
  * piece's tags and season: one of the chosen ones is enough.
  *
- * On the outfit canvas only colors and types are offered, and a type narrows only the carousel it
- * belongs to: choosing jeans changes the bottoms and leaves the tops alone.
+ * On the outfit canvas only colors and types are offered, the types sorted by category (Tops: T-shirt,
+ * Sweater…; Bottoms: Jeans…), and a type narrows only the carousel it belongs to: choosing jeans
+ * changes the bottoms and leaves the tops alone.
  *
  * Search looks at what a piece is called: the name the user gave it, else its color and type ("Black
  * sneakers"), and at its type. An outfit matches when one of its pieces does.
@@ -49,6 +51,11 @@ public class WardrobeFilter implements Serializable {
     private static final String TYPES = "types";
     private static final String TAGS = "tags";
     private static final String SEASONS = "seasons";
+    /** The categories the canvas filter sorts its types into, in this order, with their titles. */
+    private static final String[] CATEGORIES = {Categories.TOP, Categories.BOTTOM, Categories.SHOES,
+            Categories.OUTERWEAR, Categories.BAG, Categories.ACCESSORY};
+    private static final int[] CATEGORY_TITLES = {R.string.filter_tops, R.string.filter_bottoms,
+            R.string.filter_shoes, R.string.filter_outerwear, R.string.filter_bags, R.string.filter_accessories};
     /** A piece or an outfit marked like this is for every season. */
     private static final String ALL_SEASONS = "All";
 
@@ -83,7 +90,11 @@ public class WardrobeFilter implements Serializable {
     /** Takes over what the user ticked in the filter sheet. */
     public void read(Bundle sheetResult) {
         colors = chosen(sheetResult, COLORS);
-        types = chosen(sheetResult, TYPES);
+        // One group of types, or one per category on the canvas ("types_TOP", "types_BOTTOM"…).
+        types = new ArrayList<>();
+        for (String key : sheetResult.keySet()) {
+            if (key.startsWith(TYPES)) types.addAll(chosen(sheetResult, key));
+        }
         tags = chosen(sheetResult, TAGS);
         seasons = chosen(sheetResult, SEASONS);
     }
@@ -179,13 +190,28 @@ public class WardrobeFilter implements Serializable {
         return groups;
     }
 
-    /** The canvas offers only color and type, from the clothes in the closet. */
+    /**
+     * The canvas offers only color and type, from the clothes in the closet: the types in a "Type"
+     * section, one group per category that has any (Tops, Bottoms, Shoes, Outerwear, Bags, Accessories).
+     */
     public ArrayList<FilterSheet.Group> groupsForCanvas(Context context, List<ItemDto> clothes) {
         ArrayList<FilterSheet.Group> groups = new ArrayList<>();
         groups.add(new FilterSheet.Group(COLORS, context.getString(R.string.filter_color), null,
                 colorOptions(clothes), colors));
-        groups.add(new FilterSheet.Group(TYPES, context.getString(R.string.filter_type),
-                context.getString(R.string.filter_canvas_types_hint), typeOptions(clothes), types));
+        String section = context.getString(R.string.filter_type);
+        for (int i = 0; i < CATEGORIES.length; i++) {
+            List<ItemDto> inCategory = new ArrayList<>();
+            for (ItemDto item : clothes) {
+                if (CATEGORIES[i].equals(item.category)) inCategory.add(item);
+            }
+            ArrayList<Option> options = typeOptions(inCategory);
+            ArrayList<String> ticked = new ArrayList<>();
+            for (Option option : options) {
+                if (types.contains(option.value)) ticked.add(option.value);
+            }
+            groups.add(new FilterSheet.Group(TYPES + "_" + CATEGORIES[i], context.getString(CATEGORY_TITLES[i]),
+                    null, options, ticked, section));
+        }
         return groups;
     }
 

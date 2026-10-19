@@ -28,7 +28,11 @@ import java.util.HashMap;
  */
 public class FilterSheet extends BottomSheetDialogFragment {
 
-    /** One group: its key in the result, its title, an optional line under it, the chips, the chosen ones. */
+    /**
+     * One group: its key in the result, its title, an optional line under it, the chips, the chosen ones,
+     * and optionally the section it belongs to: groups of one section ("Type": Tops, Bottoms…) are shown
+     * under one section title, each with a smaller title of its own.
+     */
     public static class Group implements Serializable {
         public final String key;
         public final String title;
@@ -36,14 +40,22 @@ public class FilterSheet extends BottomSheetDialogFragment {
         public final String hint;
         public final ArrayList<Option> options;
         public final ArrayList<String> selected;
+        @Nullable
+        public final String section;
 
         public Group(String key, String title, @Nullable String hint, ArrayList<Option> options,
                 ArrayList<String> selected) {
+            this(key, title, hint, options, selected, null);
+        }
+
+        public Group(String key, String title, @Nullable String hint, ArrayList<Option> options,
+                ArrayList<String> selected, @Nullable String section) {
             this.key = key;
             this.title = title;
             this.hint = hint;
             this.options = options;
             this.selected = selected;
+            this.section = section;
         }
     }
 
@@ -83,8 +95,12 @@ public class FilterSheet extends BottomSheetDialogFragment {
         }
 
         groupsView = view.findViewById(R.id.filter_groups);
+        String section = null;
         for (Group group : groups) {
-            if (!group.options.isEmpty()) addGroup(group);
+            if (group.options.isEmpty()) continue;
+            if (group.section != null && !group.section.equals(section)) addTitle(group.section);
+            section = group.section;
+            addGroup(group);
         }
         view.findViewById(R.id.filter_clear).setOnClickListener(v -> clearAll());
         view.findViewById(R.id.filter_show).setOnClickListener(v -> finishWithResult());
@@ -105,11 +121,26 @@ public class FilterSheet extends BottomSheetDialogFragment {
         outState.putSerializable(STATE_CHOSEN, chosen);
     }
 
-    /** A small title, an optional explaining line, and the group's chips flowing over as many rows as they need. */
-    private void addGroup(Group group) {
+    /** The small capitals over a group, or over a section of groups. */
+    private void addTitle(String text) {
         TextView title = new TextView(requireContext(), null, 0, R.style.Widget_Mixyn_CardLabel);
-        title.setText(group.title);
+        title.setText(text);
         groupsView.addView(title, withTopMargin(R.dimen.space_l));
+    }
+
+    /**
+     * A small title (in a section: a plain one, under the section's), an optional explaining line, and
+     * the group's chips flowing over as many rows as they need.
+     */
+    private void addGroup(Group group) {
+        if (group.section == null) {
+            addTitle(group.title);
+        } else {
+            TextView title = new TextView(requireContext());
+            TextViewCompat.setTextAppearance(title, R.style.TextAppearance_Mixyn_Label);
+            title.setText(group.title);
+            groupsView.addView(title, withTopMargin(R.dimen.space_s));
+        }
 
         if (group.hint != null) {
             TextView hint = new TextView(requireContext());

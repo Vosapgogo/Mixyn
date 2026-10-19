@@ -89,7 +89,13 @@
     <string name="filter_outfit_types">Pieces</string>
     <string name="filter_outfit_types_hint">The outfit has every kind of piece you choose</string>
     <string name="filter_outfit_category">Category</string>
-    <string name="filter_canvas_types_hint">A type changes only its own row: jeans the bottoms, a sweater the tops</string>
+    <!-- The canvas filter sorts the types by category -->
+    <string name="filter_tops">Tops</string>
+    <string name="filter_bottoms">Bottoms</string>
+    <string name="filter_shoes">Shoes</string>
+    <string name="filter_outerwear">Outerwear</string>
+    <string name="filter_bags">Bags</string>
+    <string name="filter_accessories">Accessories</string>
     <string name="no_match_title">Nothing matches</string>
     <string name="no_match_body">Try fewer filters or another search.</string>
     <string name="no_match_clear">Clear filters</string>
