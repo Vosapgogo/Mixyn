@@ -110,6 +110,7 @@ Source: `scope.md > The Unique Kernel`, `scope.md > What "Working" Looks Like` (
 Source: `scope.md > The Core Loop`.
 - [ ] **Next** on the canvas opens "Your fit for today": the look as on the canvas (layers included), the date and the weather.
 - [ ] Every outfit has a top, bottoms and shoes; the layers are optional. Without one of the three, Next says which is missing ("Add shoes to complete the look") and offers to add it, and the backend refuses to save or update it.
+- [ ] A dress replaces the bottoms: on the canvas it hangs over the place of the bottoms like a long coat, and the bottoms carousel starts on an empty page; swiping it still offers leggings or jeans to wear under the dress. A dress and shoes are a complete outfit.
 - [ ] Under the picture the card lists the clothes in the outfit by name, the outfit's colors (taken from its clothes), and lets the user choose its category (Casual, Work, Date night…) and its seasons.
 - [ ] **Save** stores the outfit (manual or AI-generated) and opens the **Outfits** tab, where it appears as a picture; tapping it opens its card.
 - [ ] On a saved outfit's card the category and seasons can be changed, and **Delete outfit** removes it after asking "Delete this outfit?".
