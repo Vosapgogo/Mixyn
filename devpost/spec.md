@@ -96,7 +96,7 @@ As built:
 - **Colors** (`res/values/colors.xml`): `mocha #7B6453` (primary buttons, splash, avatar), `ink #1F1B17` (text, central +, dark buttons), `ink_muted #8A837B`, `sand_bg #F4F1ED`, `surface #FBFAF7`, `line #E3DDD5`, `error #4F0005` (Pantone 4975C "Red Inferno": wrong-input border + message, and Log out).
 - **Type:** *Instrument Serif* for the logo and titles, *Inter* (sans-serif) for everything else; both OFL, bundled in `res/font/`.
 - **Rules (learner request):** all texts in `strings.xml`, all colors in `colors.xml`, one spacing scale in `dimens.xml` (4/8/12/16/24/32/48 dp), styles in `styles.xml`. Reusable components: `MixynBottomBar`, `MixynLogoHeader` ("Mixyn ☰", "Profile"), `MixynBackHeader` (← + title + subtitle), `MixynTextField` (label + field + show/hide password + error), and one button base with color variants (Primary / Outline / Dark / Soft).
-- **Removed from the design for the PoC:** Continue with Apple/Google, Forgot password, Terms checkbox. **Collections** tab is visible but "coming soon".
+- **Removed from the design for the PoC:** Continue with Apple/Google, Forgot password, Terms checkbox. The **Collections** tab was removed from Home (planned for later).
 
 Original sketch (superseded where the design differs):
 

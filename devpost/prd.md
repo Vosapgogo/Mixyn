@@ -179,7 +179,7 @@ Source: learner request while checking saved outfits.
 - **Hats and Bags** — hats depend on weather triggers; bags don't demonstrate layering as strongly as outerwear.
 - **Camera capture** — gallery upload is enough for the demo.
 - **Streaks, weather and OutfitCHECK photos in the calendar** — the calendar shows only the outfits worn.
-- **Collections** (Work, Casual, Date night) on saved outfits — saving to the Outfits tab proves the loop.
+- **Collections** (Work, Casual, Date night) on saved outfits — saving to the Outfits tab proves the loop. The Home tab for them was removed from the PoC (learner decision); they are planned for later.
 - **OutfitCHECK, Friends, sharing, ratings, leaderboard** — social layer deferred in scope.
 - **AI auto-filling Tags, Season, and Name** — manual for now.
 
@@ -187,6 +187,7 @@ Source: learner request while checking saved outfits.
 - Weather-aware suggestions, including cold/hot triggers for outerwear and hats.
 - Accessories step with bags on the canvas.
 - AI stylist that uses tags and season, not just category and color.
+- **Collections**: a Home tab that groups saved outfits into themed collections (Work, Casual, Date night).
 - Everything in `scope.md > Later`: social, calendar, Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin.
 
 ## Non-Goals
