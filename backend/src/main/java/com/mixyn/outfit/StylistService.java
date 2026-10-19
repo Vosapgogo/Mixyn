@@ -61,8 +61,10 @@ public class StylistService {
     private static final String PROMPT = """
             You are a personal stylist. Build ONE outfit using ONLY the items listed below; they are the \
             user's own clothes. Pick exactly one TOP, one BOTTOM and one SHOES item by id (if that category \
-            has items). On top of that you MAY add optional layers when they suit the look: one OUTERWEAR item, \
-            one BAG item, and up to 4 ACCESSORY items of different types (never two head coverings at once). \
+            has items). A Dress is a TOP that takes the place of the BOTTOM as well: with a dress, leave \
+            bottomId null unless a bottom really goes with it (leggings or jeans under a short dress). On \
+            top of that you MAY add optional layers when they suit the look: one OUTERWEAR item, one BAG \
+            item, and up to 4 ACCESSORY items of different types (never two head coverings at once). \
             Use null / an empty list for a layer you leave off. An item listed as TOP/OUTERWEAR (a cardigan) \
             can be the top, or the outer layer over another top, but never both in one outfit. An item listed \
             as TOP/UNDER (a T-shirt, shirt, long sleeve or tank top) can be the top, or be worn under another \
@@ -244,7 +246,9 @@ public class StylistService {
         boolean aiAnswered = pick != null;
 
         Item top = choose(byCategory, Category.TOP, aiAnswered ? pick.topId() : null, true, random);
-        Item bottom = choose(byCategory, Category.BOTTOM, aiAnswered ? pick.bottomId() : null, true, random);
+        // A dress takes the place of the bottom: keep a bottom the model chose to go with it, never add one.
+        Item bottom = choose(byCategory, Category.BOTTOM, aiAnswered ? pick.bottomId() : null,
+                top == null || !top.replacesBottom(), random);
         Item shoes = choose(byCategory, Category.SHOES, aiAnswered ? pick.shoesId() : null, true, random);
         // The layers are optional: keep one only if the model chose a valid item, never add one at random.
         Item outerwear = choose(byCategory, Category.OUTERWEAR, aiAnswered ? pick.outerwearId() : null, false, random);

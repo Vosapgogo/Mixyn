@@ -84,6 +84,22 @@ class StylistServiceTest {
     }
 
     @Test
+    void aDressGetsABottomOnlyWhenTheModelChoseOne() {
+        Item dress = item(14, ItemType.DRESS);
+        List<Item> withDress = List.of(dress, bottom, shoes);
+
+        assertNull(StylistService.buildLook(withDress, new AiPick(14L, null, 30L, null, null, null, List.of(), true),
+                "", random).bottom());
+        assertSame(bottom, StylistService.buildLook(withDress,
+                new AiPick(14L, 20L, 30L, null, null, null, List.of(), true), "", random).bottom());
+        // Without an answer the look is random, and a random dress doesn't get random trousers either.
+        Look fallback = StylistService.buildLook(withDress, null, "", random);
+        assertSame(dress, fallback.top());
+        assertNull(fallback.bottom());
+        assertSame(shoes, fallback.shoes());
+    }
+
+    @Test
     void neverAddsOuterwearTheModelDidNotValidlyChoose() {
         assertNull(StylistService.buildLook(wardrobe, new AiPick(10L, 20L, 30L, null, null, null, List.of(), true), "", random).outerwear());
         assertNull(StylistService.buildLook(wardrobe, new AiPick(10L, 20L, 30L, 999L, null, null, List.of(), true), "", random).outerwear());
