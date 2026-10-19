@@ -43,7 +43,6 @@ import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.FilterSheet;
 import com.mixyn.app.ui.components.ItemNames;
 import com.mixyn.app.ui.components.OptionsSheet;
-import com.mixyn.app.ui.main.WardrobeFilter;
 import com.mixyn.app.ui.outfit.OutfitActivity;
 import com.mixyn.app.ui.outfit.OutfitPicture;
 
@@ -75,8 +74,8 @@ import java.util.concurrent.Executors;
  * exception: it hangs over the place of the bottoms like a long coat, and the bottom slot then starts
  * on an empty page, from which the user may still swipe to leggings or jeans to wear under it.
  *
- * The filter in the header narrows every carousel to the chosen colors and types (a type only its own
- * carousel); a slot it leaves empty says "No shoes match your filter".
+ * The filter in the header narrows each carousel to the types and colors chosen for its category (red
+ * sweaters, blue trousers); a slot it leaves empty says "No shoes match your filter".
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -155,8 +154,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     private float sidePeek;
     /** What the top, bottom and shoes slots show instead of their pager while they have nothing to show. */
     private final Map<ViewPager2, SlotPlaceholderView> placeholders = new HashMap<>();
-    /** The colors and types chosen in the filter; only matching pieces are in the carousels. */
-    private final WardrobeFilter filter = new WardrobeFilter();
+    /** The types and colors chosen in the filter for each category; only matching pieces are in the carousels. */
+    private final CanvasFilter filter = new CanvasFilter();
     /** The whole wardrobe as it was loaded, before the filter. */
     private List<ItemDto> wardrobe = List.of();
     /** The slots and layers whose pieces the filter hides all of right now. */
@@ -586,18 +585,18 @@ public class OutfitCanvasActivity extends BaseActivity {
         findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
         if (nothingToStyle) return false;
 
-        topPieces = narrowed(topPager, tops);
-        bottomPieces = narrowed(bottomPager, bottoms);
-        List<ItemDto> shoesShown = narrowed(shoesPager, shoes);
-        replace(underPieces, narrowed(under.pager, unders));
-        replace(outerwearPieces, narrowed(outerwear.pager, outers));
-        replace(accessories, filter.narrow(worn));
+        topPieces = narrowed(topPager, Categories.TOP, tops);
+        bottomPieces = narrowed(bottomPager, Categories.BOTTOM, bottoms);
+        List<ItemDto> shoesShown = narrowed(shoesPager, Categories.SHOES, shoes);
+        replace(underPieces, unders); // a second choice, not a category: every thin top stays offered
+        replace(outerwearPieces, narrowed(outerwear.pager, Categories.OUTERWEAR, outers));
+        replace(accessories, filter.narrow(Categories.ACCESSORY, worn));
         accessoriesFilteredOut = accessories.isEmpty() && !worn.isEmpty();
         offerTops();
         offerBottoms();
         setUpPager(shoesPager, shoesShown, SHOES_SCALE, null, null);
         offerLayersExcept(currentItem(topPager));
-        setUpPager(bag.pager, narrowed(bag.pager, bags), 1f, bag, null);
+        setUpPager(bag.pager, narrowed(bag.pager, Categories.BAG, bags), 1f, bag, null);
         // A layer the filter left with nothing comes off.
         for (Layer layer : List.of(under, outerwear, bag)) {
             if (layer.on && currentItem(layer.pager) == null) takeOff(layer);
@@ -607,8 +606,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /** These pieces as far as they pass the filter; remembers when the filter hides every one of them. */
-    private List<ItemDto> narrowed(ViewPager2 pager, List<ItemDto> pieces) {
-        List<ItemDto> passing = filter.narrow(pieces);
+    private List<ItemDto> narrowed(ViewPager2 pager, String category, List<ItemDto> pieces) {
+        List<ItemDto> passing = filter.narrow(category, pieces);
         if (passing.isEmpty() && !pieces.isEmpty()) filteredOut.add(pager);
         else filteredOut.remove(pager);
         return passing;
@@ -621,14 +620,14 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     // ----- The filter -----
 
-    /** The filter sheet: the colors and types the closet has, with the ones chosen now ticked. */
+    /** The filter sheet: per category the types and colors the closet has, with the ones chosen now ticked. */
     private void openFilter() {
         if (!wardrobeLoaded) return; // the choices are made from the clothes, and they aren't here yet
         List<ItemDto> styled = new ArrayList<>();
         for (ItemDto item : wardrobe) {
             if (item.category != null) styled.add(item);
         }
-        FilterSheet.newInstance(KEY_FILTER, filter.groupsForCanvas(this, styled))
+        FilterSheet.newInstance(KEY_FILTER, filter.groups(this, styled))
                 .show(getSupportFragmentManager(), KEY_FILTER);
     }
 
