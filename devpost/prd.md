@@ -94,7 +94,7 @@ Source: `scope.md > The Core Loop`.
 - [ ] Outerwear, when the stylist adds it, appears as half a jacket over the left side of the Top, so the top stays visible. (The canvas has no separate outerwear button, as in the design.)
 - [ ] Swiping left/right on a piece changes only that piece to another item of the same category; all other pieces stay.
 - [ ] If a category has no items, its slot shows a faded placeholder outline with a small **+** and "Add shoes to complete the look" (wording adapted to the category).
-- [ ] A filter on the canvas (as on Home, but only **Color** and **Type**) narrows the carousels to the chosen colors and types; a type changes only its own carousel (jeans the bottoms, not the tops). A slot the filter leaves empty says "No shoes match your filter"; the filter can be cleared at any time and is gone when the canvas is closed.
+- [ ] A filter on the canvas narrows each carousel to the **Type** and **Color** chosen for its category (Tops: sweater, red; Bottoms: trousers, blue); new choices add to the ones made before. A slot the filter leaves empty says "No shoes match your filter"; the filter can be cleared at any time and is gone when the canvas is closed.
 
 ### AI Stylist
 Source: `scope.md > The Unique Kernel`, `scope.md > What "Working" Looks Like` (the "aha" beat).
