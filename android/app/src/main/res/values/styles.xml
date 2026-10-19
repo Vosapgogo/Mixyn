@@ -126,7 +126,7 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <!-- ===== Tabs (Clothes / Outfits / Collections) ===== -->
+    <!-- ===== Tabs (Clothes / Outfits) ===== -->
     <style name="Widget.Mixyn.Tabs" parent="Widget.Material3.TabLayout">
         <item name="android:background">@android:color/transparent</item>
         <item name="tabIndicatorColor">@color/ink</item>

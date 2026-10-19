@@ -73,7 +73,6 @@
     <!-- Wardrobe -->
     <string name="tab_clothes">Clothes</string>
     <string name="tab_outfits">Outfits</string>
-    <string name="tab_collections">Collections</string>
     <string name="search_open">Search</string>
     <string name="search_hint">Search by name or type</string>
     <string name="search_clear">Clear search</string>

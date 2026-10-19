@@ -6,7 +6,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +17,7 @@ import com.mixyn.app.ui.components.MixynLogoHeader;
 import com.mixyn.app.ui.components.MixynTextField;
 
 /**
- * Home tab: "Mixyn" header and the Clothes / Outfits / Collections tabs.
+ * Home tab: "Mixyn" header and the Clothes / Outfits tabs.
  *
  * The header has two tools for the tab that is showing. The magnifier opens a search field under the
  * tabs. The three lines open that tab's filter sheet, and carry a dot while a filter is on. Each tab has
@@ -38,7 +37,6 @@ public class WardrobeFragment extends Fragment {
 
     private static final int TAB_CLOTHES = 0;
     private static final int TAB_OUTFITS = 1;
-    private static final int TAB_COLLECTIONS = 2;
     private static final String ARG_OUTFITS = "outfits";
     private static final String STATE_TAB = "tab";
     private static final String STATE_CLOTHES_FILTER = "clothesFilter";
@@ -104,17 +102,10 @@ public class WardrobeFragment extends Fragment {
         TabLayout tabs = view.findViewById(R.id.wardrobe_tabs);
         tabs.addTab(tabs.newTab().setText(R.string.tab_clothes));
         tabs.addTab(tabs.newTab().setText(R.string.tab_outfits));
-        tabs.addTab(tabs.newTab().setText(R.string.tab_collections));
         if (savedInstanceState != null) tabs.selectTab(tabs.getTabAt(currentTab)); // before the listener: nothing to do
         tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == TAB_COLLECTIONS) {
-                    // Not in the PoC: say so and jump back to the tab the user was on.
-                    Toast.makeText(requireContext(), R.string.coming_soon, Toast.LENGTH_SHORT).show();
-                    tabs.post(() -> tabs.selectTab(tabs.getTabAt(currentTab)));
-                    return;
-                }
                 showTab(tab.getPosition());
             }
 
