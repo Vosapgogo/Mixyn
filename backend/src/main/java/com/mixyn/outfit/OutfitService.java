@@ -463,8 +463,8 @@ public class OutfitService {
             missing.add("shoes");
         }
         if (!missing.isEmpty()) {
-            throw invalid("An outfit needs a top, bottoms and shoes. Add " + joinWithAnd(missing)
-                    + " to complete the look.");
+            throw invalid("An outfit needs a top, bottoms and shoes, or a dress and shoes. Add "
+                    + joinWithAnd(missing) + " to complete the look.");
         }
         List<Piece> pieces = new ArrayList<>();
         add(pieces, Slot.TOP, look.topId(), owned);
