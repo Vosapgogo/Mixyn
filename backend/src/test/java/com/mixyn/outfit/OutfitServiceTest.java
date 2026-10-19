@@ -53,10 +53,23 @@ class OutfitServiceTest {
     }
 
     @Test
-    void savesAnOutfitWithEmptyPlaces() {
-        List<Piece> pieces = OutfitService.checkLook(wardrobe, new LookIds(10L, 20L, null, null, null, null, null));
+    void theLayersMayBeLeftOut() {
+        List<Piece> pieces = OutfitService.checkLook(wardrobe, new LookIds(10L, 20L, 30L, null, null, null, null));
 
-        assertEquals(List.of(10L, 20L), pieces.stream().map(Piece::getItemId).toList());
+        assertEquals(List.of(10L, 20L, 30L), pieces.stream().map(Piece::getItemId).toList());
+    }
+
+    @Test
+    void refusesAnOutfitWithoutATopBottomsAndShoes() {
+        assertRefusedFor(new LookIds(10L, 20L, null, 40L, null, 50L, null), "Add shoes to complete the look.");
+        assertRefusedFor(new LookIds(null, 20L, 30L, 40L, null, null, null), "Add a top to complete the look.");
+        assertRefusedFor(new LookIds(10L, null, 30L, null, null, null, List.of(60L)),
+                "Add bottoms to complete the look.");
+        assertRefusedFor(new LookIds(10L, null, null, null, null, null, null),
+                "Add bottoms and shoes to complete the look.");
+        // A coat over nothing is not an outfit either.
+        assertRefusedFor(new LookIds(null, null, null, 40L, null, null, null),
+                "Add a top, bottoms and shoes to complete the look.");
     }
 
     @Test
@@ -218,6 +231,13 @@ class OutfitServiceTest {
     private void assertRefused(LookIds look) {
         ApiException refused = assertThrows(ApiException.class, () -> OutfitService.checkLook(wardrobe, look));
         assertEquals("validation_failed", refused.getCode());
+    }
+
+    /** Refused, and the message says which of the top, bottoms and shoes the outfit still needs. */
+    private void assertRefusedFor(LookIds look, String advice) {
+        ApiException refused = assertThrows(ApiException.class, () -> OutfitService.checkLook(wardrobe, look));
+        assertEquals("validation_failed", refused.getCode());
+        assertTrue(refused.getMessage().endsWith(advice), refused.getMessage());
     }
 
     /** An item as it would come from the database: the id is set by reflection, as JPA does. */
