@@ -39,7 +39,8 @@ class OutfitServiceTest {
     private final Item tote = item(50, ItemType.TOTE_BAG);
     private final Item scarf = item(60, ItemType.SCARF);
     private final Item cap = item(61, ItemType.CAP);
-    private final List<Item> wardrobe = List.of(sweater, tee, cardigan, jeans, sneakers, coat, tote, scarf, cap);
+    private final Item dress = item(13, ItemType.DRESS);
+    private final List<Item> wardrobe = List.of(sweater, tee, cardigan, jeans, sneakers, coat, tote, scarf, cap, dress);
 
     @Test
     void keepsEveryPieceInItsPlace() {
@@ -70,6 +71,14 @@ class OutfitServiceTest {
         // A coat over nothing is not an outfit either.
         assertRefusedFor(new LookIds(null, null, null, 40L, null, null, null),
                 "Add a top, bottoms and shoes to complete the look.");
+    }
+
+    @Test
+    void aDressTakesThePlaceOfTheBottom() {
+        assertEquals(2, OutfitService.checkLook(wardrobe, new LookIds(13L, null, 30L, null, null, null, null)).size());
+        // Jeans under a dress are fine too, but shoes are still needed.
+        assertEquals(3, OutfitService.checkLook(wardrobe, new LookIds(13L, 20L, 30L, null, null, null, null)).size());
+        assertRefusedFor(new LookIds(13L, null, null, null, null, null, null), "Add shoes to complete the look.");
     }
 
     @Test

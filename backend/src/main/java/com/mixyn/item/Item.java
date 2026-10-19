@@ -133,6 +133,11 @@ public class Item {
         return type != null && type.canGoUnder();
     }
 
+    /** Whether it takes the place of the bottom as well as the top (a dress): a bottom is then optional. */
+    public boolean replacesBottom() {
+        return type == ItemType.DRESS;
+    }
+
     /** Whether the item can stand in this outfit slot or layer. */
     public boolean fits(Category slot) {
         return slot != null && (slot == category || slot == getAlsoCategory());

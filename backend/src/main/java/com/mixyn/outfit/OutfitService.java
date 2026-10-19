@@ -445,15 +445,18 @@ public class OutfitService {
      * The trust boundary of saving: the app names the pieces by id, and none of it is taken on trust.
      * Every id must be an item of this wardrobe (someone else's item and a made-up id look the same
      * here: not found), every item must be wearable in the place it is given, and no item is worn twice.
-     * Every outfit has a top, a bottom and shoes; the layers are optional. The pieces come back in the
-     * order the outfit's card lists them.
+     * Every outfit has a top, a bottom and shoes, except that a dress takes the place of the bottom too
+     * (a bottom under it is optional); the layers are optional. The pieces come back in the order the
+     * outfit's card lists them.
      */
     static List<Piece> checkLook(List<Item> wardrobe, LookIds look) {
+        Map<Long, Item> owned = byId(wardrobe);
+        Item top = look.topId() == null ? null : owned.get(look.topId());
         List<String> missing = new ArrayList<>();
         if (look.topId() == null) {
             missing.add("a top");
         }
-        if (look.bottomId() == null) {
+        if (look.bottomId() == null && (top == null || !top.replacesBottom())) {
             missing.add("bottoms");
         }
         if (look.shoesId() == null) {
@@ -463,7 +466,6 @@ public class OutfitService {
             throw invalid("An outfit needs a top, bottoms and shoes. Add " + joinWithAnd(missing)
                     + " to complete the look.");
         }
-        Map<Long, Item> owned = byId(wardrobe);
         List<Piece> pieces = new ArrayList<>();
         add(pieces, Slot.TOP, look.topId(), owned);
         add(pieces, Slot.BOTTOM, look.bottomId(), owned);
