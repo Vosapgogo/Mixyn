@@ -171,6 +171,8 @@
     <string name="action_done">Done</string>
     <string name="action_clear_selection">Clear selection</string>
     <string name="tags_joined_separator">", "</string>
+    <!-- Before the last of several words: "a top, bottoms and shoes" -->
+    <string name="joined_last_separator">" and "</string>
 
     <!-- Outfit canvas -->
     <string name="canvas_ask_ai">Ask AI</string>
@@ -196,6 +198,13 @@
     <string name="canvas_missing_top">Add a top to complete the look</string>
     <string name="canvas_missing_bottom">Add bottoms to complete the look</string>
     <string name="canvas_missing_shoes">Add shoes to complete the look</string>
+    <!-- Next with a top, bottoms or shoes missing: an outfit can't be saved without all three -->
+    <string name="canvas_incomplete_title">Not a full outfit yet</string>
+    <string name="canvas_incomplete_body">An outfit needs a top, bottoms and shoes. Add %1$s to complete the look.</string>
+    <string name="canvas_incomplete_top">a top</string>
+    <string name="canvas_incomplete_bottom">bottoms</string>
+    <string name="canvas_incomplete_shoes">shoes</string>
+    <string name="canvas_incomplete_later">Not now</string>
     <string name="ask_ai_title">Ask the stylist</string>
     <string name="ask_ai_body">Leave it empty for a surprise, or tell the stylist where you\'re going or what you feel like wearing.</string>
     <string name="ask_ai_hint_label">Occasion or mood</string>

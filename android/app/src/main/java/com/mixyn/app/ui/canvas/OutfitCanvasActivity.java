@@ -69,6 +69,7 @@ import java.util.concurrent.Executors;
  *
  * A new look starts on a random piece in each slot, with no layers on. A slot the closet has nothing
  * for shows a dashed placeholder instead ("Add shoes to complete the look") that opens Add clothes.
+ * Next needs all three: an outfit is saved only with a top, bottoms and shoes.
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -306,6 +307,7 @@ public class OutfitCanvasActivity extends BaseActivity {
 
         weatherChip.setOnClickListener(v -> offerWeatherTip(false));
         findViewById(R.id.canvas_next).setOnClickListener(v -> {
+            if (!wardrobeLoaded || askForMissingBase()) return;
             if (weatherTipOffered) goNext();
             else offerWeatherTip(true);
         });
@@ -354,6 +356,32 @@ public class OutfitCanvasActivity extends BaseActivity {
                 }
             });
         });
+    }
+
+    /**
+     * An outfit can only be saved with a top, bottoms and shoes (the backend refuses it otherwise). If
+     * the canvas lacks any of them, says which and offers to go and add one: it then lands in its empty
+     * slot. Returns false when nothing is missing.
+     */
+    private boolean askForMissingBase() {
+        List<String> missing = new ArrayList<>();
+        if (currentItem(topPager) == null) missing.add(getString(R.string.canvas_incomplete_top));
+        if (currentItem(bottomPager) == null) missing.add(getString(R.string.canvas_incomplete_bottom));
+        if (currentItem(shoesPager) == null) missing.add(getString(R.string.canvas_incomplete_shoes));
+        if (missing.isEmpty()) return false;
+        String pieces = missing.size() == 1 ? missing.get(0)
+                : String.join(getString(R.string.tags_joined_separator), missing.subList(0, missing.size() - 1))
+                        + getString(R.string.joined_last_separator) + missing.get(missing.size() - 1);
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.canvas_incomplete_title)
+                .setMessage(getString(R.string.canvas_incomplete_body, pieces))
+                .setNegativeButton(R.string.canvas_incomplete_later, null)
+                .setPositiveButton(R.string.missing_add, (dialog, which) -> {
+                    wantedLayer = null;
+                    addPiece.launch(AddItemActivity.forResult(this));
+                })
+                .show();
+        return true;
     }
 
     /** Every piece that is on right now with its place, in the order an outfit's card lists them. */
