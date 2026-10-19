@@ -18,9 +18,9 @@ import java.util.List;
 
 /**
  * The image of one piece on the canvas. A piece is normally fitted into the middle of its frame.
- * Outerwear is "hung" instead: fitted against a line near the top of the frame — the shoulder line of
- * the top underneath — and centered left to right, so a jacket and a long coat both start at the
- * shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
+ * Outerwear is "hung" instead: from a line near the top of the frame — the shoulder line of the top
+ * underneath — as wide as that top and centered left to right, so a jacket and a long coat both sit on
+ * the top's shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
  * than the view itself: over the bottom's part of the outfit, like a long coat.
  * A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
  * above the top's neckline and its hem below the top's hem, however long the two pieces are. Under a
@@ -51,6 +51,8 @@ public class PieceImageView extends AppCompatImageView {
 
     private boolean hung;
     private float hangFrom;
+    /** How wide a hung image is drawn at most, in pixels; 0 = as wide as the view. */
+    private float hangWidth;
     /** How far down a hung image may reach, in heights of this view: more than 1 for a dress. */
     private float reach = 1f;
     private boolean behind;
@@ -93,8 +95,14 @@ public class PieceImageView extends AppCompatImageView {
 
     /** Draws the image from this many pixels below the top of the frame, as large as still fits. */
     public void hangFrom(float y) {
+        hangFrom(y, 0f);
+    }
+
+    /** The same, but no wider than this many pixels (0 = the view's width): outerwear as wide as the top. */
+    public void hangFrom(float y, float width) {
         hung = true;
         hangFrom = y;
+        hangWidth = width;
         setScaleType(ScaleType.MATRIX);
         hang();
     }
@@ -383,7 +391,8 @@ public class PieceImageView extends AppCompatImageView {
         float width = drawable.getIntrinsicWidth();
         float height = drawable.getIntrinsicHeight();
         if (frameWidth <= 0 || frameHeight <= 0 || width <= 0 || height <= 0) return;
-        float fit = Math.min(frameWidth / width, frameHeight / height);
+        float fitWidth = hangWidth > 0 ? Math.min(hangWidth, frameWidth) : frameWidth;
+        float fit = Math.min(fitWidth / width, frameHeight / height);
         Matrix matrix = new Matrix();
         matrix.setScale(fit, fit);
         matrix.postTranslate((frameWidth - width * fit) / 2f, hangFrom);
