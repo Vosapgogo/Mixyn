@@ -40,8 +40,10 @@ import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.additem.AddItemActivity;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
+import com.mixyn.app.ui.components.FilterSheet;
 import com.mixyn.app.ui.components.ItemNames;
 import com.mixyn.app.ui.components.OptionsSheet;
+import com.mixyn.app.ui.main.WardrobeFilter;
 import com.mixyn.app.ui.outfit.OutfitActivity;
 import com.mixyn.app.ui.outfit.OutfitPicture;
 
@@ -72,6 +74,9 @@ import java.util.concurrent.Executors;
  * Next needs all three: an outfit is saved only with a top, bottoms and shoes. A dress is the one
  * exception: it hangs over the place of the bottoms like a long coat, and the bottom slot then starts
  * on an empty page, from which the user may still swipe to leggings or jeans to wear under it.
+ *
+ * The filter in the header narrows every carousel to the chosen colors and types (a type only its own
+ * carousel); a slot it leaves empty says "No shoes match your filter".
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -115,6 +120,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final String TIP_OUTERWEAR = "OUTERWEAR";
 
     private static final String KEY_ACCESSORIES = "canvas_accessories";
+    private static final String KEY_FILTER = "canvas_filter";
     private static final String EXTRA_EDIT = "edit";
 
     /** One optional layer over the outfit: its pager and whether it is part of the outfit right now. */
@@ -149,8 +155,15 @@ public class OutfitCanvasActivity extends BaseActivity {
     private float topShare;
     /** Share of the screen width left on each side of a piece, where its neighbors peek in. */
     private float sidePeek;
-    /** What the top, bottom and shoes slots show instead of their pager while the closet has nothing for them. */
-    private final Map<ViewPager2, View> placeholders = new HashMap<>();
+    /** What the top, bottom and shoes slots show instead of their pager while they have nothing to show. */
+    private final Map<ViewPager2, SlotPlaceholderView> placeholders = new HashMap<>();
+    /** The colors and types chosen in the filter; only matching pieces are in the carousels. */
+    private final WardrobeFilter filter = new WardrobeFilter();
+    /** The whole wardrobe as it was loaded, before the filter. */
+    private List<ItemDto> wardrobe = List.of();
+    /** The slots and layers whose pieces the filter hides all of right now. */
+    private final Set<ViewPager2> filteredOut = new HashSet<>();
+    private boolean accessoriesFilteredOut;
     private final Map<AccessorySpot, Layer> accessorySpots = new EnumMap<>(AccessorySpot.class);
     private final List<Layer> layers = new ArrayList<>();
     private ImageButton askAi;
@@ -242,7 +255,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         placeholders.put(bottomPager, findViewById(R.id.canvas_bottom_placeholder));
         placeholders.put(shoesPager, findViewById(R.id.canvas_shoes_placeholder));
         // The + in an empty slot: add a piece, then come straight back to the outfit with it in that slot.
-        placeholders.values().forEach(placeholder -> placeholder.setOnClickListener(v -> {
+        // A slot the filter emptied opens the filter instead.
+        placeholders.forEach((slot, placeholder) -> placeholder.setOnClickListener(v -> {
+            if (filteredOut.contains(slot)) {
+                openFilter();
+                return;
+            }
             wantedLayer = null;
             addPiece.launch(AddItemActivity.forResult(this));
         }));
@@ -290,11 +308,14 @@ public class OutfitCanvasActivity extends BaseActivity {
         outerwear.pager.registerOnPageChangeCallback(wornChanged);
 
         findViewById(R.id.canvas_under_button).setOnClickListener(v -> chooseLayer(under,
-                R.string.canvas_focus_under, R.string.missing_under_title, R.string.missing_under_body));
+                R.string.canvas_focus_under, R.string.missing_under_title, R.string.missing_under_body,
+                R.string.canvas_no_match_under));
         findViewById(R.id.canvas_outerwear_button).setOnClickListener(v -> chooseLayer(outerwear,
-                R.string.canvas_focus_outerwear, R.string.missing_outerwear_title, R.string.missing_outerwear_body));
+                R.string.canvas_focus_outerwear, R.string.missing_outerwear_title, R.string.missing_outerwear_body,
+                R.string.canvas_no_match_outerwear));
         findViewById(R.id.canvas_bag_button).setOnClickListener(v -> chooseLayer(bag,
-                R.string.canvas_focus_bag, R.string.missing_bag_title, R.string.missing_bag_body));
+                R.string.canvas_focus_bag, R.string.missing_bag_title, R.string.missing_bag_body,
+                R.string.canvas_no_match_bag));
         findViewById(R.id.canvas_accessory_button).setOnClickListener(v -> chooseAccessoryTypes());
         getSupportFragmentManager().setFragmentResultListener(KEY_ACCESSORIES, this, (key, result) ->
                 wear(result.getStringArrayList(OptionsSheet.RESULT_VALUES)));
@@ -316,6 +337,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         getSupportFragmentManager().setFragmentResultListener(AskAiSheet.REQUEST_KEY, this, (key, result) -> {
             if (result.getBoolean(AskAiSheet.RESULT_START_OVER)) conversation.clear();
             generate(result.getString(AskAiSheet.RESULT_HINT, ""));
+        });
+
+        findViewById(R.id.canvas_filter).setOnClickListener(v -> openFilter());
+        getSupportFragmentManager().setFragmentResultListener(KEY_FILTER, this, (key, result) -> {
+            filter.read(result);
+            filterChanged();
         });
 
         weatherChip.setOnClickListener(v -> offerWeatherTip(false));
@@ -378,26 +405,43 @@ public class OutfitCanvasActivity extends BaseActivity {
      * slot. Returns false when nothing is missing.
      */
     private boolean askForMissingBase() {
-        List<String> missing = new ArrayList<>();
-        if (currentItem(topPager) == null) missing.add(getString(R.string.canvas_incomplete_top));
-        if (currentItem(bottomPager) == null && !isDress(currentItem(topPager))) {
-            missing.add(getString(R.string.canvas_incomplete_bottom));
-        }
-        if (currentItem(shoesPager) == null) missing.add(getString(R.string.canvas_incomplete_shoes));
+        List<ViewPager2> missing = new ArrayList<>();
+        if (currentItem(topPager) == null) missing.add(topPager);
+        if (currentItem(bottomPager) == null && !isDress(currentItem(topPager))) missing.add(bottomPager);
+        if (currentItem(shoesPager) == null) missing.add(shoesPager);
         if (missing.isEmpty()) return false;
-        String pieces = missing.size() == 1 ? missing.get(0)
-                : String.join(getString(R.string.tags_joined_separator), missing.subList(0, missing.size() - 1))
-                        + getString(R.string.joined_last_separator) + missing.get(missing.size() - 1);
-        new MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.canvas_incomplete_title)
-                .setMessage(getString(R.string.canvas_incomplete_body, pieces))
-                .setNegativeButton(R.string.canvas_incomplete_later, null)
-                .setPositiveButton(R.string.missing_add, (dialog, which) -> {
-                    wantedLayer = null;
-                    addPiece.launch(AddItemActivity.forResult(this));
-                })
-                .show();
+                .setNegativeButton(R.string.canvas_incomplete_later, null);
+        // The closet has them, but the filter hides them: offer to clear it. Otherwise offer to add one.
+        List<ViewPager2> hidden = new ArrayList<>(missing);
+        hidden.retainAll(filteredOut);
+        if (!hidden.isEmpty()) {
+            dialog.setMessage(getString(R.string.canvas_incomplete_filtered, pieceNames(hidden, true)))
+                    .setPositiveButton(R.string.canvas_filter_clear, (d, which) -> clearFilter());
+        } else {
+            dialog.setMessage(getString(R.string.canvas_incomplete_body, pieceNames(missing, false)))
+                    .setPositiveButton(R.string.missing_add, (d, which) -> {
+                        wantedLayer = null;
+                        addPiece.launch(AddItemActivity.forResult(this));
+                    });
+        }
+        dialog.show();
         return true;
+    }
+
+    /** "a top, bottoms and shoes"; in the plural for the ones the filter hides: "tops and shoes". */
+    private String pieceNames(List<ViewPager2> slots, boolean plural) {
+        List<String> names = new ArrayList<>();
+        for (ViewPager2 slot : slots) {
+            int name = slot == topPager ? (plural ? R.string.canvas_filtered_top : R.string.canvas_incomplete_top)
+                    : slot == bottomPager ? (plural ? R.string.canvas_filtered_bottom : R.string.canvas_incomplete_bottom)
+                    : (plural ? R.string.canvas_filtered_shoes : R.string.canvas_incomplete_shoes);
+            names.add(getString(name));
+        }
+        if (names.size() == 1) return names.get(0);
+        return String.join(getString(R.string.tags_joined_separator), names.subList(0, names.size() - 1))
+                + getString(R.string.joined_last_separator) + names.get(names.size() - 1);
     }
 
     /** Every piece that is on right now with its place, in the order an outfit's card lists them. */
@@ -483,47 +527,16 @@ public class OutfitCanvasActivity extends BaseActivity {
                 if (items == null) return;
                 boolean firstLoad = !wardrobeLoaded;
                 wardrobeLoaded = true;
-                List<ItemDto> tops = new ArrayList<>();
-                List<ItemDto> bottoms = new ArrayList<>();
-                List<ItemDto> shoes = new ArrayList<>();
-                List<ItemDto> bags = new ArrayList<>();
-                underPieces.clear();
-                outerwearPieces.clear();
-                accessories.clear();
-                for (ItemDto item : items) {
-                    if (item.category == null) continue; // not placed in a slot until the user chooses a type
-                    switch (item.category) {
-                        case Categories.TOP -> tops.add(item);
-                        case Categories.BOTTOM -> bottoms.add(item);
-                        case Categories.SHOES -> shoes.add(item);
-                        case Categories.OUTERWEAR -> outerwearPieces.add(item);
-                        case Categories.BAG -> bags.add(item);
-                        case Categories.ACCESSORY -> {
-                            if (AccessorySpot.of(item.type) != null) accessories.add(item);
-                        }
-                        default -> { }
-                    }
-                    if (Categories.OUTERWEAR.equals(item.alsoCategory)) outerwearPieces.add(item);
-                    if (Categories.TOP.equals(item.category) && item.underLayer) underPieces.add(item);
-                }
-                boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty()
-                        && outerwearPieces.isEmpty();
-                findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
-                if (nothingToStyle) return;
-                topPieces = tops;
-                bottomPieces = bottoms;
-                offerTops();
-                offerBottoms();
-                setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
+                wardrobe = items;
+                if (!showWardrobe()) return; // nothing to style yet
                 // A saved outfit being changed is put on below; a reloaded wardrobe keeps the outfit.
                 if (firstLoad && editing == null) startOnRandomPieces();
-                offerLayersExcept(currentItem(topPager));
-                setUpPager(bag.pager, bags, 1f, bag, null);
-                showAccessories(List.of());
                 askAi.setEnabled(true);
                 if (addedItemId >= 0) {
                     for (ItemDto item : items) {
-                        if (item.id == addedItemId) showAdded(item);
+                        if (item.id != addedItemId) continue;
+                        if (!offered(item)) clearFilter(); // the new piece shouldn't be hidden by the filter
+                        showAdded(item);
                     }
                     addedItemId = -1;
                 }
@@ -543,6 +556,111 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
+     * Fills the slots and layers from the wardrobe, each with the pieces that pass the filter; a slot
+     * keeps the piece it shows while that piece still passes. Returns false, showing "Nothing to style
+     * yet", when the closet has no tops, bottoms, shoes or outerwear at all.
+     */
+    private boolean showWardrobe() {
+        List<ItemDto> tops = new ArrayList<>();
+        List<ItemDto> bottoms = new ArrayList<>();
+        List<ItemDto> shoes = new ArrayList<>();
+        List<ItemDto> bags = new ArrayList<>();
+        List<ItemDto> unders = new ArrayList<>();
+        List<ItemDto> outers = new ArrayList<>();
+        List<ItemDto> worn = new ArrayList<>();
+        for (ItemDto item : wardrobe) {
+            if (item.category == null) continue; // not placed in a slot until the user chooses a type
+            switch (item.category) {
+                case Categories.TOP -> tops.add(item);
+                case Categories.BOTTOM -> bottoms.add(item);
+                case Categories.SHOES -> shoes.add(item);
+                case Categories.OUTERWEAR -> outers.add(item);
+                case Categories.BAG -> bags.add(item);
+                case Categories.ACCESSORY -> {
+                    if (AccessorySpot.of(item.type) != null) worn.add(item);
+                }
+                default -> { }
+            }
+            if (Categories.OUTERWEAR.equals(item.alsoCategory)) outers.add(item);
+            if (Categories.TOP.equals(item.category) && item.underLayer) unders.add(item);
+        }
+        boolean nothingToStyle = tops.isEmpty() && bottoms.isEmpty() && shoes.isEmpty() && outers.isEmpty();
+        findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
+        if (nothingToStyle) return false;
+
+        topPieces = narrowed(topPager, tops);
+        bottomPieces = narrowed(bottomPager, bottoms);
+        List<ItemDto> shoesShown = narrowed(shoesPager, shoes);
+        replace(underPieces, narrowed(under.pager, unders));
+        replace(outerwearPieces, narrowed(outerwear.pager, outers));
+        replace(accessories, filter.narrow(worn));
+        accessoriesFilteredOut = accessories.isEmpty() && !worn.isEmpty();
+        offerTops();
+        offerBottoms();
+        setUpPager(shoesPager, shoesShown, SHOES_SCALE, null, null);
+        offerLayersExcept(currentItem(topPager));
+        setUpPager(bag.pager, narrowed(bag.pager, bags), 1f, bag, null);
+        // A layer the filter left with nothing comes off.
+        for (Layer layer : List.of(under, outerwear, bag)) {
+            if (layer.on && currentItem(layer.pager) == null) takeOff(layer);
+        }
+        showAccessories(List.of());
+        return true;
+    }
+
+    /** These pieces as far as they pass the filter; remembers when the filter hides every one of them. */
+    private List<ItemDto> narrowed(ViewPager2 pager, List<ItemDto> pieces) {
+        List<ItemDto> passing = filter.narrow(pieces);
+        if (passing.isEmpty() && !pieces.isEmpty()) filteredOut.add(pager);
+        else filteredOut.remove(pager);
+        return passing;
+    }
+
+    private static void replace(List<ItemDto> list, List<ItemDto> pieces) {
+        list.clear();
+        list.addAll(pieces);
+    }
+
+    // ----- The filter -----
+
+    /** The filter sheet: the colors and types the closet has, with the ones chosen now ticked. */
+    private void openFilter() {
+        if (!wardrobeLoaded) return; // the choices are made from the clothes, and they aren't here yet
+        List<ItemDto> styled = new ArrayList<>();
+        for (ItemDto item : wardrobe) {
+            if (item.category != null) styled.add(item);
+        }
+        FilterSheet.newInstance(KEY_FILTER, filter.groupsForCanvas(this, styled))
+                .show(getSupportFragmentManager(), KEY_FILTER);
+    }
+
+    private void clearFilter() {
+        filter.clear();
+        filterChanged();
+    }
+
+    /** The carousels show what the filter lets through now, and the dot on the filter button says if it is on. */
+    private void filterChanged() {
+        findViewById(R.id.canvas_filter_badge).setVisibility(filter.count() > 0 ? View.VISIBLE : View.GONE);
+        if (wardrobeLoaded) showWardrobe();
+    }
+
+    /** Whether a carousel offers this piece right now: the filter may hide it. */
+    private boolean offered(ItemDto item) {
+        for (List<ItemDto> pieces : List.of(topPieces, bottomPieces, piecesOf(shoesPager), underPieces,
+                outerwearPieces, piecesOf(bag.pager), accessories)) {
+            for (ItemDto piece : pieces) {
+                if (piece.id == item.id) return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<ItemDto> piecesOf(ViewPager2 pager) {
+        return pager.getAdapter() instanceof SlotPagerAdapter adapter ? adapter.getItems() : List.of();
+    }
+
+    /**
      * One slot or layer = one pager. In a base slot (layer == null) and in a wide layer, side padding
      * leaves room for the previous and next piece, faded and smaller; a layer shows them only in focus.
      * A pager that already shows pieces (the wardrobe was reloaded) stays on the piece it was showing.
@@ -559,9 +677,10 @@ public class OutfitCanvasActivity extends BaseActivity {
      */
     private void setUpPager(ViewPager2 pager, List<ItemDto> items, float slotScale, @Nullable Layer layer,
             @Nullable SlotPagerAdapter.PageStyle pageStyle, boolean emptyFirst) {
-        View placeholder = placeholders.get(pager);
+        SlotPlaceholderView placeholder = placeholders.get(pager);
         if (placeholder != null) {
             boolean missing = items.isEmpty() && !emptyFirst;
+            placeholder.showNoMatch(filteredOut.contains(pager));
             // Hidden, the empty pager can't take the taps meant for the placeholder.
             pager.setVisibility(missing ? View.INVISIBLE : View.VISIBLE);
             placeholder.setVisibility(missing ? View.VISIBLE : View.GONE);
@@ -885,8 +1004,12 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     /** Outerwear / Bag: put the layer on if it isn't, then let the user swipe through it. */
     private void chooseLayer(Layer layer, @StringRes int hint, @StringRes int missingTitle,
-            @StringRes int missingBody) {
+            @StringRes int missingBody, @StringRes int noMatch) {
         if (!wardrobeLoaded) return;
+        if (filteredOut.contains(layer.pager)) {
+            Toast.makeText(this, noMatch, Toast.LENGTH_LONG).show();
+            return;
+        }
         if (currentItem(layer.pager) == null) {
             askToAdd(missingTitle, missingBody, layer);
             return;
@@ -902,6 +1025,10 @@ public class OutfitCanvasActivity extends BaseActivity {
         Set<String> listed = new LinkedHashSet<>();
         for (ItemDto item : accessories) {
             if (listed.add(item.type)) options.add(new OptionsSheet.Option(item.type, item.typeLabel, null, 0));
+        }
+        if (accessoriesFilteredOut) {
+            Toast.makeText(this, R.string.canvas_no_match_accessories, Toast.LENGTH_LONG).show();
+            return;
         }
         if (options.isEmpty()) {
             askToAdd(R.string.missing_accessories_title, R.string.missing_accessories_body, null);
@@ -1030,6 +1157,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         findViewById(R.id.canvas_focus_hint).setVisibility(locked ? View.VISIBLE : View.GONE);
         findViewById(R.id.canvas_ask_ai_holder).setVisibility(locked ? View.GONE : View.VISIBLE);
         findViewById(R.id.canvas_next).setEnabled(!locked);
+        findViewById(R.id.canvas_filter).setEnabled(!locked);
         weatherChip.setEnabled(!locked);
         leaveFocusOnBack.setEnabled(locked);
     }
@@ -1148,6 +1276,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             protected void onSuccess(@Nullable GenerateResult look) {
                 setStyling(false);
                 if (look == null) return;
+                makeRoomFor(look);
                 wearLook(look.top, look.bottom, look.shoes, look.outerwear, look.under, look.bag,
                         look.accessories == null ? List.of() : look.accessories, true);
                 remember(hint, look);
@@ -1162,6 +1291,22 @@ public class OutfitCanvasActivity extends BaseActivity {
                 Toast.makeText(OutfitCanvasActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /** The stylist chooses from the whole closet: if its look has a piece the filter hides, the filter goes. */
+    private void makeRoomFor(GenerateResult look) {
+        if (filter.count() == 0) return;
+        List<ItemDto> pieces = new ArrayList<>(look.accessories == null ? List.of() : look.accessories);
+        for (ItemDto piece : new ItemDto[] {look.top, look.bottom, look.shoes, look.outerwear, look.under, look.bag}) {
+            if (piece != null) pieces.add(piece);
+        }
+        for (ItemDto piece : pieces) {
+            if (!offered(piece)) {
+                clearFilter();
+                Toast.makeText(this, R.string.canvas_filter_cleared, Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
     }
 
     // ----- Putting a whole look on -----

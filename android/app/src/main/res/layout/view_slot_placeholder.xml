@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SlotPlaceholderView: a small round + over "Add shoes to complete the look". -->
+<!-- SlotPlaceholderView: a small round + over "Add shoes to complete the look" (or only "No shoes match your filter"). -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,6 +8,7 @@
     tools:parentTag="android.widget.LinearLayout">
 
     <ImageView
+        android:id="@+id/placeholder_plus"
         android:layout_width="@dimen/slot_placeholder_plus_size"
         android:layout_height="@dimen/slot_placeholder_plus_size"
         android:background="@drawable/bg_circle_button"

@@ -89,6 +89,7 @@
     <string name="filter_outfit_types">Pieces</string>
     <string name="filter_outfit_types_hint">The outfit has every kind of piece you choose</string>
     <string name="filter_outfit_category">Category</string>
+    <string name="filter_canvas_types_hint">A type changes only its own row: jeans the bottoms, a sweater the tops</string>
     <string name="no_match_title">Nothing matches</string>
     <string name="no_match_body">Try fewer filters or another search.</string>
     <string name="no_match_clear">Clear filters</string>
@@ -198,6 +199,21 @@
     <string name="canvas_missing_top">Add a top to complete the look</string>
     <string name="canvas_missing_bottom">Add bottoms to complete the look</string>
     <string name="canvas_missing_shoes">Add shoes to complete the look</string>
+    <!-- A slot or layer whose pieces the canvas filter all hides -->
+    <string name="canvas_no_match_top">No tops match your filter</string>
+    <string name="canvas_no_match_bottom">No bottoms match your filter</string>
+    <string name="canvas_no_match_shoes">No shoes match your filter</string>
+    <string name="canvas_no_match_under">Nothing to wear under it matches your filter</string>
+    <string name="canvas_no_match_outerwear">No outerwear matches your filter</string>
+    <string name="canvas_no_match_bag">No bags match your filter</string>
+    <string name="canvas_no_match_accessories">No accessories match your filter</string>
+    <!-- Next while the filter hides every top, bottom or shoe -->
+    <string name="canvas_incomplete_filtered">An outfit needs a top, bottoms and shoes, or a dress and shoes, and no %1$s match your filter.</string>
+    <string name="canvas_filtered_top">tops</string>
+    <string name="canvas_filtered_bottom">bottoms</string>
+    <string name="canvas_filtered_shoes">shoes</string>
+    <string name="canvas_filter_clear">Clear filter</string>
+    <string name="canvas_filter_cleared">Filter cleared, so you can see the whole look</string>
     <!-- The empty first page of the bottoms under a dress (read out by TalkBack) -->
     <string name="canvas_no_bottoms">No bottoms: the dress takes their place</string>
     <!-- Next with a top, bottoms or shoes missing: an outfit can't be saved without all three -->

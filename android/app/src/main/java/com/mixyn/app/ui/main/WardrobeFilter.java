@@ -37,6 +37,9 @@ import java.util.Set;
  * among its pieces (black and white: both are in the look). Its category and season work like a
  * piece's tags and season: one of the chosen ones is enough.
  *
+ * On the outfit canvas only colors and types are offered, and a type narrows only the carousel it
+ * belongs to: choosing jeans changes the bottoms and leaves the tops alone.
+ *
  * Search looks at what a piece is called: the name the user gave it, else its color and type ("Black
  * sneakers"), and at its type. An outfit matches when one of its pieces does.
  */
@@ -100,6 +103,23 @@ public class WardrobeFilter implements Serializable {
                 && (query.isEmpty() || isCalled(context, item));
     }
 
+    /**
+     * The canvas: the pieces of one carousel (all tops, all bags…) that pass. A piece needs one of the
+     * chosen colors; the chosen types count only when this carousel has pieces of one of them.
+     */
+    public List<ItemDto> narrow(List<ItemDto> carousel) {
+        boolean typesHere = false;
+        for (ItemDto item : carousel) typesHere |= types.contains(item.type);
+        List<ItemDto> passing = new ArrayList<>();
+        for (ItemDto item : carousel) {
+            if ((colors.isEmpty() || overlap(colorCodes(item), colors))
+                    && (!typesHere || types.contains(item.type))) {
+                passing.add(item);
+            }
+        }
+        return passing;
+    }
+
     public boolean matches(Context context, OutfitDto outfit) {
         Set<String> colorsWorn = new HashSet<>();
         Set<String> typesWorn = new HashSet<>();
@@ -156,6 +176,16 @@ public class WardrobeFilter implements Serializable {
                 tagOptions(context), tags));
         groups.add(new FilterSheet.Group(SEASONS, context.getString(R.string.filter_season), null,
                 seasonOptions(context), seasons));
+        return groups;
+    }
+
+    /** The canvas offers only color and type, from the clothes in the closet. */
+    public ArrayList<FilterSheet.Group> groupsForCanvas(Context context, List<ItemDto> clothes) {
+        ArrayList<FilterSheet.Group> groups = new ArrayList<>();
+        groups.add(new FilterSheet.Group(COLORS, context.getString(R.string.filter_color), null,
+                colorOptions(clothes), colors));
+        groups.add(new FilterSheet.Group(TYPES, context.getString(R.string.filter_type),
+                context.getString(R.string.filter_canvas_types_hint), typeOptions(clothes), types));
         return groups;
     }
 

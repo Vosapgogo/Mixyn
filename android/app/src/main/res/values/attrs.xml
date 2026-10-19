@@ -21,6 +21,7 @@
 
     <declare-styleable name="SlotPlaceholderView">
         <attr name="android:text" />
+        <attr name="noMatchText" format="string" />
     </declare-styleable>
 
     <declare-styleable name="MixynLogoHeader">

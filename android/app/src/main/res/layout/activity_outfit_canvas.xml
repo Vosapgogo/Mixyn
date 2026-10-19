@@ -34,6 +34,34 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
+        <!-- The filter: only pieces of the chosen colors and types in the carousels. The dot says it is on. -->
+        <FrameLayout
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:layout_marginEnd="@dimen/space_xxs">
+
+            <ImageButton
+                android:id="@+id/canvas_filter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/filter_title"
+                android:padding="@dimen/space_s"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_menu"
+                app:tint="@color/ink" />
+
+            <View
+                android:id="@+id/canvas_filter_badge"
+                android:layout_width="@dimen/chip_dot_size"
+                android:layout_height="@dimen/chip_dot_size"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:background="@drawable/bg_badge_dot"
+                android:visibility="gone" />
+        </FrameLayout>
+
         <!-- Hidden until the weather arrives (and stays hidden if it can't be loaded).
              Tapping it asks whether to add what the weather calls for. -->
         <TextView
@@ -141,6 +169,7 @@
                     android:layout_marginBottom="@dimen/space_xs"
                     android:text="@string/canvas_missing_top"
                     android:visibility="gone"
+                    app:noMatchText="@string/canvas_no_match_top"
                     app:layout_constraintBottom_toTopOf="@id/canvas_slot_split"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -155,6 +184,7 @@
                     android:layout_marginBottom="@dimen/space_xs"
                     android:text="@string/canvas_missing_bottom"
                     android:visibility="gone"
+                    app:noMatchText="@string/canvas_no_match_bottom"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -180,6 +210,7 @@
                     android:layout_marginBottom="@dimen/space_xs"
                     android:text="@string/canvas_missing_shoes"
                     android:visibility="gone"
+                    app:noMatchText="@string/canvas_no_match_shoes"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
