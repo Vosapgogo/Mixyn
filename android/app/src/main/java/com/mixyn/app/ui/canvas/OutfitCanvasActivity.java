@@ -69,7 +69,9 @@ import java.util.concurrent.Executors;
  *
  * A new look starts on a random piece in each slot, with no layers on. A slot the closet has nothing
  * for shows a dashed placeholder instead ("Add shoes to complete the look") that opens Add clothes.
- * Next needs all three: an outfit is saved only with a top, bottoms and shoes.
+ * Next needs all three: an outfit is saved only with a top, bottoms and shoes. A dress is the one
+ * exception: it hangs over the place of the bottoms like a long coat, and the bottom slot then starts
+ * on an empty page, from which the user may still swipe to leggings or jeans to wear under it.
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -91,13 +93,16 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final float SHOES_SCALE = 0.7f;
     /**
      * Drawing order inside the body frame. Normally the bottom is drawn over the top's hem (tucked in);
-     * with a piece under the top, the order is bottom, under layer, top, so its hem hangs over the bottom.
+     * with a piece under the top, the order is bottom, under layer, top, so its hem hangs over the bottom,
+     * and a dress, too, is drawn over whatever is worn under it.
      * Outerwear is always over all of them.
      */
     private static final float Z_TUCKED_BOTTOM = 1f;
     private static final float Z_OUTERWEAR = 2f;
     /** These reach down over the bottom; every other outerwear type covers only the top. */
     private static final List<String> LONG_OUTERWEAR = List.of("COAT", "TRENCH_COAT", "PUFFER_COAT");
+    /** A top that takes the place of the bottoms as well. */
+    private static final String DRESS = "DRESS";
     /** Everything that can't be changed while one layer is being chosen is faded to this. */
     private static final float LOCKED_ALPHA = 0.45f;
     /** Where the bag hangs: by the hand, beside the bottom. Same units as AccessorySpot. */
@@ -178,6 +183,11 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     /** Every top in the wardrobe. The top slot offers them all except the ones worn as a layer. */
     private List<ItemDto> topPieces = new ArrayList<>();
+    /** Every bottom in the wardrobe; under a dress the bottom slot offers them after an empty page. */
+    private List<ItemDto> bottomPieces = new ArrayList<>();
+    /** The bottom that was on when a dress became the top: it comes back with the next top that isn't a dress. */
+    @Nullable
+    private ItemDto bottomBeforeDress;
     /** The thin tops that can also be worn under another top (the backend marks them). */
     private final List<ItemDto> underPieces = new ArrayList<>();
     /** Every piece that can be worn as outerwear: jackets and coats, and cardigans (which are tops too). */
@@ -242,8 +252,10 @@ public class OutfitCanvasActivity extends BaseActivity {
         bag = new Layer(findViewById(R.id.canvas_bag), false, null);
         bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
         outerwear.pager.setTranslationZ(Z_OUTERWEAR);
-        // The collar of the piece under the top is drawn a little above the frame.
+        // The collar of the piece under the top is drawn a little above the frame, and a dress in the top's
+        // slot reaches down over the bottom's.
         ((ViewGroup) under.pager.getChildAt(0)).setClipChildren(false);
+        ((ViewGroup) topPager.getChildAt(0)).setClipChildren(false);
         layers.add(under);
         layers.add(outerwear);
         layers.add(bag);
@@ -261,6 +273,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             @Override
             public void onPageScrollStateChanged(int state) {
                 if (state != ViewPager2.SCROLL_STATE_IDLE) return;
+                offerBottoms();
                 offerLayersExcept(currentItem(topPager));
                 alignToTop();
             }
@@ -359,14 +372,17 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
-     * An outfit can only be saved with a top, bottoms and shoes (the backend refuses it otherwise). If
+     * An outfit can only be saved with a top, bottoms and shoes, or a dress and shoes (the backend
+     * refuses it otherwise). If
      * the canvas lacks any of them, says which and offers to go and add one: it then lands in its empty
      * slot. Returns false when nothing is missing.
      */
     private boolean askForMissingBase() {
         List<String> missing = new ArrayList<>();
         if (currentItem(topPager) == null) missing.add(getString(R.string.canvas_incomplete_top));
-        if (currentItem(bottomPager) == null) missing.add(getString(R.string.canvas_incomplete_bottom));
+        if (currentItem(bottomPager) == null && !isDress(currentItem(topPager))) {
+            missing.add(getString(R.string.canvas_incomplete_bottom));
+        }
         if (currentItem(shoesPager) == null) missing.add(getString(R.string.canvas_incomplete_shoes));
         if (missing.isEmpty()) return false;
         String pieces = missing.size() == 1 ? missing.get(0)
@@ -495,8 +511,9 @@ public class OutfitCanvasActivity extends BaseActivity {
                 findViewById(R.id.canvas_empty).setVisibility(nothingToStyle ? View.VISIBLE : View.GONE);
                 if (nothingToStyle) return;
                 topPieces = tops;
+                bottomPieces = bottoms;
                 offerTops();
-                setUpPager(bottomPager, bottoms, 1f, null, null);
+                offerBottoms();
                 setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
                 // A saved outfit being changed is put on below; a reloaded wardrobe keeps the outfit.
                 if (firstLoad && editing == null) startOnRandomPieces();
@@ -533,11 +550,21 @@ public class OutfitCanvasActivity extends BaseActivity {
      */
     private void setUpPager(ViewPager2 pager, List<ItemDto> items, float slotScale, @Nullable Layer layer,
             @Nullable SlotPagerAdapter.PageStyle pageStyle) {
+        setUpPager(pager, items, slotScale, layer, pageStyle, false);
+    }
+
+    /**
+     * @param emptyFirst start with an empty page (the bottoms under a dress): the slot then never needs
+     *                   a placeholder
+     */
+    private void setUpPager(ViewPager2 pager, List<ItemDto> items, float slotScale, @Nullable Layer layer,
+            @Nullable SlotPagerAdapter.PageStyle pageStyle, boolean emptyFirst) {
         View placeholder = placeholders.get(pager);
         if (placeholder != null) {
+            boolean missing = items.isEmpty() && !emptyFirst;
             // Hidden, the empty pager can't take the taps meant for the placeholder.
-            pager.setVisibility(items.isEmpty() ? View.INVISIBLE : View.VISIBLE);
-            placeholder.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+            pager.setVisibility(missing ? View.INVISIBLE : View.VISIBLE);
+            placeholder.setVisibility(missing ? View.VISIBLE : View.GONE);
         }
         // The side padding must be in place before the pages are laid out, or the first piece
         // would sit against the left edge instead of the center.
@@ -549,7 +576,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         pages.setOverScrollMode(View.OVER_SCROLL_NEVER);
         pager.setOffscreenPageLimit(1);
         ItemDto shown = currentItem(pager);
-        SlotPagerAdapter adapter = new SlotPagerAdapter(items, pageStyle);
+        SlotPagerAdapter adapter = new SlotPagerAdapter(items, pageStyle, emptyFirst);
         pager.setAdapter(adapter);
         int keep = shown == null ? -1 : adapter.indexOf(shown.id);
         if (keep > 0) {
@@ -575,12 +602,17 @@ public class OutfitCanvasActivity extends BaseActivity {
      * different outfit every time it opens. The layers stay off.
      */
     private void startOnRandomPieces() {
-        for (ViewPager2 slot : List.of(topPager, bottomPager, shoesPager)) {
-            int count = slot.getAdapter() == null ? 0 : slot.getAdapter().getItemCount();
-            if (count < 2) continue;
-            slot.setCurrentItem(random.nextInt(count), false);
-            slot.post(slot::requestTransform); // an instant move doesn't re-run the page transformer
-        }
+        moveToRandom(topPager);
+        offerBottoms();
+        if (!isDress(currentItem(topPager))) moveToRandom(bottomPager); // a dress starts with no bottoms
+        moveToRandom(shoesPager);
+    }
+
+    private void moveToRandom(ViewPager2 slot) {
+        int count = slot.getAdapter() == null ? 0 : slot.getAdapter().getItemCount();
+        if (count < 2) return;
+        slot.setCurrentItem(random.nextInt(count), false);
+        slot.post(slot::requestTransform); // an instant move doesn't re-run the page transformer
     }
 
     /**
@@ -603,11 +635,53 @@ public class OutfitCanvasActivity extends BaseActivity {
         // The top's image tells the layers around it where it is, whenever it changes.
         setUpPager(topPager, choices, 1f, null, (image, item) -> {
             PieceImageView piece = (PieceImageView) image;
+            // A dress reaches from the top of its slot to the bottom of the outfit's body, like a long coat.
+            if (isDress(item)) piece.hangLong(1f / topShare);
+            else piece.fitInside();
             piece.setOpening(item.opening);
             piece.setOnImageChanged(this::alignToTop);
         });
+        offerBottoms(); // the top showing may have changed, and a dress changes the bottoms
         // The new pages can only be asked where the top is once they are laid out.
         topPager.post(this::alignToTop);
+    }
+
+    /**
+     * The bottom slot follows the top. A dress takes the place of the bottoms, so with a dress on, the
+     * slot gets an empty first page and moves to it; the user can still swipe on to leggings or jeans to
+     * wear under the dress. With any other top the slot shows a bottom again, the one it had before the
+     * dress. Does nothing when the slot already offers the right pages.
+     */
+    private void offerBottoms() {
+        boolean dress = isDress(currentItem(topPager));
+        boolean wasDress = bottomPager.getAdapter() instanceof SlotPagerAdapter adapter && adapter.hasEmptyFirst();
+        if (bottomPager.getAdapter() instanceof SlotPagerAdapter adapter && dress == wasDress
+                && sameIds(adapter.getItems(), bottomPieces)) {
+            return;
+        }
+        ItemDto shown = currentItem(bottomPager);
+        setUpPager(bottomPager, bottomPieces, 1f, null, null, dress);
+        if (dress && !wasDress) {
+            bottomBeforeDress = shown;
+            bottomPager.setCurrentItem(0, false);
+            bottomPager.post(bottomPager::requestTransform);
+        } else if (!dress && wasDress && shown == null) {
+            moveTo(bottomPager, bottomBeforeDress, false);
+        }
+        layBottom();
+    }
+
+    /**
+     * The bottom is drawn over the top's hem (tucked in), except under a dress and when a piece is worn
+     * under the top: then the top hangs over it.
+     */
+    private void layBottom() {
+        boolean covered = under.on || isDress(currentItem(topPager));
+        bottomPager.setTranslationZ(covered ? 0f : Z_TUCKED_BOTTOM);
+    }
+
+    private static boolean isDress(@Nullable ItemDto item) {
+        return item != null && DRESS.equals(item.type);
     }
 
     /**
@@ -775,7 +849,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         layer.on = true;
         layer.pager.setVisibility(View.VISIBLE);
         if (layer == under) {
-            bottomPager.setTranslationZ(0f); // the under layer's hem hangs over the bottom
+            layBottom(); // the under layer's hem hangs over the bottom
             alignToTop();
         }
         if (item != null && layer.pager.getAdapter() instanceof SlotPagerAdapter adapter) {
@@ -792,7 +866,7 @@ public class OutfitCanvasActivity extends BaseActivity {
         layer.on = false;
         layer.pager.setVisibility(View.GONE);
         if (layer == under) {
-            bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
+            layBottom();
             alignToTop(); // an open-front top gets the inside of its back again
         }
         if (layer == under || layer == outerwear) offerTops(); // its piece can be the top again
@@ -1106,7 +1180,13 @@ public class OutfitCanvasActivity extends BaseActivity {
         takeOff(under);
         takeOff(outerwear);
         moveTo(topPager, top, animate);
-        moveTo(bottomPager, bottom, animate);
+        offerBottoms();
+        if (bottom == null && isDress(currentItem(topPager))) {
+            bottomPager.setCurrentItem(0, animate); // the empty page: nothing under the dress
+            if (!animate) bottomPager.post(bottomPager::requestTransform);
+        } else {
+            moveTo(bottomPager, bottom, animate);
+        }
         moveTo(shoesPager, shoes, animate);
         // The top may still be scrolling to its new piece, so tell the layers which one it will be.
         offerLayersExcept(top != null ? top : currentItem(topPager));
@@ -1141,8 +1221,9 @@ public class OutfitCanvasActivity extends BaseActivity {
         for (OutfitDto.Piece piece : outfit.pieces) {
             if (!worn.contains(piece.item.id)) leftOut.add(ItemNames.of(this, piece.item));
         }
-        // The top, bottom and shoes always show a piece. If the outfit had none (it was removed from the
-        // wardrobe, or its type changed), the slot shows one from the closet, which the user should know.
+        // The top, bottom and shoes always show a piece (but the bottoms under a dress). If the outfit had
+        // none (it was removed from the wardrobe, or its type changed), the slot shows one from the closet,
+        // which the user should know.
         List<String> filledIn = new ArrayList<>();
         for (String slot : List.of(OutfitDto.Piece.TOP, OutfitDto.Piece.BOTTOM, OutfitDto.Piece.SHOES)) {
             ItemDto shown = currentItem(slot.equals(OutfitDto.Piece.TOP) ? topPager

@@ -20,7 +20,9 @@ import java.util.List;
  * The image of one piece on the canvas. A piece is normally fitted into the middle of its frame.
  * Outerwear is "hung" instead: fitted against a line near the top of the frame — the shoulder line of
  * the top underneath — and centered left to right, so a jacket and a long coat both start at the
- * shoulders. A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
+ * shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
+ * than the view itself: over the bottom's part of the outfit, like a long coat.
+ * A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
  * above the top's neckline and its hem below the top's hem, however long the two pieces are. Under a
  * top that is open down the front it is drawn whole instead, so it fills the opening like a piece the
  * top was put on over. A piece that is itself open down the front can leave its opening out: in a
@@ -49,6 +51,8 @@ public class PieceImageView extends AppCompatImageView {
 
     private boolean hung;
     private float hangFrom;
+    /** How far down a hung image may reach, in heights of this view: more than 1 for a dress. */
+    private float reach = 1f;
     private boolean behind;
     @Nullable
     private RectF behindTop;
@@ -93,6 +97,22 @@ public class PieceImageView extends AppCompatImageView {
         hangFrom = y;
         setScaleType(ScaleType.MATRIX);
         hang();
+    }
+
+    /**
+     * Hangs the image from the top of this view and lets it reach this many view heights down, as large
+     * as still fits: a dress over the place of the bottoms. The parents must not clip it.
+     */
+    public void hangLong(float reach) {
+        this.reach = reach;
+        hangFrom(0f);
+    }
+
+    /** Back to the usual: the image fitted into the middle of the view (a recycled page that held a dress). */
+    public void fitInside() {
+        hung = false;
+        reach = 1f;
+        setScaleType(ScaleType.FIT_CENTER);
     }
 
     /**
@@ -287,22 +307,17 @@ public class PieceImageView extends AppCompatImageView {
     }
 
     /**
-     * For a piece fitted into the middle: the rectangle its image covers when the view is drawn at this
-     * scale (the size from "Edit photo"). Null while there is no image or no size yet.
+     * The rectangle the image covers when the view is drawn at this scale (the size from "Edit photo"),
+     * which is applied around the middle of the view. Null while there is no image or no size yet.
      */
     @Nullable
     public RectF imageBounds(float scale) {
-        Drawable drawable = getDrawable();
-        if (drawable == null || getWidth() == 0 || getHeight() == 0
-                || drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            return null;
-        }
-        float fit = scale * Math.min((float) getWidth() / drawable.getIntrinsicWidth(),
-                (float) getHeight() / drawable.getIntrinsicHeight());
-        float halfWidth = drawable.getIntrinsicWidth() * fit / 2f;
-        float halfHeight = drawable.getIntrinsicHeight() * fit / 2f;
-        return new RectF(getWidth() / 2f - halfWidth, getHeight() / 2f - halfHeight,
-                getWidth() / 2f + halfWidth, getHeight() / 2f + halfHeight);
+        RectF drawn = drawnBounds();
+        if (drawn == null) return null;
+        float middleX = getWidth() / 2f;
+        float middleY = getHeight() / 2f;
+        return new RectF(middleX + (drawn.left - middleX) * scale, middleY + (drawn.top - middleY) * scale,
+                middleX + (drawn.right - middleX) * scale, middleY + (drawn.bottom - middleY) * scale);
     }
 
     @Override
@@ -342,19 +357,29 @@ public class PieceImageView extends AppCompatImageView {
     @Nullable
     private RectF drawnBounds() {
         Drawable drawable = getDrawable();
-        if (!hung) return imageBounds(1f);
-        if (drawable == null || drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) return null;
-        RectF bounds = new RectF(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        getImageMatrix().mapRect(bounds);
-        bounds.offset(getPaddingLeft(), getPaddingTop());
-        return bounds;
+        if (drawable == null || getWidth() == 0 || getHeight() == 0
+                || drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            return null;
+        }
+        if (hung) {
+            RectF bounds = new RectF(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            getImageMatrix().mapRect(bounds);
+            bounds.offset(getPaddingLeft(), getPaddingTop());
+            return bounds;
+        }
+        float fit = Math.min((float) getWidth() / drawable.getIntrinsicWidth(),
+                (float) getHeight() / drawable.getIntrinsicHeight());
+        float halfWidth = drawable.getIntrinsicWidth() * fit / 2f;
+        float halfHeight = drawable.getIntrinsicHeight() * fit / 2f;
+        return new RectF(getWidth() / 2f - halfWidth, getHeight() / 2f - halfHeight,
+                getWidth() / 2f + halfWidth, getHeight() / 2f + halfHeight);
     }
 
     private void hang() {
         Drawable drawable = getDrawable();
         if (!hung || drawable == null) return;
         float frameWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        float frameHeight = getHeight() - getPaddingTop() - getPaddingBottom() - hangFrom;
+        float frameHeight = getHeight() * reach - getPaddingTop() - getPaddingBottom() - hangFrom;
         float width = drawable.getIntrinsicWidth();
         float height = drawable.getIntrinsicHeight();
         if (frameWidth <= 0 || frameHeight <= 0 || width <= 0 || height <= 0) return;

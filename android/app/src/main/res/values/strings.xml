@@ -198,9 +198,11 @@
     <string name="canvas_missing_top">Add a top to complete the look</string>
     <string name="canvas_missing_bottom">Add bottoms to complete the look</string>
     <string name="canvas_missing_shoes">Add shoes to complete the look</string>
+    <!-- The empty first page of the bottoms under a dress (read out by TalkBack) -->
+    <string name="canvas_no_bottoms">No bottoms: the dress takes their place</string>
     <!-- Next with a top, bottoms or shoes missing: an outfit can't be saved without all three -->
     <string name="canvas_incomplete_title">Not a full outfit yet</string>
-    <string name="canvas_incomplete_body">An outfit needs a top, bottoms and shoes. Add %1$s to complete the look.</string>
+    <string name="canvas_incomplete_body">An outfit needs a top, bottoms and shoes, or a dress and shoes. Add %1$s to complete the look.</string>
     <string name="canvas_incomplete_top">a top</string>
     <string name="canvas_incomplete_bottom">bottoms</string>
     <string name="canvas_incomplete_shoes">shoes</string>

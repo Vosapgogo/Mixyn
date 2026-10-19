@@ -15,7 +15,10 @@ import com.mixyn.app.api.dto.ItemDto;
 
 import java.util.List;
 
-/** The pages of one canvas slot or layer: every item it can show (all tops, all bags, all scarves…). */
+/**
+ * The pages of one canvas slot or layer: every item it can show (all tops, all bags, all scarves…).
+ * The bottom slot under a dress also starts with an empty page: no bottoms, as the dress takes their place.
+ */
 public class SlotPagerAdapter extends RecyclerView.Adapter<SlotPagerAdapter.Holder> {
 
     /** Extra drawing rules for a page, applied each time an item is put on it (outerwear uses this). */
@@ -26,28 +29,43 @@ public class SlotPagerAdapter extends RecyclerView.Adapter<SlotPagerAdapter.Hold
     private final List<ItemDto> items;
     @Nullable
     private final PageStyle pageStyle;
+    /** Whether the first page is the empty one, before the items. */
+    private final boolean emptyFirst;
 
     public SlotPagerAdapter(List<ItemDto> items) {
         this(items, null);
     }
 
     public SlotPagerAdapter(List<ItemDto> items, @Nullable PageStyle pageStyle) {
-        this.items = items;
-        this.pageStyle = pageStyle;
+        this(items, pageStyle, false);
     }
 
+    public SlotPagerAdapter(List<ItemDto> items, @Nullable PageStyle pageStyle, boolean emptyFirst) {
+        this.items = items;
+        this.pageStyle = pageStyle;
+        this.emptyFirst = emptyFirst;
+    }
+
+    /** The items on the pages, without the empty page. */
     public List<ItemDto> getItems() {
         return items;
     }
 
+    public boolean hasEmptyFirst() {
+        return emptyFirst;
+    }
+
+    /** The item on this page, or null for the empty page. */
+    @Nullable
     public ItemDto getItem(int position) {
+        if (emptyFirst) return position == 0 ? null : items.get(position - 1);
         return items.get(position);
     }
 
     /** Position of the item with this id, or -1. */
     public int indexOf(long itemId) {
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).id == itemId) return i;
+            if (items.get(i).id == itemId) return emptyFirst ? i + 1 : i;
         }
         return -1;
     }
@@ -61,7 +79,14 @@ public class SlotPagerAdapter extends RecyclerView.Adapter<SlotPagerAdapter.Hold
 
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
-        ItemDto item = items.get(position);
+        ItemDto item = getItem(position);
+        if (item == null) {
+            Glide.with(holder.image).clear(holder.image);
+            holder.image.setContentDescription(holder.image.getContext().getString(R.string.canvas_no_bottoms));
+            holder.image.setTag(1f);
+            return;
+        }
+        holder.image.setContentDescription(holder.image.getContext().getString(R.string.item_photo));
         if (pageStyle != null) pageStyle.apply(holder.image, item);
         // The canvas is later drawn into a picture of the outfit, and that can only be done with
         // bitmaps kept in ordinary memory (not the graphics card's, which Glide prefers).
@@ -71,7 +96,7 @@ public class SlotPagerAdapter extends RecyclerView.Adapter<SlotPagerAdapter.Hold
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return emptyFirst ? items.size() + 1 : items.size();
     }
 
     static class Holder extends RecyclerView.ViewHolder {

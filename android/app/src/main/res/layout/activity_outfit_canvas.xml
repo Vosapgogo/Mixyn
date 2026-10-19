@@ -113,10 +113,12 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <!-- Not clipped: a dress in the top's slot reaches down over the bottom's part of the frame -->
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/canvas_top"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
+                    android:clipChildren="false"
                     app:layout_constraintBottom_toTopOf="@id/canvas_slot_split"
                     app:layout_constraintTop_toTopOf="parent" />
 
