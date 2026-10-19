@@ -48,6 +48,8 @@
     <dimen name="canvas_overlap">-12dp</dimen>
     <!-- Outfit canvas: the room above the outfit, under the header, where a hat is worn -->
     <dimen name="canvas_head_room">80dp</dimen>
+    <!-- Outfit canvas: how wide a hat is drawn, the same with every top -->
+    <dimen name="canvas_hat_width">96dp</dimen>
     <!-- Outfit canvas: the share of the screen width a piece takes; its neighbors peek in at both sides -->
     <item name="canvas_piece_share" format="float" type="dimen">0.56</item>
     <!-- Outfit canvas: an empty shoe slot is as wide as shoes are drawn there (70% of a piece) -->

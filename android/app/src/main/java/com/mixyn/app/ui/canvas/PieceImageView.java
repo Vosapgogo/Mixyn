@@ -22,7 +22,7 @@ import java.util.List;
  * underneath — as wide as that top and centered left to right, so a jacket and a long coat both sit on
  * the top's shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
  * than the view itself: over the bottom's part of the outfit, like a long coat. A hat stands on the
- * bottom edge of its view instead (the top's shoulder line), at a width given by the top.
+ * bottom edge of its view instead (the top's shoulder line), always at the same width.
  * A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
  * above the top's neckline and its hem below the top's hem, however long the two pieces are. Under a
  * top that is open down the front it is drawn whole instead, so it fills the opening like a piece the

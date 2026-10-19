@@ -17,7 +17,7 @@ enum AccessorySpot {
     WAIST(R.id.canvas_waist, 0f, 1f, 0.33f, 0.43f, "BELT"),
     NECK(R.id.canvas_neck, 0f, 1f, 0.02f, 0.24f, "SCARF"),
     // The head ends where the top begins, so a hat never hides the collar; the canvas lowers it to the
-    // shoulder line of the top that is on and sizes the hat by that top.
+    // shoulder line of the top that is on.
     HEAD(R.id.canvas_head, 0f, 1f, -1f, 0f, "BEANIE", "HAT", "CAP", "HEADSCARF"),
     SIDE(R.id.canvas_side, 0.70f, 0.97f, 0.04f, 0.18f, "SUNGLASSES", "JEWELRY"),
     HANDS(R.id.canvas_hands, 0.70f, 0.97f, 0.36f, 0.50f, "GLOVES");
