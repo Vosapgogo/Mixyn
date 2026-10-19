@@ -889,6 +889,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** Redraws the layers around the top after it changed (another top, or its image just arrived). */
     private void alignToTop() {
         float shoulderLine = shoulderLine();
+        // A hat sits right above the top, wherever its image begins, so the collar stays in sight.
+        accessorySpots.get(AccessorySpot.HEAD).pager.setTranslationY(shoulderLine);
         float topWidth = topWidth();
         RecyclerView jackets = (RecyclerView) outerwear.pager.getChildAt(0);
         for (int i = 0; i < jackets.getChildCount(); i++) {
