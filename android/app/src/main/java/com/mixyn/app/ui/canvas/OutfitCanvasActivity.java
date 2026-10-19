@@ -105,6 +105,8 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final float Z_OUTERWEAR = 2f;
     /** A top that takes the place of the bottoms as well. */
     private static final String DRESS = "DRESS";
+    /** A hat is this share of the width of the top it is worn with: about a head over the shoulders. */
+    private static final float HAT_SHARE = 0.45f;
     /** Everything that can't be changed while one layer is being chosen is faded to this. */
     private static final float LOCKED_ALPHA = 0.45f;
     /** Where the bag hangs: by the hand, beside the bottom. Same units as AccessorySpot. */
@@ -857,6 +859,15 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
+     * A hat stands on the bottom of the head's spot, which the canvas keeps on the top's shoulder line,
+     * and is a share of the top's width wide. It grows and shrinks from that line too.
+     */
+    private void styleHatPage(ImageView image, ItemDto item) {
+        ((PieceImageView) image).standOn(topWidth() * HAT_SHARE);
+        whenLaidOut(image, () -> image.setPivotY(image.getHeight()));
+    }
+
+    /**
      * The rectangle the image of the top that is showing covers, inside the body frame (the top's slot
      * starts at the same corner as the frame). Null while there is no top, or its image hasn't arrived.
      */
@@ -889,8 +900,14 @@ public class OutfitCanvasActivity extends BaseActivity {
     /** Redraws the layers around the top after it changed (another top, or its image just arrived). */
     private void alignToTop() {
         float shoulderLine = shoulderLine();
-        // A hat sits right above the top, wherever its image begins, so the collar stays in sight.
-        accessorySpots.get(AccessorySpot.HEAD).pager.setTranslationY(shoulderLine);
+        // A hat sits right above the top, wherever its image begins, so the collar stays in sight, and is
+        // sized by the top.
+        ViewPager2 head = accessorySpots.get(AccessorySpot.HEAD).pager;
+        head.setTranslationY(shoulderLine);
+        RecyclerView hats = (RecyclerView) head.getChildAt(0);
+        for (int i = 0; i < hats.getChildCount(); i++) {
+            if (hats.getChildAt(i) instanceof PieceImageView piece) piece.standOn(topWidth() * HAT_SHARE);
+        }
         float topWidth = topWidth();
         RecyclerView jackets = (RecyclerView) outerwear.pager.getChildAt(0);
         for (int i = 0; i < jackets.getChildCount(); i++) {
@@ -1120,7 +1137,8 @@ public class OutfitCanvasActivity extends BaseActivity {
             }
             boolean sameItems = layer.pager.getAdapter() instanceof SlotPagerAdapter adapter
                     && adapter.getItems().equals(items);
-            if (!sameItems) setUpPager(layer.pager, items, 1f, layer, null);
+            SlotPagerAdapter.PageStyle style = spot == AccessorySpot.HEAD ? this::styleHatPage : null;
+            if (!sameItems) setUpPager(layer.pager, items, 1f, layer, style);
             putOn(layer, target);
         }
     }

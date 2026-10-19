@@ -21,7 +21,8 @@ import java.util.List;
  * Outerwear is "hung" instead: from a line near the top of the frame — the shoulder line of the top
  * underneath — as wide as that top and centered left to right, so a jacket and a long coat both sit on
  * the top's shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
- * than the view itself: over the bottom's part of the outfit, like a long coat.
+ * than the view itself: over the bottom's part of the outfit, like a long coat. A hat stands on the
+ * bottom edge of its view instead (the top's shoulder line), at a width given by the top.
  * A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
  * above the top's neckline and its hem below the top's hem, however long the two pieces are. Under a
  * top that is open down the front it is drawn whole instead, so it fills the opening like a piece the
@@ -53,6 +54,8 @@ public class PieceImageView extends AppCompatImageView {
     private float hangFrom;
     /** How wide a hung image is drawn at most, in pixels; 0 = as wide as the view. */
     private float hangWidth;
+    /** A hung image placed on the bottom edge of the view instead of from the top. */
+    private boolean standing;
     /** How far down a hung image may reach, in heights of this view: more than 1 for a dress. */
     private float reach = 1f;
     private boolean behind;
@@ -101,6 +104,7 @@ public class PieceImageView extends AppCompatImageView {
     /** The same, but no wider than this many pixels (0 = the view's width): outerwear as wide as the top. */
     public void hangFrom(float y, float width) {
         hung = true;
+        standing = false;
         hangFrom = y;
         hangWidth = width;
         setScaleType(ScaleType.MATRIX);
@@ -114,6 +118,13 @@ public class PieceImageView extends AppCompatImageView {
     public void hangLong(float reach) {
         this.reach = reach;
         hangFrom(0f);
+    }
+
+    /** Draws the image standing on the bottom edge of the view, at most this many pixels wide: a hat. */
+    public void standOn(float width) {
+        hangFrom(0f, width);
+        standing = true;
+        hang();
     }
 
     /** Back to the usual: the image fitted into the middle of the view (a recycled page that held a dress). */
@@ -395,7 +406,8 @@ public class PieceImageView extends AppCompatImageView {
         float fit = Math.min(fitWidth / width, frameHeight / height);
         Matrix matrix = new Matrix();
         matrix.setScale(fit, fit);
-        matrix.postTranslate((frameWidth - width * fit) / 2f, hangFrom);
+        matrix.postTranslate((frameWidth - width * fit) / 2f,
+                standing ? frameHeight - height * fit : hangFrom);
         setImageMatrix(matrix);
     }
 

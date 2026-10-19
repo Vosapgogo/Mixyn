@@ -101,7 +101,7 @@
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:orientation="vertical"
-            android:paddingTop="@dimen/space_xxl"
+            android:paddingTop="@dimen/canvas_head_room"
             android:paddingBottom="@dimen/space_m">
 
             <!-- The body of the outfit: top and bottom share one frame with two optional layers. In drawing
