@@ -144,3 +144,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - The outfit sits a little lower and hats are sized by the top — learner feedback ("the outfit a bit lower, the cap in proportion"): 80dp of room above the outfit instead of 48dp, and a hat is 45% as wide as the top it is worn with, standing on its shoulder line.
 - Hats are one fixed size — learner feedback right after: a hat sized by the top changed from a T-shirt to a shirt, and it should stay the same. It is now always 96dp wide (`canvas_hat_width`), still standing on the top's shoulder line.
 - The Collections tab is gone from Home — learner decision: it only said "coming soon". Collections are now under `prd.md > Possible Later Enhancements`.
+- Friends and sending outfits stay out of the PoC — learner decision after the estimate (about 1–1.5 days, six days before the deadline). Planned in `prd.md > Possible Later Enhancements` and shown in the demo as the next step.

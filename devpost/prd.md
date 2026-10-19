@@ -188,6 +188,7 @@ Source: learner request while checking saved outfits.
 - Accessories step with bags on the canvas.
 - AI stylist that uses tags and season, not just category and color.
 - **Collections**: a Home tab that groups saved outfits into themed collections (Work, Casual, Date night).
+- **Friends and sending outfits** — the next step, shown as such in the demo: add a friend by their exact email (a request the friend accepts or declines; no directory of users), send a saved outfit to one or more friends from the outfit card's Share button, and see what friends sent in a "Sent to you" list on the Friends tab, opened read-only. Sized on 2026-10-20 at about 1–1.5 days: two tables (friendships, shared outfits), about eight endpoints with tests for the rules (not yourself, only accepted friends, only your own outfits), the Friends tab and a share sheet; no push notifications.
 - Everything in `scope.md > Later`: social, calendar, Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin.
 
 ## Non-Goals
