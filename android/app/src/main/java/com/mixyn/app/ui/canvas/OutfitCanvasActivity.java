@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +66,8 @@ import java.util.concurrent.Executors;
  * (only its left half is drawn, like an open jacket), a bag, and accessories, each in its own spot on
  * the outfit. A piece is worn in one place at a time: a layer never offers the piece that is the top
  * right now, and the top slot never offers a piece that is on as the under layer or the outerwear.
+ *
+ * A new look starts on a random piece in each slot, with no layers on.
  *
  * A layer is chosen in "focus": tapping Under layer, Outerwear, Bag or Accessories locks the rest of the outfit, so
  * swipes change only that layer, until the user taps Done. If the closet has nothing for a layer, the
@@ -128,6 +131,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     private final ExecutorService background = Executors.newSingleThreadExecutor();
+    private final Random random = new Random();
     private MixynApi api;
     private long userId;
     private ViewPager2 topPager;
@@ -414,6 +418,7 @@ public class OutfitCanvasActivity extends BaseActivity {
             protected void onSuccess(@Nullable List<ItemDto> items) {
                 findViewById(R.id.canvas_loading).setVisibility(View.GONE);
                 if (items == null) return;
+                boolean firstLoad = !wardrobeLoaded;
                 wardrobeLoaded = true;
                 List<ItemDto> tops = new ArrayList<>();
                 List<ItemDto> bottoms = new ArrayList<>();
@@ -446,6 +451,8 @@ public class OutfitCanvasActivity extends BaseActivity {
                 offerTops();
                 setUpPager(bottomPager, bottoms, 1f, null, null);
                 setUpPager(shoesPager, shoes, SHOES_SCALE, null, null);
+                // A saved outfit being changed is put on below; a reloaded wardrobe keeps the outfit.
+                if (firstLoad && editing == null) startOnRandomPieces();
                 offerLayersExcept(currentItem(topPager));
                 setUpPager(bag.pager, bags, 1f, bag, null);
                 showAccessories(List.of());
@@ -507,6 +514,19 @@ public class OutfitCanvasActivity extends BaseActivity {
             page.setScaleX(scale);
             page.setScaleY(scale);
         });
+    }
+
+    /**
+     * A new look starts on a random piece in the top, the bottom and the shoes, so the canvas suggests a
+     * different outfit every time it opens. The layers stay off.
+     */
+    private void startOnRandomPieces() {
+        for (ViewPager2 slot : List.of(topPager, bottomPager, shoesPager)) {
+            int count = slot.getAdapter() == null ? 0 : slot.getAdapter().getItemCount();
+            if (count < 2) continue;
+            slot.setCurrentItem(random.nextInt(count), false);
+            slot.post(slot::requestTransform); // an instant move doesn't re-run the page transformer
+        }
     }
 
     /**
