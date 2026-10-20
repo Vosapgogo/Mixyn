@@ -292,6 +292,14 @@
         <item name="android:textColor">@color/ink</item>
     </style>
 
+    <!-- City for weather: "23°" -->
+    <style name="TextAppearance.Mixyn.Weather" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_weather</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
     <!-- Profile: the user's name next to the photo -->
     <style name="TextAppearance.Mixyn.Heading" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/serif</item>

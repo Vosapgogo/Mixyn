@@ -387,9 +387,15 @@
     <string name="profile_saved">Profile saved</string>
 
     <!-- City for weather -->
-    <string name="city_weather_subtitle">The stylist and the canvas dress you for the weather here.</string>
-    <string name="city_weather_today">Today</string>
     <string name="city_weather_now">%1$d°</string>
+    <string name="city_sheet_body">Pick your city from the suggestions. The stylist and the canvas dress you for its weather.</string>
+    <!-- What to wear, by how the weather feels (the backend's "feel") -->
+    <string name="weather_wear_freezing">Your warmest coat, a beanie, a scarf and gloves.</string>
+    <string name="weather_wear_cold">A warm coat and a scarf; gloves if you\'re out for long.</string>
+    <string name="weather_wear_cool">Add a jacket or a cardigan over your top.</string>
+    <string name="weather_wear_mild">A light layer you can take off later.</string>
+    <string name="weather_wear_warm">T-shirt weather. A light layer for the evening.</string>
+    <string name="weather_wear_hot">Light fabrics, and a cap or sunglasses for the sun.</string>
     <string name="city_weather_feel">%1$s · feels %2$s</string>
     <string name="city_weather_unavailable">The weather can\'t be loaded right now.</string>
     <string name="city_weather_change">Change city</string>
