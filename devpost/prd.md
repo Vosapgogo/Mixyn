@@ -125,6 +125,16 @@ Source: `scope.md > The Core Loop`.
 - [ ] Changing a piece's type on its card checks the saved outfits: where the piece can't be worn in its place any more and its new place is free, it moves there; if that place is taken (a T-shirt turned skirt, in an outfit with jeans), an error names the outfit and nothing changes.
 - [ ] In the calendar, the cells before the 1st and after the last day show the neighboring months' dates on beige and can't be tapped; the calendar icon (or the month's name) opens a picker with a year and its months, and months that haven't come yet can't be chosen.
 
+### Stylist Chat
+Source: learner decision on 2026-10-20 (a light version, with a cut-off on the evening of 22 October; otherwise a plain Stylist button that opens Ask AI).
+- [ ] **Stylist** in the bottom bar (in place of Friends, which moved to later) opens a chat with the AI stylist.
+- [ ] The user writes a request in their own words and language: "3 outfits for a date", "what goes well with this sweater", "show all my black pieces", "which pieces suit me best", "what haven't I worn for a long time".
+- [ ] The stylist answers with a short message and, where it helps, up to 3 outfit cards made only of the user's own clothes (each a complete outfit), or pictures of the matching pieces (up to 12).
+- [ ] An outfit card opens on the canvas, where it can be changed and saved like any look; a piece opens its item card.
+- [ ] The chat remembers the conversation while it is open, so follow-ups work ("make the second one warmer").
+- [ ] A message that isn't about clothes or style gets only: "I help only with choosing clothes and your style."
+- [ ] Chat history and trying outfits on the user's photo are later (see Possible Later Enhancements).
+
 ### Search and Filters
 Source: learner request while checking saved outfits.
 - [ ] The magnifier on Home opens a search field: typing part of a piece's name (the one the user gave it, or its color and type) or of its type narrows the Clothes grid; on the Outfits tab it shows the outfits that have such a piece.
@@ -188,6 +198,7 @@ Source: learner request while checking saved outfits.
 - Accessories step with bags on the canvas.
 - AI stylist that uses tags and season, not just category and color.
 - **Collections**: a Home tab that groups saved outfits into themed collections (Work, Casual, Date night).
+- **Stylist chat, the full version**: saved chat history with a list of past chats to go back to, and trying outfits on the user's own photo ("show how this outfit looks on me", with an image model). Sized on 2026-10-20 at about 2 more days, the try-on with the risk that the free Gemini key can't generate images at all.
 - **Friends and sending outfits** — the next step, shown as such in the demo: add a friend by their exact email (a request the friend accepts or declines; no directory of users), send a saved outfit to one or more friends from the outfit card's Share button, and see what friends sent in a "Sent to you" list on the Friends tab, opened read-only. Sized on 2026-10-20 at about 1–1.5 days: two tables (friendships, shared outfits), about eight endpoints with tests for the rules (not yourself, only accepted friends, only your own outfits), the Friends tab and a share sheet; no push notifications.
 - Everything in `scope.md > Later`: social, calendar, Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin.
 
