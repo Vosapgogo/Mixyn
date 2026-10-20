@@ -16,7 +16,7 @@ import com.mixyn.user.UserRepository;
 
 /**
  * Current weather for the user's city, from the free Open-Meteo forecast API (no key), using the
- * coordinates saved at sign-up. Answers are remembered for 15 minutes per user, and any failure
+ * coordinates saved at sign-up. Answers are remembered for 15 minutes per place, and any failure
  * simply means "no weather": the canvas hides its chip and the stylist works without it.
  */
 @Service
@@ -33,7 +33,7 @@ public class WeatherService {
     record Forecast(Current current) {
     }
 
-    private record Cached(Weather weather, Instant at) {
+    private record Cached(Current now, Instant at) {
     }
 
     private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
@@ -41,41 +41,51 @@ public class WeatherService {
 
     private final RestClient client = RestClient.create("https://api.open-meteo.com");
     private final UserRepository users;
-    private final Map<Long, Cached> cache = new ConcurrentHashMap<>();
+    /**
+     * Recent answers by place ("50.45,30.52"), not by user: a user who changes their city gets the new
+     * city's weather at once, instead of the old one for up to 15 minutes.
+     */
+    private final Map<String, Cached> cache = new ConcurrentHashMap<>();
 
     public WeatherService(UserRepository users) {
         this.users = users;
     }
 
     public Optional<Weather> forUser(Long userId) {
-        Cached cached = cache.get(userId);
-        if (cached != null && cached.at().plus(FRESH_FOR).isAfter(Instant.now())) {
-            return Optional.of(cached.weather());
-        }
         User user = users.findById(userId).orElse(null);
         if (user == null || user.getLatitude() == null || user.getLongitude() == null) {
             return Optional.empty();
         }
+        String place = user.getLatitude() + "," + user.getLongitude();
+        Cached cached = cache.get(place);
+        if (cached == null || !cached.at().plus(FRESH_FOR).isAfter(Instant.now())) {
+            Current now = lookUp(user.getLatitude(), user.getLongitude());
+            if (now == null) {
+                return Optional.empty();
+            }
+            cached = new Cached(now, Instant.now());
+            cache.put(place, cached);
+        }
+        Current now = cached.now();
+        return Optional.of(new Weather((int) Math.round(now.temperature_2m()),
+                feel(now.apparent_temperature()), sky(now.weather_code()), user.getCity()));
+    }
+
+    /** The weather at this place right now, or null if Open-Meteo can't be reached. */
+    private Current lookUp(double latitude, double longitude) {
         try {
             Forecast forecast = client.get()
                     .uri(uri -> uri.path("/v1/forecast")
-                            .queryParam("latitude", user.getLatitude())
-                            .queryParam("longitude", user.getLongitude())
+                            .queryParam("latitude", latitude)
+                            .queryParam("longitude", longitude)
                             .queryParam("current", "temperature_2m,apparent_temperature,weather_code")
                             .build())
                     .retrieve()
                     .body(Forecast.class);
-            if (forecast == null || forecast.current() == null) {
-                return Optional.empty();
-            }
-            Current now = forecast.current();
-            Weather weather = new Weather((int) Math.round(now.temperature_2m()),
-                    feel(now.apparent_temperature()), sky(now.weather_code()), user.getCity());
-            cache.put(userId, new Cached(weather, Instant.now()));
-            return Optional.of(weather);
+            return forecast == null ? null : forecast.current();
         } catch (Exception e) {
             log.warn("Weather lookup failed: {}", e.toString());
-            return Optional.empty();
+            return null;
         }
     }
 
