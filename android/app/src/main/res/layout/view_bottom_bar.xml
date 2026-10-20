@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- MixynBottomBar: Home, Calendar, big black +, Friends, Profile. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:orientation="horizontal"
     tools:parentTag="android.widget.LinearLayout">
@@ -26,7 +27,7 @@
             android:padding="@dimen/space_m"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_plus"
-            android:tint="@color/on_dark" />
+            app:tint="@color/on_dark" />
     </FrameLayout>
 
     <TextView android:id="@+id/nav_stylist" style="@style/Widget.Mixyn.BottomBarItem"

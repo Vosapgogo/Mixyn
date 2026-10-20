@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- A light navigation bar needs Android 8.1; on Android 8.0 it stays dark, with light buttons. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.Mixyn" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/mocha</item>
         <item name="colorOnPrimary">@color/on_dark</item>
@@ -12,7 +13,7 @@
         <!-- Fonts come from the TextAppearance.Mixyn.* styles; a theme-wide font would override them. -->
         <item name="android:textViewStyle">@style/Widget.Mixyn.TextView</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
         <item name="materialButtonStyle">@style/Widget.Mixyn.Button.Primary</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Mixyn.Dialog</item>
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Mixyn.BottomSheet</item>
@@ -21,14 +22,14 @@
     <style name="Theme.Mixyn.Splash">
         <item name="android:windowBackground">@color/mocha</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
 
     <!-- Dark screen while a photo is processed -->
     <style name="Theme.Mixyn.Charcoal">
         <item name="android:windowBackground">@color/charcoal_bg</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
 
     <style name="ThemeOverlay.Mixyn.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">

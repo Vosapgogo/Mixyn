@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Text and component styles. Screens pick a style; they don't set fonts, sizes or colors themselves. -->
-<resources>
+<!-- Text and component styles. Screens pick a style; they don't set fonts, sizes or colors themselves.
+     Font weights (textFontWeight) need Android 9: on Android 8 that text stays in the regular weight. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ===== Text ===== -->
     <!-- Default for any TextView without its own appearance -->
@@ -42,14 +43,14 @@
 
     <style name="TextAppearance.Mixyn.BodyStrong" parent="TextAppearance.Mixyn.Body">
         <item name="android:textColor">@color/ink</item>
-        <item name="android:textFontWeight">500</item>
+        <item name="android:textFontWeight" tools:targetApi="28">500</item>
     </style>
 
     <style name="TextAppearance.Mixyn.Label" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/inter</item>
         <item name="android:textSize">@dimen/text_label</item>
         <item name="android:textColor">@color/ink</item>
-        <item name="android:textFontWeight">500</item>
+        <item name="android:textFontWeight" tools:targetApi="28">500</item>
     </style>
 
     <style name="TextAppearance.Mixyn.Caption" parent="TextAppearance.AppCompat">
@@ -66,7 +67,7 @@
     <style name="TextAppearance.Mixyn.Button" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/inter</item>
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="android:textFontWeight">600</item>
+        <item name="android:textFontWeight" tools:targetApi="28">600</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
     </style>
@@ -120,7 +121,7 @@
     <style name="Widget.Mixyn.TextLink" parent="Widget.AppCompat.TextView">
         <item name="android:textAppearance">@style/TextAppearance.Mixyn.Label</item>
         <item name="android:textColor">@color/mocha</item>
-        <item name="android:textFontWeight">600</item>
+        <item name="android:textFontWeight" tools:targetApi="28">600</item>
         <item name="android:paddingTop">@dimen/space_xs</item>
         <item name="android:paddingBottom">@dimen/space_xs</item>
         <item name="android:background">?attr/selectableItemBackground</item>
