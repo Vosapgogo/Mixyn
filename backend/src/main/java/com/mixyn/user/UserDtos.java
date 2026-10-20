@@ -33,11 +33,32 @@ public final class UserDtos {
         }
     }
 
-    public record UserResponse(Long id, String name, String email, String city, String country) {
+    /** The user as the app sees them; avatarUrl is null without a profile photo. */
+    public record UserResponse(Long id, String name, String email, String city, String country, String username,
+            String avatarUrl) {
         static UserResponse from(User user) {
-            return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getCity(),
-                    user.getCountry());
+            return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getCity(), user.getCountry(),
+                    user.getUsername(), user.getAvatarFile() == null ? null : "/images/" + user.getAvatarFile());
         }
+    }
+
+    /** Body of PUT /api/me: the whole profile as the edit screen has it. The city comes from the suggestions. */
+    public record ProfileUpdate(
+            @NotBlank @Size(max = 50) String name,
+            @Size(max = 31) String username,
+            @NotBlank @Size(max = 80) String city,
+            @Size(max = 80) String country,
+            @NotNull Double latitude,
+            @NotNull Double longitude) {
+        public ProfileUpdate {
+            name = trim(name);
+            username = trim(username);
+            city = trim(city);
+        }
+    }
+
+    /** Body of PUT /api/me/password. */
+    public record PasswordChange(@NotBlank String currentPassword, @NotBlank @Size(min = 8, max = 72) String newPassword) {
     }
 
     public record AuthResponse(UserResponse user, String token) {

@@ -42,6 +42,14 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
+    /** The name friends will find the user by ("@koko"): lower-case, unique, optional. */
+    @Column(unique = true, length = 30)
+    private String username;
+
+    /** The profile photo's file in the image folder, or null for none. */
+    @Column(name = "avatar_file")
+    private String avatarFile;
+
     protected User() {
     }
 
@@ -86,5 +94,37 @@ public class User {
 
     public Double getLongitude() {
         return longitude;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /** A city chosen from the suggestions, with where it is (for the weather). */
+    public void setCity(String city, String country, Double latitude, Double longitude) {
+        this.city = city;
+        this.country = country;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getAvatarFile() {
+        return avatarFile;
+    }
+
+    public void setAvatarFile(String avatarFile) {
+        this.avatarFile = avatarFile;
     }
 }

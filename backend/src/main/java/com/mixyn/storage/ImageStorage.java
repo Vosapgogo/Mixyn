@@ -27,6 +27,8 @@ import com.mixyn.common.ApiException;
 public class ImageStorage {
 
     private static final int MAX_SIDE = 1024;
+    /** A profile photo is never larger than this square. */
+    private static final int AVATAR_SIDE = 512;
     private static final int ALPHA_VISIBLE = 24; // pixels fainter than this count as background
     private static final int PADDING = 8;
     private static final int BOX_MARGIN_PERCENT = 3;
@@ -119,6 +121,37 @@ public class ImageStorage {
         } catch (IOException e) {
             throw invalidImage();
         }
+    }
+
+    /**
+     * A profile photo ready to store: the middle square of the photo (JPEG or PNG), at most AVATAR_SIDE
+     * pixels wide, as PNG bytes.
+     */
+    public byte[] squareAvatar(byte[] photo) {
+        try {
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(photo));
+            if (image == null) {
+                throw notAPhoto();
+            }
+            int side = Math.min(image.getWidth(), image.getHeight());
+            BufferedImage square = image.getSubimage((image.getWidth() - side) / 2, (image.getHeight() - side) / 2,
+                    side, side);
+            int size = Math.min(side, AVATAR_SIDE);
+            BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = out.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.drawImage(square, 0, 0, size, size, null);
+            g.dispose();
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            ImageIO.write(out, "png", bytes);
+            return bytes.toByteArray();
+        } catch (IOException e) {
+            throw notAPhoto();
+        }
+    }
+
+    private static ApiException notAPhoto() {
+        return new ApiException(HttpStatus.BAD_REQUEST, "invalid_image", "This file isn't a photo we can read");
     }
 
     /** Turns a PNG clockwise by 90, 180 or 270 degrees ("Edit photo" on the item card). */
