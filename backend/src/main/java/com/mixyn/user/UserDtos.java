@@ -34,11 +34,12 @@ public final class UserDtos {
     }
 
     /** The user as the app sees them; avatarUrl is null without a profile photo. */
-    public record UserResponse(Long id, String name, String email, String city, String country, String username,
-            String avatarUrl) {
+    public record UserResponse(Long id, String name, String email, String city, String country, Double latitude,
+            Double longitude, String username, String avatarUrl) {
         static UserResponse from(User user) {
             return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getCity(), user.getCountry(),
-                    user.getUsername(), user.getAvatarFile() == null ? null : "/images/" + user.getAvatarFile());
+                    user.getLatitude(), user.getLongitude(), user.getUsername(),
+                    user.getAvatarFile() == null ? null : "/images/" + user.getAvatarFile());
         }
     }
 
