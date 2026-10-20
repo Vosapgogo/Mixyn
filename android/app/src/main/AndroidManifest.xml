@@ -32,6 +32,13 @@
         <activity android:name=".ui.canvas.OutfitCanvasActivity" />
         <activity android:name=".ui.outfit.OutfitActivity" />
         <activity
+            android:name=".ui.profile.EditProfileActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.profile.CityWeatherActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.profile.GoodbyeActivity" />
+        <activity
             android:name=".ui.stylist.StylistChatActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity

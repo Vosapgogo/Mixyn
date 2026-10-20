@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Profile: a tag pill. The screen colors the outline with the tag's own color. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <stroke android:width="@dimen/stroke_error" android:color="@color/ink_muted" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

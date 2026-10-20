@@ -274,6 +274,43 @@
         <item name="android:background">@color/line</item>
     </style>
 
+    <!-- Profile: one of the three tiles under the name, its number and its label -->
+    <style name="Widget.Mixyn.StatTile" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_card_white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingTop">@dimen/space_m</item>
+        <item name="android:paddingBottom">@dimen/space_m</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.Stat" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_watermark</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <!-- Profile: the user's name next to the photo -->
+    <style name="TextAppearance.Mixyn.Heading" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/serif</item>
+        <item name="android:textSize">@dimen/text_heading</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <!-- Profile: a tag the user wears most, outlined in its own color -->
+    <style name="Widget.Mixyn.TagPill" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">@dimen/tag_pill_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+        <item name="android:drawablePadding">@dimen/space_xs</item>
+        <item name="android:background">@drawable/bg_tag_pill</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mixyn.BodyStrong</item>
+    </style>
+
     <!-- "mixyn" in the corner of an outfit's picture -->
     <style name="TextAppearance.Mixyn.Watermark" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/serif</item>

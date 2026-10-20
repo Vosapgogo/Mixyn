@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: the city, today's weather there, and a way to choose another city. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_margin">
+
+        <com.mixyn.app.ui.components.MixynBackHeader
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:subtitle="@string/city_weather_subtitle"
+            app:title="@string/profile_city" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            android:background="@drawable/bg_card_white"
+            android:orientation="vertical"
+            android:padding="@dimen/space_l">
+
+            <TextView
+                style="@style/Widget.Mixyn.CardLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/city_weather_today"
+                android:textColor="@color/ink_muted" />
+
+            <TextView
+                android:id="@+id/weather_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textAppearance="@style/TextAppearance.Mixyn.Heading" />
+
+            <LinearLayout
+                android:id="@+id/weather_now"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/weather_temperature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Mixyn.Display" />
+
+                <TextView
+                    android:id="@+id/weather_feel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:drawablePadding="@dimen/space_xs"
+                    android:textAppearance="@style/TextAppearance.Mixyn.Body"
+                    app:drawableStartCompat="@drawable/ic_cloud"
+                    app:drawableTint="@color/ink_muted" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/weather_loading"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_marginTop="@dimen/space_s"
+                android:indeterminateTint="@color/mocha" />
+
+            <TextView
+                android:id="@+id/weather_unavailable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:text="@string/city_weather_unavailable"
+                android:textAppearance="@style/TextAppearance.Mixyn.Body"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/weather_city_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            app:fieldType="text"
+            app:hint="@string/field_city_hint"
+            app:label="@string/city_weather_change" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/weather_save"
+                style="@style/Widget.Mixyn.Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_save_city" />
+
+            <ProgressBar
+                android:id="@+id/weather_saving"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_gravity="center"
+                android:elevation="@dimen/space_xs"
+                android:indeterminateTint="@color/on_dark"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</ScrollView>

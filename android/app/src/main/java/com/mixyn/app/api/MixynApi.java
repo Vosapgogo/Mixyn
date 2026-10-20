@@ -47,6 +47,22 @@ public interface MixynApi {
     @GET("api/me")
     Call<UserDto> me();
 
+
+    /** The whole profile: name, username, city (from the suggestions, with coordinates). */
+    @PUT("api/me")
+    Call<UserDto> updateProfile(@Body Map<String, Object> profile);
+
+    /** {currentPassword, newPassword}; other phones have to log in again afterwards. */
+    @PUT("api/me/password")
+    Call<Void> changePassword(@Body Map<String, String> passwords);
+
+    @Multipart
+    @POST("api/me/avatar")
+    Call<UserDto> uploadAvatar(@Part MultipartBody.Part photo);
+
+    /** The account and everything in it. */
+    @DELETE("api/me")
+    Call<Void> deleteAccount();
     @GET("api/cities")
     Call<List<CityDto>> cities(@Query("q") String query);
 

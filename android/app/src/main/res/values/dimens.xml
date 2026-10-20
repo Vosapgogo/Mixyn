@@ -48,6 +48,10 @@
     <dimen name="canvas_overlap">-12dp</dimen>
     <!-- Outfit canvas: the room above the outfit, under the header, where a hat is worn -->
     <dimen name="canvas_head_room">80dp</dimen>
+    <!-- Profile: the closet's colors as one rounded bar, and a tag pill under it -->
+    <dimen name="palette_height">18dp</dimen>
+    <dimen name="palette_radius">9dp</dimen>
+    <dimen name="tag_pill_height">36dp</dimen>
     <!-- Stylist chat: an outfit card, the outfit drawn in it, and one piece shown -->
     <dimen name="chat_look_width">168dp</dimen>
     <dimen name="chat_look_height">232dp</dimen>
@@ -81,6 +85,7 @@
     <dimen name="text_display">44sp</dimen>
     <dimen name="text_title">36sp</dimen>
     <dimen name="text_logo">32sp</dimen>
+    <dimen name="text_heading">26sp</dimen>
     <dimen name="text_watermark">22sp</dimen>
     <dimen name="text_body">16sp</dimen>
     <dimen name="text_label">14sp</dimen>

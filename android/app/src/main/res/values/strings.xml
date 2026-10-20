@@ -345,9 +345,56 @@
 
     <!-- Profile -->
     <string name="profile_title">Profile</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_username_city">@%1$s · %2$s</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="profile_pieces">pieces</string>
+    <string name="profile_outfits">outfits saved</string>
+    <string name="profile_days_worn">days worn</string>
+    <string name="profile_palette">Your closet palette</string>
     <string name="profile_city">City for weather</string>
     <string name="profile_log_out">Log out</string>
-    <string name="profile_email_city">%1$s · %2$s</string>
+    <string name="profile_delete_account">Delete account</string>
+    <string name="profile_log_out_title">Log out?</string>
+    <string name="profile_log_out_body">You can log back in with your email and password any time.</string>
+    <string name="profile_delete_title">Delete your account?</string>
+    <string name="profile_delete_body">Your clothes, outfits and calendar will be deleted for good. This can\'t be undone.</string>
+    <string name="profile_delete_confirm">Delete</string>
+    <string name="profile_cancel">Cancel</string>
+
+    <!-- After logging out or deleting the account -->
+    <string name="goodbye_logged_out_title">You\'re logged out</string>
+    <string name="goodbye_deleted_title">Your account is deleted</string>
+    <string name="goodbye_body">We hope to see you again soon.</string>
+    <string name="goodbye_action">Back to start</string>
+
+    <!-- Edit profile -->
+    <string name="edit_profile_title">Edit profile</string>
+    <string name="edit_profile_subtitle">How you appear in Mixyn.</string>
+    <string name="edit_profile_photo">Change photo</string>
+    <string name="field_username">Username</string>
+    <string name="field_username_hint">How friends will find you</string>
+    <string name="edit_profile_password">Change password</string>
+    <string name="edit_profile_password_note">Leave both empty to keep your password.</string>
+    <string name="field_current_password">Current password</string>
+    <string name="field_current_password_hint">Your password now</string>
+    <string name="field_new_password">New password</string>
+    <string name="action_save_changes">Save changes</string>
+    <string name="error_username_invalid">Use 3 to 30 letters, digits, dots or underscores</string>
+    <string name="error_username_taken">This username is taken</string>
+    <string name="error_current_password">Your current password is incorrect</string>
+    <string name="error_current_password_required">Enter your current password</string>
+    <string name="profile_saved">Profile saved</string>
+
+    <!-- City for weather -->
+    <string name="city_weather_subtitle">The stylist and the canvas dress you for the weather here.</string>
+    <string name="city_weather_today">Today</string>
+    <string name="city_weather_now">%1$d°</string>
+    <string name="city_weather_feel">%1$s · feels %2$s</string>
+    <string name="city_weather_unavailable">The weather can\'t be loaded right now.</string>
+    <string name="city_weather_change">Change city</string>
+    <string name="action_save_city">Save city</string>
+    <string name="city_saved">City saved</string>
 
     <!-- Shared -->
     <string name="coming_soon">Coming soon</string>

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 
 import com.mixyn.app.api.dto.AuthResponse;
+import com.mixyn.app.api.dto.UserDto;
 
 /** Remembers who is logged in on this phone. Never stores the password — only the session token. */
 public class SessionStore {
@@ -30,6 +31,14 @@ public class SessionStore {
                 .putString(KEY_EMAIL, auth.user.email)
                 .putString(KEY_CITY, auth.user.city)
                 .putString(KEY_TOKEN, auth.token)
+                .apply();
+    }
+
+    /** The profile changed (Edit profile, City for weather): the name and city shown elsewhere follow. */
+    public void update(UserDto user) {
+        prefs.edit()
+                .putString(KEY_NAME, user.name)
+                .putString(KEY_CITY, user.city)
                 .apply();
     }
 

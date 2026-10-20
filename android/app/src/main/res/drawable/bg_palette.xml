@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Profile: the rounded bar the closet's colors are drawn in (it clips them to its shape). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/line" />
+    <corners android:radius="@dimen/palette_radius" />
+</shape>

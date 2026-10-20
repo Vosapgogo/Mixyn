@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Edit profile: the photo (saved as soon as it is picked), name, username and city, and a new password
+     with the current one. Wrong input shows an error under its field, as at sign-up. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_margin">
+
+        <com.mixyn.app.ui.components.MixynBackHeader
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:subtitle="@string/edit_profile_subtitle"
+            app:title="@string/edit_profile_title" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="@dimen/avatar_size"
+                android:layout_height="@dimen/avatar_size">
+
+                <ImageView
+                    android:id="@+id/edit_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_avatar"
+                    android:contentDescription="@string/profile_photo"
+                    android:padding="@dimen/space_l"
+                    android:src="@drawable/ic_profile"
+                    app:tint="@color/on_dark" />
+
+                <ProgressBar
+                    android:id="@+id/edit_avatar_progress"
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:layout_gravity="center"
+                    android:indeterminateTint="@color/on_dark"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/edit_change_photo"
+                style="@style/Widget.Mixyn.TextLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:text="@string/edit_profile_photo" />
+        </LinearLayout>
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/edit_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            app:fieldType="name"
+            app:hint="@string/field_name_hint"
+            app:label="@string/field_name" />
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/edit_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            app:fieldType="text"
+            app:hint="@string/field_username_hint"
+            app:label="@string/field_username" />
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/edit_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            app:fieldType="text"
+            app:hint="@string/field_city_hint"
+            app:label="@string/field_city" />
+
+        <TextView
+            style="@style/Widget.Mixyn.CardLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/edit_profile_password" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xxs"
+            android:text="@string/edit_profile_password_note"
+            android:textAppearance="@style/TextAppearance.Mixyn.Caption" />
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/edit_current_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            app:fieldType="password"
+            app:hint="@string/field_current_password_hint"
+            app:label="@string/field_current_password" />
+
+        <com.mixyn.app.ui.components.MixynTextField
+            android:id="@+id/edit_new_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            app:fieldType="password"
+            app:hint="@string/field_password_hint_register"
+            app:label="@string/field_new_password" />
+
+        <TextView
+            android:id="@+id/edit_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:textAppearance="@style/TextAppearance.Mixyn.Error"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/edit_save"
+                style="@style/Widget.Mixyn.Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_save_changes" />
+
+            <ProgressBar
+                android:id="@+id/edit_progress"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_gravity="center"
+                android:elevation="@dimen/space_xs"
+                android:indeterminateTint="@color/on_dark"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</ScrollView>
