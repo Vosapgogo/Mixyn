@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MixynBackHeader: round back button, serif title, optional subtitle. -->
+<!-- MixynBackHeader: the plain back arrow (as on the item card), serif title, optional subtitle. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,7 +10,8 @@
         android:id="@+id/header_back"
         android:layout_width="@dimen/icon_button_size"
         android:layout_height="@dimen/icon_button_size"
-        android:background="@drawable/bg_circle_button"
+        android:layout_marginStart="@dimen/back_arrow_inset"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/back"
         android:padding="@dimen/space_s"
         android:scaleType="fitCenter"
