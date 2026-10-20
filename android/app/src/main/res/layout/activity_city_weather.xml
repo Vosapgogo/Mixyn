@@ -5,14 +5,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/screen_margin">
+    android:orientation="vertical">
 
+    <!-- The plain arrow of the item card, in the same place -->
     <ImageButton
         android:id="@+id/weather_back"
         android:layout_width="@dimen/icon_button_size"
         android:layout_height="@dimen/icon_button_size"
-        android:background="@drawable/bg_circle_button"
+        android:layout_marginStart="@dimen/space_s"
+        android:layout_marginTop="@dimen/space_xs"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/back"
         android:padding="@dimen/space_s"
         android:scaleType="fitCenter"
@@ -25,7 +27,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin">
 
         <TextView
             android:id="@+id/weather_city"
@@ -106,6 +110,7 @@
         style="@style/Widget.Mixyn.Button.Outline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/screen_margin"
         android:text="@string/city_weather_change"
         app:icon="@drawable/ic_location"
         app:iconGravity="textStart" />
