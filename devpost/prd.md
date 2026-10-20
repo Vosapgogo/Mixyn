@@ -37,7 +37,7 @@ Success = step 11: an outfit the user likes, built from their own clothes, saved
 - **Bottom navigation** — Home, Calendar, large black central **+**, Friends, Profile. Friends is visible but disabled, marked "coming soon."
 - **Calendar** — one month at a time; a day on which an outfit was worn shows that outfit's picture, today has a frame. The days of the neighboring months fill the first and last week on beige. A calendar icon opens a month and year picker.
 - **Profile** — shows the user's name, email, and city, plus **Log out**. Everything else on it is "coming soon."
-- **+ menu** — Add clothes, Create outfit, OutfitCHECK (OutfitCHECK visible but disabled, "coming soon").
+- **+ menu** — Add clothes and Create outfit.
 - **Add clothes flow** — gallery picker → processing screen → **View item**.
 - **Item card** — large item image on white; name field ("Add a name…" + Edit); Category (e.g. "Outerwear >"); Tags (Casual, Night out, Streetwear, Date night, Work, Favorites, Sports, Cozy); Color (swatch + name, e.g. "Khaki"); Season.
 - **Create outfit (canvas)** — white canvas with pieces stacked vertically like a silhouette: Top, Bottom, Shoes; Outerwear overlaps the Top. A hint text field + **Generate with AI**. **Next** leads to the outfit card.
@@ -78,7 +78,7 @@ Source: learner decision on 2026-10-20, after the Stylist chat (design page 19),
 ### Adding Clothes
 Source: `scope.md > The POC Boundary` ("Upload clothes with AI background removal").
 - [ ] Empty Clothes tab shows the wardrobe illustration, "Your closet is empty," "Add your first piece. Snap a photo and we'll clean up the background for you," and **+ Add clothes**.
-- [ ] Central **+** opens a menu containing **Add clothes** and **Create outfit**; OutfitCHECK is shown but disabled with "coming soon."
+- [ ] Central **+** opens a menu containing **Add clothes** and **Create outfit**.
 - [ ] Friends in the bottom nav is visible but disabled with "coming soon"; tapping it doesn't navigate anywhere.
 - [ ] Add clothes lets the user pick a photo from the gallery (camera not required for the PoC).
 - [ ] A processing screen shows progress, then "Background removed · 1/1 completed" and a **View item** button.
@@ -177,7 +177,7 @@ Source: learner request while checking saved outfits.
 - **Save and "Wear it today" both work** — Save proves "the creation loop is complete and the data is stored"; Wear it today adds the day to the calendar (learner decision during the build; streaks stay out).
 - **The outfit card mirrors the item card** — instead of name chips under the look (design page 17), rows for the clothes, colors, category, seasons and delete (learner request).
 - **Gallery upload only** for the demo.
-- **Deferred features stay visible as "coming soon"** — Friends and OutfitCHECK appear disabled; Profile holds only account info and Log out, hinting at the full vision without building it.
+- **Deferred features are left out, not shown disabled** — the Collections tab and OutfitCHECK were removed (learner decisions), and Friends gave its place to the Stylist chat; only the outfit card's Share button still says "Coming soon".
 - **Japandi look** — warm neutrals, white canvas, serif headers, clothes as the accent.
 
 ## What We're Building
@@ -208,6 +208,7 @@ Source: learner request while checking saved outfits.
 - AI stylist that uses tags and season, not just category and color.
 - **Collections**: a Home tab that groups saved outfits into themed collections (Work, Casual, Date night).
 - **Stylist chat, the full version**: saved chat history with a list of past chats to go back to, and trying outfits on the user's own photo ("show how this outfit looks on me", with an image model). Sized on 2026-10-20 at about 2 more days, the try-on with the risk that the free Gemini key can't generate images at all.
+- **OutfitCHECK** (design pages 21–22): + → OutfitCHECK opens a camera with a self-timer (Off / 3s / 10s, "Prop up your phone and step back"); the photo of the user in their outfit gets its background removed like a clothing photo and is kept for that day of the calendar, which shows it with a camera badge (design page 18). Sized on 2026-10-20 at about 1.5 days with our own camera as on page 21, or about 1 day with the phone's camera app; posting it to friends needs Friends first.
 - **Friends and sending outfits** — the next step, shown as such in the demo: add a friend by their exact email (a request the friend accepts or declines; no directory of users), send a saved outfit to one or more friends from the outfit card's Share button, and see what friends sent in a "Sent to you" list on the Friends tab, opened read-only. Sized on 2026-10-20 at about 1–1.5 days: two tables (friendships, shared outfits), about eight endpoints with tests for the rules (not yourself, only accepted friends, only your own outfits), the Friends tab and a share sheet; no push notifications.
 - Everything in `scope.md > Later`: social, calendar, Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin.
 
