@@ -3,14 +3,8 @@ package com.mixyn.app.ui.auth;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -23,16 +17,15 @@ import com.mixyn.app.api.ApiCallback;
 import com.mixyn.app.api.ApiClient;
 import com.mixyn.app.api.MixynApi;
 import com.mixyn.app.api.dto.AuthResponse;
-import com.mixyn.app.api.dto.CityDto;
 import com.mixyn.app.api.dto.LoginRequest;
 import com.mixyn.app.api.dto.RegisterRequest;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.MixynBackHeader;
+import com.mixyn.app.ui.components.CityPicker;
 import com.mixyn.app.ui.components.MixynTextField;
 import com.mixyn.app.ui.main.MainActivity;
 
-import java.util.List;
 
 import retrofit2.Call;
 
@@ -58,11 +51,7 @@ public class AuthActivity extends BaseActivity {
 
     // City autocomplete: the user must pick one of the suggestions.
     @Nullable
-    private CityDto selectedCity;
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable pendingCitySearch;
-    @Nullable
-    private Call<List<CityDto>> cityCall;
+    private CityPicker cityPicker;
 
     public static void start(Activity from, Mode mode, @Nullable String email) {
         from.startActivity(new Intent(from, AuthActivity.class)
@@ -104,65 +93,13 @@ public class AuthActivity extends BaseActivity {
         String prefill = getIntent().getStringExtra(EXTRA_EMAIL);
         if (prefill != null) email.setValue(prefill);
 
-        if (register) setUpCityAutocomplete();
+        if (register) cityPicker = new CityPicker(this, city);
         submit.setOnClickListener(v -> submit());
     }
 
     private void switchMode() {
         start(this, mode == Mode.REGISTER ? Mode.LOGIN : Mode.REGISTER, email.getValue());
         finish();
-    }
-
-    // ----- City autocomplete -----
-
-    private void setUpCityAutocomplete() {
-        AutoCompleteTextView input = city.getInput();
-        input.setOnItemClickListener((parent, view, position, id) -> {
-            selectedCity = (CityDto) parent.getItemAtPosition(position);
-            city.setError(null);
-            // Picking fills the field with the label, which would otherwise trigger one more search.
-            if (pendingCitySearch != null) handler.removeCallbacks(pendingCitySearch);
-        });
-        input.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // Typing after a pick means the pick no longer matches the text.
-                if (selectedCity != null && !selectedCity.toString().contentEquals(s)) selectedCity = null;
-                if (selectedCity != null) return;
-                if (pendingCitySearch != null) handler.removeCallbacks(pendingCitySearch);
-                String query = s.toString().trim();
-                if (query.length() < 2) return;
-                pendingCitySearch = () -> searchCities(query);
-                handler.postDelayed(pendingCitySearch, CITY_SEARCH_DELAY_MS);
-            }
-        });
-    }
-
-    private void searchCities(String query) {
-        if (cityCall != null) cityCall.cancel();
-        cityCall = api.cities(query);
-        cityCall.enqueue(new ApiCallback<>(this) {
-            @Override
-            protected void onSuccess(@Nullable List<CityDto> cities) {
-                if (cities == null) return;
-                AutoCompleteTextView input = city.getInput();
-                input.setAdapter(new ArrayAdapter<>(AuthActivity.this, R.layout.item_dropdown, cities));
-                if (input.hasFocus() && !cities.isEmpty()) input.showDropDown();
-            }
-
-            @Override
-            protected void onError(@Nullable String code, @NonNull String message) {
-                city.setError(getString(R.string.error_cities));
-            }
-        });
     }
 
     // ----- Submit -----
@@ -172,7 +109,7 @@ public class AuthActivity extends BaseActivity {
         if (!validate()) return;
         setLoading(true);
         Call<AuthResponse> call = mode == Mode.REGISTER
-                ? api.register(new RegisterRequest(name.getValue(), email.getValue(), password.getValue(), selectedCity))
+                ? api.register(new RegisterRequest(name.getValue(), email.getValue(), password.getValue(), cityPicker.getSelected()))
                 : api.login(new LoginRequest(email.getValue(), password.getValue()));
         call.enqueue(new ApiCallback<>(this) {
             @Override
@@ -224,8 +161,9 @@ public class AuthActivity extends BaseActivity {
         ok &= pwError == null;
 
         if (mode == Mode.REGISTER) {
-            city.setError(selectedCity == null ? getString(R.string.error_city_required) : null);
-            ok &= selectedCity != null;
+            boolean picked = cityPicker != null && cityPicker.getSelected() != null;
+            city.setError(picked ? null : getString(R.string.error_city_required));
+            ok &= picked;
         }
         return ok;
     }
@@ -249,8 +187,7 @@ public class AuthActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        handler.removeCallbacksAndMessages(null);
-        if (cityCall != null) cityCall.cancel();
+        if (cityPicker != null) cityPicker.release();
         super.onDestroy();
     }
 }

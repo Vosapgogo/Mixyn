@@ -2,11 +2,7 @@ package com.mixyn.app.ui.additem;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageDecoder;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,11 +24,10 @@ import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.session.SessionStore;
 import com.mixyn.app.ui.base.BaseActivity;
+import com.mixyn.app.ui.components.PhotoFiles;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.item.ItemDetailActivity;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -120,7 +115,7 @@ public class AddItemActivity extends BaseActivity {
         showProcessing(uri);
         // Reading and shrinking the photo is slow work, so it stays off the main (UI) thread.
         background.execute(() -> {
-            byte[] jpeg = readAsJpeg(uri);
+            byte[] jpeg = PhotoFiles.readAsJpeg(this, uri, MAX_UPLOAD_SIDE);
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 if (jpeg == null) {
@@ -153,36 +148,6 @@ public class AddItemActivity extends BaseActivity {
                 });
             });
         });
-    }
-
-    /** Decodes any gallery photo (JPEG, PNG, HEIC…), scales it down and re-encodes it as JPEG. */
-    @Nullable
-    private byte[] readAsJpeg(Uri uri) {
-        try {
-            Bitmap bitmap;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), uri),
-                        (decoder, info, source) -> {
-                            decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
-                            int longSide = Math.max(info.getSize().getWidth(), info.getSize().getHeight());
-                            if (longSide > MAX_UPLOAD_SIDE) {
-                                float scale = (float) MAX_UPLOAD_SIDE / longSide;
-                                decoder.setTargetSize(Math.round(info.getSize().getWidth() * scale),
-                                        Math.round(info.getSize().getHeight() * scale));
-                            }
-                        });
-            } else {
-                try (InputStream in = getContentResolver().openInputStream(uri)) {
-                    bitmap = BitmapFactory.decodeStream(in);
-                }
-            }
-            if (bitmap == null) return null;
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            return out.toByteArray();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     // ----- The three states of the screen -----
