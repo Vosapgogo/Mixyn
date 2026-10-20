@@ -128,7 +128,7 @@ Source: `scope.md > The Core Loop`.
 ### Stylist Chat
 Source: learner decision on 2026-10-20 (a light version, with a cut-off on the evening of 22 October; otherwise a plain Stylist button that opens Ask AI).
 - [ ] **Stylist** in the bottom bar (in place of Friends, which moved to later) opens a chat with the AI stylist.
-- [ ] The user writes a request in their own words and language: "3 outfits for a date", "what goes well with this sweater", "show all my black pieces", "which pieces suit me best", "what haven't I worn for a long time".
+- [ ] The user writes a request in their own words and language: "3 outfits for a date", "what goes well with this sweater", "show all my black pieces", "which pieces suit me best", "what haven't I worn for a long time", "describe my style from my clothes", "how can I improve my style" (tips only with what they own, never buying new clothes).
 - [ ] The stylist answers with a short message and, where it helps, up to 3 outfit cards made only of the user's own clothes (each a complete outfit), or pictures of the matching pieces (up to 12).
 - [ ] An outfit card opens on the canvas, where it can be changed and saved like any look; a piece opens its item card.
 - [ ] The chat remembers the conversation while it is open, so follow-ups work ("make the second one warmer").
