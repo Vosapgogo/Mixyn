@@ -32,6 +32,9 @@
         <activity android:name=".ui.canvas.OutfitCanvasActivity" />
         <activity android:name=".ui.outfit.OutfitActivity" />
         <activity
+            android:name=".ui.stylist.StylistChatActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".ui.additem.AddItemActivity"
             android:theme="@style/Theme.Mixyn.Charcoal" />
     </application>

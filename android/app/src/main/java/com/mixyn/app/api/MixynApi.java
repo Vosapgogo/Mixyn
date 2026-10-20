@@ -2,6 +2,7 @@ package com.mixyn.app.api;
 
 import com.mixyn.app.api.dto.AuthResponse;
 import com.mixyn.app.api.dto.CalendarDayDto;
+import com.mixyn.app.api.dto.ChatReply;
 import com.mixyn.app.api.dto.CityDto;
 import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.GenerateResult;
@@ -75,6 +76,10 @@ public interface MixynApi {
      */
     @POST("api/users/{userId}/outfits/generate")
     Call<GenerateResult> generateOutfit(@Path("userId") long userId, @Body Map<String, Object> body);
+
+    /** The Stylist chat: {message, history: [{role, text, looks, itemIds}]} → the stylist's answer. */
+    @POST("api/users/{userId}/stylist/chat")
+    Call<ChatReply> stylistChat(@Path("userId") long userId, @Body Map<String, Object> body);
 
     /**
      * Saves the outfit on the canvas. Two parts: "picture", the look as a PNG, and "outfit", sent as

@@ -119,6 +119,7 @@ public class OutfitCanvasActivity extends BaseActivity {
     private static final String KEY_ACCESSORIES = "canvas_accessories";
     private static final String KEY_FILTER = "canvas_filter";
     private static final String EXTRA_EDIT = "edit";
+    private static final String EXTRA_WEAR = "wear";
 
     /** One optional layer over the outfit: its pager and whether it is part of the outfit right now. */
     private static final class Layer {
@@ -190,6 +191,9 @@ public class OutfitCanvasActivity extends BaseActivity {
     private OutfitDto editing;
     /** Whether that outfit has been put on the canvas yet (once, when the wardrobe first arrives). */
     private boolean editingShown;
+    /** A look from the Stylist chat to start with, as a new outfit, or null. */
+    @Nullable
+    private OutfitDto toWear;
 
     /** Every top in the wardrobe. The top slot offers them all except the ones worn as a layer. */
     private List<ItemDto> topPieces = new ArrayList<>();
@@ -224,6 +228,12 @@ public class OutfitCanvasActivity extends BaseActivity {
         context.startActivity(new Intent(context, OutfitCanvasActivity.class));
     }
 
+    /** Opens the canvas with this look on (from the Stylist chat), as a new outfit to change and save. */
+    public static void wear(Context context, OutfitDto look) {
+        context.startActivity(new Intent(context, OutfitCanvasActivity.class)
+                .putExtra(EXTRA_WEAR, new Gson().toJson(look)));
+    }
+
     /** Opens the canvas with this saved outfit on, to change it. */
     public static void edit(Context context, OutfitDto outfit) {
         context.startActivity(new Intent(context, OutfitCanvasActivity.class)
@@ -238,6 +248,8 @@ public class OutfitCanvasActivity extends BaseActivity {
         userId = new SessionStore(this).getUserId();
         String toEdit = getIntent().getStringExtra(EXTRA_EDIT);
         if (toEdit != null) editing = new Gson().fromJson(toEdit, OutfitDto.class);
+        String look = getIntent().getStringExtra(EXTRA_WEAR);
+        if (look != null) toWear = new Gson().fromJson(look, OutfitDto.class);
 
         topPager = findViewById(R.id.canvas_top);
         bottomPager = findViewById(R.id.canvas_bottom);
@@ -526,8 +538,10 @@ public class OutfitCanvasActivity extends BaseActivity {
                 wardrobeLoaded = true;
                 wardrobe = items;
                 if (!showWardrobe()) return; // nothing to style yet
-                // A saved outfit being changed is put on below; a reloaded wardrobe keeps the outfit.
-                if (firstLoad && editing == null) startOnRandomPieces();
+                // A saved outfit being changed or a look from the chat is put on below; a reloaded wardrobe
+                // keeps the outfit.
+                if (firstLoad && editing == null && toWear == null) startOnRandomPieces();
+                if (firstLoad && toWear != null) topPager.post(() -> wearSaved(toWear));
                 askAi.setEnabled(true);
                 if (addedItemId >= 0) {
                     for (ItemDto item : items) {

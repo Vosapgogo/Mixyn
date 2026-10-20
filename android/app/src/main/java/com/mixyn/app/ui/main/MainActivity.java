@@ -3,7 +3,6 @@ package com.mixyn.app.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,8 +11,9 @@ import androidx.fragment.app.Fragment;
 import com.mixyn.app.R;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.MixynBottomBar;
+import com.mixyn.app.ui.stylist.StylistChatActivity;
 
-/** Hosts the tabs: Home (wardrobe), Calendar and Profile. Friends is "coming soon". */
+/** Hosts the tabs: Home (wardrobe), Calendar and Profile. Stylist opens the stylist chat over them. */
 public class MainActivity extends BaseActivity implements MixynBottomBar.Listener {
 
     private static final String EXTRA_TAB = "tab";
@@ -70,7 +70,7 @@ public class MainActivity extends BaseActivity implements MixynBottomBar.Listene
             case HOME -> show(new WardrobeFragment(), tab);
             case CALENDAR -> show(new CalendarFragment(), tab);
             case PROFILE -> show(new ProfileFragment(), tab);
-            default -> Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show();
+            case STYLIST -> StylistChatActivity.start(this);
         }
     }
 

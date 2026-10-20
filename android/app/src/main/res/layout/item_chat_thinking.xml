@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylist chat: shown while the stylist works on an answer. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="@dimen/space_s"
+    android:paddingBottom="@dimen/space_s">
+
+    <ProgressBar
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:indeterminateTint="@color/mocha" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_s"
+        android:text="@string/stylist_thinking"
+        android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+</LinearLayout>

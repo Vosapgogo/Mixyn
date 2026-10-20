@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylist chat: what the user wrote, on the right. The stylist's answers use bg_card_white. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/mocha_light" />
+    <corners android:radius="@dimen/radius_card" />
+</shape>

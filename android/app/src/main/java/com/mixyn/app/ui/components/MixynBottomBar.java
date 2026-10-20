@@ -21,7 +21,7 @@ import java.util.Map;
 /** The app's bottom navigation. The hosting screen decides what each tap does. */
 public class MixynBottomBar extends LinearLayout {
 
-    public enum Tab { HOME, CALENDAR, FRIENDS, PROFILE }
+    public enum Tab { HOME, CALENDAR, STYLIST, PROFILE }
 
     public interface Listener {
         void onTabClick(Tab tab);
@@ -42,7 +42,7 @@ public class MixynBottomBar extends LinearLayout {
 
         items.put(Tab.HOME, findViewById(R.id.nav_home));
         items.put(Tab.CALENDAR, findViewById(R.id.nav_calendar));
-        items.put(Tab.FRIENDS, findViewById(R.id.nav_friends));
+        items.put(Tab.STYLIST, findViewById(R.id.nav_stylist));
         items.put(Tab.PROFILE, findViewById(R.id.nav_profile));
         items.forEach((tab, view) -> view.setOnClickListener(v -> {
             if (listener != null) listener.onTabClick(tab);

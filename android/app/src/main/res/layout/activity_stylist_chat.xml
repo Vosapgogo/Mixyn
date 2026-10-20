@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylist chat: the conversation, and a field to write in. Before the first message the screen says
+     what the stylist can do and offers a few requests to start with. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_s"
+        android:paddingTop="@dimen/space_xs"
+        android:paddingEnd="@dimen/space_s">
+
+        <ImageButton
+            android:id="@+id/stylist_back"
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            android:padding="@dimen/space_s"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_back"
+            app:tint="@color/ink" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
+            android:layout_weight="1"
+            android:text="@string/stylist_title"
+            android:textAppearance="@style/TextAppearance.Mixyn.Logo" />
+
+        <ImageButton
+            android:id="@+id/stylist_new_chat"
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/stylist_new_chat"
+            android:padding="@dimen/space_s"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/ink" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/stylist_messages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/screen_margin"
+            android:paddingTop="@dimen/space_s"
+            android:paddingEnd="@dimen/screen_margin"
+            android:paddingBottom="@dimen/space_s" />
+
+        <LinearLayout
+            android:id="@+id/stylist_intro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_margin">
+
+            <ImageView
+                android:layout_width="@dimen/feature_icon_size"
+                android:layout_height="@dimen/feature_icon_size"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_sparkle"
+                app:tint="@color/mocha" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:gravity="center"
+                android:text="@string/stylist_intro_title"
+                android:textAppearance="@style/TextAppearance.Mixyn.Title" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center"
+                android:text="@string/stylist_intro_body"
+                android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+
+            <!-- Requests to start with; the activity adds one chip per suggestion -->
+            <LinearLayout
+                android:id="@+id/stylist_suggestions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:gravity="center_horizontal"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_bottom_bar"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingBottom="@dimen/space_s">
+
+        <EditText
+            android:id="@+id/stylist_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_field"
+            android:hint="@string/stylist_hint"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine|textCapSentences"
+            android:maxLength="500"
+            android:maxLines="4"
+            android:minHeight="@dimen/icon_button_size"
+            android:paddingStart="@dimen/space_m"
+            android:paddingTop="@dimen/space_s"
+            android:paddingEnd="@dimen/space_m"
+            android:paddingBottom="@dimen/space_s"
+            android:textAppearance="@style/TextAppearance.Mixyn.Body"
+            android:textColor="@color/ink" />
+
+        <FrameLayout
+            android:layout_width="@dimen/icon_button_size"
+            android:layout_height="@dimen/icon_button_size"
+            android:layout_marginStart="@dimen/space_s">
+
+            <ImageButton
+                android:id="@+id/stylist_send"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_plus_button"
+                android:contentDescription="@string/stylist_send"
+                android:padding="@dimen/space_s"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_arrow_forward"
+                app:tint="@color/on_dark" />
+
+            <ProgressBar
+                android:id="@+id/stylist_sending"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/on_dark"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

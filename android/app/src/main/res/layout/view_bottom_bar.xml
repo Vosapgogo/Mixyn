@@ -29,8 +29,8 @@
             android:tint="@color/on_dark" />
     </FrameLayout>
 
-    <TextView android:id="@+id/nav_friends" style="@style/Widget.Mixyn.BottomBarItem"
-        android:drawableTop="@drawable/ic_friends" android:text="@string/nav_friends" />
+    <TextView android:id="@+id/nav_stylist" style="@style/Widget.Mixyn.BottomBarItem"
+        android:drawableTop="@drawable/ic_sparkle" android:text="@string/nav_stylist" />
 
     <TextView android:id="@+id/nav_profile" style="@style/Widget.Mixyn.BottomBarItem"
         android:drawableTop="@drawable/ic_profile" android:text="@string/nav_profile" />

@@ -67,7 +67,7 @@
     <string name="nav_home">Home</string>
     <string name="nav_calendar">Calendar</string>
     <string name="nav_add">Add</string>
-    <string name="nav_friends">Friends</string>
+    <string name="nav_stylist">Stylist</string>
     <string name="nav_profile">Profile</string>
 
     <!-- Wardrobe -->
@@ -179,6 +179,25 @@
     <string name="tags_joined_separator">", "</string>
     <!-- Before the last of several words: "a top, bottoms and shoes" -->
     <string name="joined_last_separator">" and "</string>
+
+    <!-- Stylist chat -->
+    <string name="stylist_title">Stylist</string>
+    <string name="stylist_new_chat">New chat</string>
+    <string name="stylist_intro_title">Ask your stylist</string>
+    <string name="stylist_intro_body">Outfits for an occasion, pieces from your closet, or advice on your style. I use only the clothes you own.</string>
+    <string name="stylist_hint">Ask about outfits, pieces or your style</string>
+    <string name="stylist_send">Send</string>
+    <string name="stylist_thinking">Putting it together…</string>
+    <string name="stylist_look">Look %1$d</string>
+    <string name="stylist_open_look">Open on the canvas</string>
+    <string-array name="stylist_suggestions">
+        <item>3 outfits for a date</item>
+        <item>What goes well with my sweater?</item>
+        <item>Show all my black pieces</item>
+        <item>What haven\'t I worn for a long time?</item>
+        <item>Describe my style from my clothes</item>
+        <item>How can I improve my style?</item>
+    </string-array>
 
     <!-- Outfit canvas -->
     <string name="canvas_ask_ai">Ask AI</string>

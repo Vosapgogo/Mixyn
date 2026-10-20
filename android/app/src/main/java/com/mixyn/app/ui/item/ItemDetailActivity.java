@@ -36,6 +36,7 @@ import com.mixyn.app.ui.components.OptionsSheet.Mode;
 import com.mixyn.app.ui.components.OptionsSheet.Option;
 import com.mixyn.app.ui.main.AddMenuSheet;
 import com.mixyn.app.ui.main.MainActivity;
+import com.mixyn.app.ui.stylist.StylistChatActivity;
 import com.mixyn.app.ui.outfit.OutfitActivity;
 
 import java.util.ArrayList;
@@ -260,7 +261,7 @@ public class ItemDetailActivity extends BaseActivity
         switch (tab) {
             case HOME -> finish(); // the wardrobe is right behind this card
             case CALENDAR, PROFILE -> startActivity(MainActivity.tabIntent(this, tab));
-            default -> Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show();
+            case STYLIST -> StylistChatActivity.start(this);
         }
     }
 

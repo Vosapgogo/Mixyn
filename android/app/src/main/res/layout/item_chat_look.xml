@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylist chat: one outfit the stylist suggests. The top, the bottom and the shoes are stacked like
+     on the canvas; the layers (outerwear, under layer, bag, accessories) are small pictures below.
+     Tapping the card opens the outfit on the canvas. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/chat_look_width"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/space_s"
+    android:background="@drawable/bg_card_white"
+    android:foreground="?attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:padding="@dimen/space_s">
+
+    <TextView
+        android:id="@+id/look_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/chat_look_height"
+        android:layout_marginTop="@dimen/space_xs"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/look_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="40"
+            android:contentDescription="@string/item_photo"
+            android:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/look_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="40"
+            android:contentDescription="@string/item_photo"
+            android:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/look_shoes"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="20"
+            android:contentDescription="@string/item_photo"
+            android:scaleType="fitCenter" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/look_layers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_xs"
+        android:orientation="horizontal" />
+
+    <TextView
+        style="@style/Widget.Mixyn.TextLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/stylist_open_look" />
+</LinearLayout>

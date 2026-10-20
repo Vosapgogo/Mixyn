@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylist chat: one answer of the stylist, on the left: its message, then the outfits and the pieces
+     it shows, each a row to scroll sideways (the activity fills them). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
+
+    <TextView
+        android:id="@+id/chat_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_xxl"
+        android:background="@drawable/bg_card_white"
+        android:paddingStart="@dimen/space_m"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/space_m"
+        android:paddingBottom="@dimen/space_s"
+        android:textAppearance="@style/TextAppearance.Mixyn.Body"
+        android:textColor="@color/ink" />
+
+    <HorizontalScrollView
+        android:id="@+id/chat_looks_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/chat_looks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/chat_items_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/chat_items"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+</LinearLayout>
