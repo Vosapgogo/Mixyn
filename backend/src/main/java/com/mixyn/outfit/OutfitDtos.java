@@ -4,6 +4,7 @@ import com.mixyn.item.ItemDtos.ItemResponse;
 import com.mixyn.item.Labels;
 import com.mixyn.outfit.OutfitService.DayView;
 import com.mixyn.outfit.OutfitService.OutfitView;
+import com.mixyn.outfit.StylistChatService.ChatAnswer;
 import com.mixyn.outfit.StylistService.Look;
 
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -106,6 +108,29 @@ public final class OutfitDtos {
 
         static DayResponse from(DayView day) {
             return new DayResponse(day.date(), OutfitResponse.from(day.outfit()));
+        }
+    }
+
+    /**
+     * One earlier message of the Stylist chat: "user" or "stylist", its text, and for the stylist what it
+     * showed (outfits by their ids, pieces by id). Only context for the model.
+     */
+    public record ChatTurn(@NotBlank String role, @Size(max = 2000) String text,
+            @Valid @Size(max = 3) List<LookIds> looks, @Size(max = 12) List<Long> itemIds) {
+    }
+
+    /** Body of POST /api/users/{id}/stylist/chat: the new message and the chat so far (the phone keeps it). */
+    public record ChatRequest(@NotBlank @Size(max = 500) String message,
+            @Valid @Size(max = 12) List<ChatTurn> history) {
+    }
+
+    /** The stylist's answer: a short message, up to three outfits, up to twelve pieces. */
+    public record ChatResponse(String reply, boolean offTopic, List<GenerateResponse> looks,
+            List<ItemResponse> items) {
+        static ChatResponse from(ChatAnswer answer) {
+            return new ChatResponse(answer.reply(), answer.offTopic(),
+                    answer.looks().stream().map(GenerateResponse::from).toList(),
+                    answer.items().stream().map(ItemResponse::from).toList());
         }
     }
 }

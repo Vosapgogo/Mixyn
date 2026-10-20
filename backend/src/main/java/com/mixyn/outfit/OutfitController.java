@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mixyn.outfit.OutfitDtos.ChatRequest;
+import com.mixyn.outfit.OutfitDtos.ChatResponse;
 import com.mixyn.outfit.OutfitDtos.DayResponse;
 import com.mixyn.outfit.OutfitDtos.GenerateRequest;
 import com.mixyn.outfit.OutfitDtos.GenerateResponse;
@@ -36,11 +38,19 @@ import jakarta.validation.Valid;
 public class OutfitController {
 
     private final StylistService stylist;
+    private final StylistChatService chat;
     private final OutfitService outfits;
 
-    public OutfitController(StylistService stylist, OutfitService outfits) {
+    public OutfitController(StylistService stylist, StylistChatService chat, OutfitService outfits) {
         this.stylist = stylist;
+        this.chat = chat;
         this.outfits = outfits;
+    }
+
+    /** The Stylist chat: one message in, the stylist's answer out. The phone sends the chat so far. */
+    @PostMapping("/api/users/{userId}/stylist/chat")
+    public ChatResponse chat(@PathVariable Long userId, @Valid @RequestBody ChatRequest request) {
+        return ChatResponse.from(chat.answer(userId, request.message(), request.history()));
     }
 
     @PostMapping("/api/users/{userId}/outfits/generate")

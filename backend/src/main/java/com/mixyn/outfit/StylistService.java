@@ -180,7 +180,7 @@ public class StylistService {
         return text.isEmpty() ? "" : text.append('\n').toString();
     }
 
-    private static String describeIds(LookIds look) {
+    static String describeIds(LookIds look) {
         return look == null ? "(unknown)"
                 : "top=" + look.topId() + ", under=" + look.underId() + ", bottom=" + look.bottomId()
                         + ", shoes=" + look.shoesId() + ", outerwear=" + look.outerwearId() + ", bag=" + look.bagId()
