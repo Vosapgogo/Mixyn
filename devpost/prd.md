@@ -62,9 +62,18 @@ Real accounts backed by a database — built from the start, not added later.
 - [ ] Wrong email or password shows a friendly error ("Email or password is incorrect"); nothing else happens.
 - [ ] Creating an account with an email that already exists shows a friendly error and suggests Log In.
 - [ ] Closing and reopening the app goes Splash → main screen directly, skipping Welcome (session persists).
-- [ ] Profile → **Log out** ends the session and returns to Welcome.
+- [ ] Profile → **Log out** asks "Log out?", ends the session and shows a goodbye screen ("You're logged out. We hope to see you again soon.") with a way back to Welcome.
 - [ ] Each user sees only their own clothes and outfits — never another user's.
 - [ ] City is stored with the user (for future weather), even though no weather is shown yet.
+
+### Profile
+Source: learner decision on 2026-10-20, after the Stylist chat (design page 19), with a cut-off on the evening of 23 October; after that only checks and the submission.
+- [ ] Profile shows the avatar (or a placeholder), the name, @username · city, three tiles (pieces, outfits saved, days worn), the closet's palette (the colors of the user's clothes) and the tags used most.
+- [ ] The pencil opens **Edit profile**: photo (from the gallery), name, username, city (with suggestions, as at sign-up) and a new password (with the current one). Wrong input shows an error under its field, as at sign-up; a username someone else has says so.
+- [ ] The avatar is kept with the account, so friends can see it once friends exist.
+- [ ] **City for weather** shows the city and today's weather there, and lets the user change the city.
+- [ ] **Delete account** asks "Delete your account?" (everything goes: clothes, outfits, calendar) and then removes the account and all its data; a goodbye screen follows, as after logging out.
+- [ ] Streaks, the morning outfit reminder and "who sees my fits" are later (they need the calendar streaks, notifications and friends).
 
 ### Adding Clothes
 Source: `scope.md > The POC Boundary` ("Upload clothes with AI background removal").
