@@ -19,39 +19,41 @@
         android:src="@drawable/ic_back"
         app:tint="@color/ink" />
 
+    <!-- From the top, as in the sketch: city and date under the back button, then the weather -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/weather_city"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.Mixyn.Heading" />
+            android:textAppearance="@style/TextAppearance.Mixyn.Display" />
 
         <TextView
             android:id="@+id/weather_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_xxs"
-            android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+            android:textAppearance="@style/TextAppearance.Mixyn.WeatherLine" />
 
         <ProgressBar
             android:id="@+id/weather_loading"
             android:layout_width="@dimen/icon_size"
             android:layout_height="@dimen/icon_size"
-            android:layout_marginTop="@dimen/space_xl"
+            android:layout_marginTop="@dimen/space_xxl"
             android:indeterminateTint="@color/mocha" />
 
         <TextView
             android:id="@+id/weather_unavailable"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xl"
+            android:layout_marginTop="@dimen/space_xxl"
             android:gravity="center"
             android:text="@string/city_weather_unavailable"
             android:textAppearance="@style/TextAppearance.Mixyn.Body"
@@ -69,34 +71,33 @@
                 android:id="@+id/weather_icon"
                 android:layout_width="@dimen/weather_icon_size"
                 android:layout_height="@dimen/weather_icon_size"
-                android:layout_marginTop="@dimen/space_xl"
+                android:layout_marginTop="@dimen/space_xxl"
                 android:importantForAccessibility="no"
-                android:src="@drawable/ic_sun"
-                app:tint="@color/mocha" />
+                android:src="@drawable/weather_sun" />
 
             <TextView
                 android:id="@+id/weather_temperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_s"
                 android:textAppearance="@style/TextAppearance.Mixyn.Weather" />
 
             <TextView
                 android:id="@+id/weather_feel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs"
-                android:textAppearance="@style/TextAppearance.Mixyn.BodyStrong" />
+                android:layout_marginTop="@dimen/space_s"
+                android:textAppearance="@style/TextAppearance.Mixyn.WeatherLine"
+                android:textColor="@color/ink" />
 
             <TextView
                 android:id="@+id/weather_wear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_xl"
-                android:layout_marginTop="@dimen/space_l"
+                android:layout_marginTop="@dimen/space_xl"
                 android:layout_marginEnd="@dimen/space_xl"
                 android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Mixyn.Body" />
+                android:textAppearance="@style/TextAppearance.Mixyn.WeatherLine" />
         </LinearLayout>
     </LinearLayout>
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: the sun, a plain warm disc (design A). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/weather_sun" />
+    <size android:width="@dimen/weather_icon_size" android:height="@dimen/weather_icon_size" />
+</shape>

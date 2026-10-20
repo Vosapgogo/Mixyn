@@ -93,7 +93,8 @@ public class CityWeatherActivity extends BaseActivity {
                     return;
                 }
                 boolean clear = "clear".equals(now.sky) || "partly cloudy".equals(now.sky);
-                ((ImageView) findViewById(R.id.weather_icon)).setImageResource(clear ? R.drawable.ic_sun : R.drawable.ic_cloud);
+                ((ImageView) findViewById(R.id.weather_icon))
+                        .setImageResource(clear ? R.drawable.weather_sun : R.drawable.weather_cloud);
                 ((TextView) findViewById(R.id.weather_temperature))
                         .setText(getString(R.string.city_weather_now, now.temperature));
                 ((TextView) findViewById(R.id.weather_feel))

@@ -300,6 +300,11 @@
         <item name="android:includeFontPadding">false</item>
     </style>
 
+    <!-- City for weather: the date, how it feels and what to wear, as large as in the design -->
+    <style name="TextAppearance.Mixyn.WeatherLine" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textSize">@dimen/text_weather_line</item>
+    </style>
+
     <!-- Profile: the user's name next to the photo -->
     <style name="TextAppearance.Mixyn.Heading" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/serif</item>

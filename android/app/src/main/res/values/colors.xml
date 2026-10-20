@@ -29,6 +29,10 @@
     <color name="sparkle_tan">#C9A27A</color>
     <color name="card_blush">#EADFDB</color>
 
+    <!-- City for weather: the filled sun and cloud over the temperature -->
+    <color name="weather_sun">#E8C9A0</color>
+    <color name="weather_cloud">@color/card_blue</color>
+
     <!-- Tag dots (item card → tags) -->
     <color name="tag_casual">#8FA3BF</color>
     <color name="tag_night_out">#2B2926</color>
