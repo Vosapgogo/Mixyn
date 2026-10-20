@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,7 +13,7 @@ import com.mixyn.app.R;
 import com.mixyn.app.ui.additem.AddItemActivity;
 import com.mixyn.app.ui.canvas.OutfitCanvasActivity;
 
-/** The central + menu: Add clothes, Create outfit, OutfitCHECK (coming soon). */
+/** The central + menu: Add clothes and Create outfit. */
 public class AddMenuSheet extends BottomSheetDialogFragment {
 
     @Nullable
@@ -34,11 +33,5 @@ public class AddMenuSheet extends BottomSheetDialogFragment {
             OutfitCanvasActivity.start(requireContext());
             dismiss();
         });
-        view.findViewById(R.id.menu_outfitcheck).setOnClickListener(v -> toastAndClose(R.string.coming_soon));
-    }
-
-    private void toastAndClose(int message) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-        dismiss();
     }
 }

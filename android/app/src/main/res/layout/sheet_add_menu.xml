@@ -31,15 +31,4 @@
         android:text="@string/menu_create_outfit"
         app:drawableEndCompat="@drawable/ic_chevron_right"
         app:drawableStartCompat="@drawable/ic_outfit" />
-
-    <!-- Visible but disabled in the PoC -->
-    <TextView
-        android:id="@+id/menu_outfitcheck"
-        style="@style/Widget.Mixyn.ListRow"
-        android:paddingStart="@dimen/screen_margin"
-        android:paddingEnd="@dimen/screen_margin"
-        android:text="@string/menu_outfitcheck"
-        android:textColor="@color/ink_muted"
-        app:drawableStartCompat="@drawable/ic_camera"
-        app:drawableTint="@color/ink_muted" />
 </LinearLayout>
