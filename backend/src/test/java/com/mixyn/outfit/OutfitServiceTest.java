@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,15 +19,17 @@ import org.junit.jupiter.api.Test;
 import com.mixyn.common.ApiException;
 import com.mixyn.item.Item;
 import com.mixyn.item.ItemColor;
+import com.mixyn.item.ItemRepository;
 import com.mixyn.item.ItemType;
 import com.mixyn.outfit.Outfit.Piece;
 import com.mixyn.outfit.OutfitDtos.LookIds;
+import com.mixyn.storage.ImageStorage;
 
 /**
  * Tests the trust boundary of saving an outfit: whatever ids the app sends, an outfit is made only of
  * the user's own items, each in a place it can be worn. Also what may not happen to saved outfits: the
- * same outfit twice, and a piece whose new type leaves it in a place it can't be worn. No Spring, no
- * database, no network.
+ * same outfit twice, and a piece whose new type leaves it in a place it can't be worn. And where an
+ * item is worn, which the app shows before the item is removed. No Spring, no database, no network.
  */
 class OutfitServiceTest {
 
@@ -218,6 +223,27 @@ class OutfitServiceTest {
         assertEquals(Slot.ACCESSORY, change.moves().get(0).to());
     }
 
+    // ----- Where an item is worn -----
+
+    @Test
+    void anItemCountsInTheOutfitsAsTheyAreNowAndOnEveryDayItWasWorn() {
+        OutfitRepository outfits = mock(OutfitRepository.class);
+        WearRepository wears = mock(WearRepository.class);
+        OutfitService service = new OutfitService(outfits, wears, mock(ItemRepository.class), mock(ImageStorage.class));
+        Outfit now = outfit(1, new Piece(Slot.TOP, 10L), new Piece(Slot.OUTERWEAR, 40L));
+        Outfit before = withId(now.versionAsWorn(), 2); // the outfit as it was on a day it was worn
+        Outfit other = outfit(3, new Piece(Slot.TOP, 11L), new Piece(Slot.OUTERWEAR, 40L));
+        when(outfits.findDistinctByPiecesItemId(40L)).thenReturn(List.of(now, before, other));
+        when(wears.findByOutfitId(1L)).thenReturn(List.of(new Wear(USER, 1L, LocalDate.of(2026, 10, 16))));
+        when(wears.findByOutfitId(2L)).thenReturn(List.of(new Wear(USER, 2L, LocalDate.of(2026, 10, 12))));
+        when(wears.findByOutfitId(3L)).thenReturn(List.of());
+
+        OutfitService.ItemUse use = service.useOf(40L);
+
+        assertEquals(2, use.outfits()); // the earlier version isn't a saved outfit of its own
+        assertEquals(List.of(LocalDate.of(2026, 10, 12), LocalDate.of(2026, 10, 16)), use.wornOn());
+    }
+
     private Map<Long, Item> byId() {
         Map<Long, Item> owned = new HashMap<>();
         for (Item item : wardrobe) owned.put(item.getId(), item);
@@ -226,7 +252,10 @@ class OutfitServiceTest {
 
     /** A saved outfit with these pieces, its id set by reflection, as JPA does. */
     private static Outfit outfit(long id, Piece... pieces) {
-        Outfit outfit = new Outfit(USER, id + ".png", List.of(pieces));
+        return withId(new Outfit(USER, id + ".png", List.of(pieces)), id);
+    }
+
+    private static Outfit withId(Outfit outfit, long id) {
         try {
             Field idField = Outfit.class.getDeclaredField("id");
             idField.setAccessible(true);

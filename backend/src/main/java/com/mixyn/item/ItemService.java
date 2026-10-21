@@ -18,6 +18,7 @@ import com.mixyn.common.ApiException;
 import com.mixyn.item.ItemDtos.ItemUpdate;
 import com.mixyn.item.ItemDtos.PhotoEdit;
 import com.mixyn.outfit.OutfitService;
+import com.mixyn.outfit.OutfitService.ItemUse;
 import com.mixyn.storage.ImageStorage;
 
 @Service
@@ -204,6 +205,11 @@ public class ItemService {
         outfits.forgetItem(itemId);
         items.delete(item);
         storage.delete(item.getImageFile());
+    }
+
+    /** Where the user's item is worn: asked before "Remove from wardrobe", which leaves the outfits' pictures as they are. */
+    public ItemUse useOf(Long userId, Long itemId) {
+        return outfits.useOf(ownItem(userId, itemId).getId());
     }
 
     /** Someone else's item is reported as "not found", so ids can't be probed. */

@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.mixyn.item.ItemDtos.ItemResponse;
 import com.mixyn.item.ItemDtos.ItemUpdate;
 import com.mixyn.item.ItemDtos.PhotoEdit;
+import com.mixyn.outfit.OutfitService.ItemUse;
 import com.mixyn.user.AuthInterceptor;
 
 /** AuthInterceptor has already checked that {userId} is the logged-in user. */
@@ -55,6 +56,12 @@ public class ItemController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId) {
         itemService.deleteItem(userId, itemId);
+    }
+
+    /** Where the item is worn, e.g. {"outfits": 2, "wornOn": ["2026-10-12", "2026-10-16"]}. */
+    @GetMapping("/api/items/{itemId}/use")
+    public ItemUse use(@RequestAttribute(AuthInterceptor.USER_ID) Long userId, @PathVariable Long itemId) {
+        return itemService.useOf(userId, itemId);
     }
 
     @GetMapping("/api/users/{userId}/items")

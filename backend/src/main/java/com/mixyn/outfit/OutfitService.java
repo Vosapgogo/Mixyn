@@ -51,6 +51,13 @@ public class OutfitService {
     public record DayView(LocalDate date, OutfitView outfit) {
     }
 
+    /**
+     * Where an item is worn: how many saved outfits (as they are now) have it, and the calendar days
+     * whose outfit had it, earliest first (a day worn in an earlier version of an outfit included).
+     */
+    public record ItemUse(int outfits, List<LocalDate> wornOn) {
+    }
+
     /** A piece of an outfit that has to move to another place because its type changed. */
     record Move(Outfit outfit, int position, Slot to) {
     }
@@ -410,6 +417,26 @@ public class OutfitService {
             outfits.delete(version);
             storage.delete(version.getImageFile());
         }
+    }
+
+    /**
+     * Where an item is worn, asked before it is removed: the outfits that have it keep their pictures,
+     * so the app tells the user which outfits and days will still show it.
+     */
+    public ItemUse useOf(Long itemId) {
+        List<Outfit> having = outfits.findDistinctByPiecesItemId(itemId);
+        int saved = 0;
+        List<LocalDate> days = new ArrayList<>();
+        for (Outfit outfit : having) {
+            if (outfit.getReplacedBy() == null) {
+                saved++;
+            }
+            for (Wear wear : wears.findByOutfitId(outfit.getId())) {
+                days.add(wear.getWornOn());
+            }
+        }
+        days.sort(null);
+        return new ItemUse(saved, days);
     }
 
     /**
