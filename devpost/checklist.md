@@ -41,7 +41,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Learner check: Open an item, change its category or color, add a tag and season, go back and reopen — your changes should still be there.
   Commit: `Add editable item card`
 
-- [ ] **4. You can generate a complete look with the AI stylist, with or without a hint**
+- [x] **4. You can generate a complete look with the AI stylist, with or without a hint**
   Becomes usable: + → Create outfit opens the canvas (Top with Outerwear overlapping, Bottom, Shoes on a white card); typing an optional hint and tapping Generate with AI fills every slot with items from your own closet, with the friendly toast when the hint has no match.
   Why now: This is the "aha" beat and the heart of the unique kernel — it comes as soon as there are items to style, not last. The backend validation (ownership, category, fallback) is the core learning goal: making an AI feature reliable.
   PRD ref: `prd.md > The Core Journey` (steps 8, 10), `prd.md > AI Stylist`, `prd.md > Outfit Canvas and Carousel` (layout, outerwear layer)
@@ -51,7 +51,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Learner check: Open Create outfit, tap Generate with AI with no hint, then try a hint like a color you own and one you don't. Does the look make sense? Is it only your clothes?
   Commit: `Add AI stylist with validated outfit generation`
 
-- [ ] **5. The canvas starts with a random outfit you can swipe piece by piece**
+- [x] **5. The canvas starts with a random outfit you can swipe piece by piece**
   Becomes usable: Opening Create outfit shows a random look right away; swiping any piece changes only that piece; missing categories show the dashed placeholder with + that opens Add clothes.
   Why now: Completes the manual half of the core loop around the canvas built in slice 4; cheap on-device logic, so it follows the riskier AI slice.
   PRD ref: `prd.md > The Core Journey` (steps 8–9), `prd.md > Outfit Canvas and Carousel`, `prd.md > States and Boundaries` (Partial wardrobe, Only one item in a category)
@@ -61,7 +61,7 @@ Commits: many small commits per slice — one per new feature, backend and Andro
   Learner check: Open Create outfit a few times — does it start differently? Swipe only the bottom — do the top and shoes stay? If you have no shoes yet, do you see "Add shoes to complete the look"?
   Commit: `Add random start and per-piece swipe on the canvas`
 
-- [ ] **6. You can save an outfit, wear it today, and find both again after logging out and back in**
+- [x] **6. You can save an outfit, wear it today, and find both again after logging out and back in**
   Becomes usable: Next on the canvas opens "Your fit for today" (design page 17): the look on a white card and, like the item card, the clothes in it, its colors, its category and its seasons. Save stores it and it appears in the Outfits tab; opened from there it can be relabeled or deleted (after a confirmation). Wear it today saves it and puts it on today in the Calendar tab. All of it is still there after closing the app or logging out and back in.
   Why now: Closes the core loop ("success = step 11") and proves persistence end to end; everything it saves exists by now. Built before slice 5 at the learner's request.
   PRD ref: `prd.md > The Core Journey` (steps 11–13), `prd.md > Saving Outfits`
