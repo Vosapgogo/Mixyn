@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mixyn.common.ApiException;
 import com.mixyn.user.AuthInterceptor;
+import com.mixyn.weather.WeatherService.Outlook;
 import com.mixyn.weather.WeatherService.Weather;
 
 @RestController
@@ -22,6 +23,16 @@ public class WeatherController {
     @GetMapping("/api/me/weather")
     public Weather weather(@RequestAttribute(AuthInterceptor.USER_ID) Long userId) {
         return weatherService.forUser(userId).orElseThrow(() ->
+                new ApiException(HttpStatus.BAD_GATEWAY, "weather_unavailable", "Can't load the weather right now"));
+    }
+
+    /**
+     * Today in detail and the week ahead in the user's city, for the City for weather page: the weather
+     * now with wind and humidity, today's high, low and chance of rain, the next 24 hours and 7 days.
+     */
+    @GetMapping("/api/me/weather/forecast")
+    public Outlook forecast(@RequestAttribute(AuthInterceptor.USER_ID) Long userId) {
+        return weatherService.outlookForUser(userId).orElseThrow(() ->
                 new ApiException(HttpStatus.BAD_GATEWAY, "weather_unavailable", "Can't load the weather right now"));
     }
 }
