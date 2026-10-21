@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Weather picture, a clear night: a crescent moon in the sun's color. One 64-unit square for all of them, so they line up at any size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/weather_icon_size"
+    android:height="@dimen/weather_icon_size"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="@color/weather_sun"
+        android:pathData="M28.06,15.10 A18,18 0 1,0 47.03,38.82 A15.30,15.30 0 0,1 28.06,15.10 Z" />
+</vector>

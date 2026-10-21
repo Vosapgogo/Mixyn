@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- City for weather: the sun, a plain warm disc (design A). -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-    <solid android:color="@color/weather_sun" />
-    <size android:width="@dimen/weather_icon_size" android:height="@dimen/weather_icon_size" />
-</shape>
+<!-- Weather picture, the sun, a plain warm disc. One 64-unit square for all of them, so they line up at any size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/weather_icon_size"
+    android:height="@dimen/weather_icon_size"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="@color/weather_sun"
+        android:pathData="M15,32 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z" />
+</vector>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Weather picture, a thunderstorm: the cloud with a lightning bolt. One 64-unit square for all of them, so they line up at any size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/weather_icon_size"
+    android:height="@dimen/weather_icon_size"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <group
+        android:translateY="-9">
+        <group
+            android:translateY="2.5">
+            <path
+                android:fillColor="@color/weather_cloud_shade"
+                android:pathData="M9,38 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 Z" />
+            <path
+                android:fillColor="@color/weather_cloud_shade"
+                android:pathData="M18,30 a14,14 0 1,0 28,0 a14,14 0 1,0 -28,0 Z" />
+            <path
+                android:fillColor="@color/weather_cloud_shade"
+                android:pathData="M33.5,38.5 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0 Z" />
+            <path
+                android:fillColor="@color/weather_cloud_shade"
+                android:pathData="M20,38 h24 v11 h-24 Z" />
+        </group>
+        <path
+            android:fillColor="@color/weather_cloud"
+            android:pathData="M9,38 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 Z" />
+        <path
+            android:fillColor="@color/weather_cloud"
+            android:pathData="M18,30 a14,14 0 1,0 28,0 a14,14 0 1,0 -28,0 Z" />
+        <path
+            android:fillColor="@color/weather_cloud"
+            android:pathData="M33.5,38.5 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0 Z" />
+        <path
+            android:fillColor="@color/weather_cloud"
+            android:pathData="M20,38 h24 v11 h-24 Z" />
+    </group>
+    <path
+        android:fillColor="@color/weather_bolt"
+        android:pathData="M33,38 L25,51 L31,51 L27,61 L40,46 L34,46 L38,38 Z" />
+</vector>

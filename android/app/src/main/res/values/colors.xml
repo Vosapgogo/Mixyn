@@ -30,9 +30,15 @@
     <color name="sparkle_tan">#C9A27A</color>
     <color name="card_blush">#EADFDB</color>
 
-    <!-- City for weather: the filled sun and cloud over the temperature -->
+    <!-- City for weather: the weather pictures (sun and moon, cloud and its shadow, rain, snow, lightning)
+         and the card with today's weather, mocha fading into a deeper mocha -->
     <color name="weather_sun">#E8C9A0</color>
     <color name="weather_cloud">@color/card_blue</color>
+    <color name="weather_cloud_shade">#A9B6C4</color>
+    <color name="weather_rain">#6F8BAA</color>      <!-- also the "60%" chance of rain under an hour or a day -->
+    <color name="weather_snow">@color/stripe_blue</color>
+    <color name="weather_bolt">#D9A85F</color>
+    <color name="weather_card_end">#5C4A3D</color>
 
     <!-- Tag dots (item card → tags) -->
     <color name="tag_casual">#8FA3BF</color>
