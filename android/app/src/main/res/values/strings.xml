@@ -166,6 +166,17 @@
     <string name="item_remove">Remove from wardrobe</string>
     <string name="item_remove_title">Remove this piece?</string>
     <string name="item_remove_body">It will be deleted from your wardrobe together with its photo, and taken out of your saved outfits. This can\'t be undone.</string>
+    <!-- The same question for a piece that is in outfits: %1$s is where it is worn (item_remove_outfits, item_remove_worn) -->
+    <string name="item_remove_body_used">It will be deleted from your wardrobe together with its photo. %1$s Those outfits\' pictures will still show it, as a record of what you wore, but it will be gone from their lists of pieces. This can\'t be undone.</string>
+    <plurals name="item_remove_outfits">
+        <item quantity="one">It\'s in %1$d saved outfit.</item>
+        <item quantity="other">It\'s in %1$d saved outfits.</item>
+    </plurals>
+    <!-- %1$d days, the last one %2$s ("16 October") -->
+    <plurals name="item_remove_worn">
+        <item quantity="one">You wore it on %2$s.</item>
+        <item quantity="other">You wore it on %1$d days, the last time on %2$s.</item>
+    </plurals>
     <string name="item_remove_confirm">Remove</string>
     <string name="item_removed">Removed from your wardrobe</string>
     <string name="item_front_title">Worn open or closed?</string>

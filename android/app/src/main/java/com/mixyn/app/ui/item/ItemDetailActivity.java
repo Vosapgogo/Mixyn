@@ -26,6 +26,7 @@ import com.mixyn.app.api.MixynApi;
 import com.mixyn.app.api.dto.ColorDto;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.ItemTypeDto;
+import com.mixyn.app.api.dto.ItemUseDto;
 import com.mixyn.app.ui.base.BaseActivity;
 import com.mixyn.app.ui.components.Categories;
 import com.mixyn.app.ui.components.ColorDots;
@@ -39,10 +40,13 @@ import com.mixyn.app.ui.main.MainActivity;
 import com.mixyn.app.ui.stylist.StylistChatActivity;
 import com.mixyn.app.ui.outfit.OutfitActivity;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -66,9 +70,12 @@ public class ItemDetailActivity extends BaseActivity
     private static final String FRONT_OPEN = "OPEN";
     private static final String FRONT_CLOSED = "CLOSED";
     private static final int MAX_COLORS = 3; // same limit as the backend
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH);
 
     private final Gson gson = new Gson();
     private MixynApi api;
+    /** True while "Remove from wardrobe" is being asked, so a second tap doesn't ask twice. */
+    private boolean askingToRemove;
     private ItemDto item;
     private ImageView photo;
     private View photoFrame;
@@ -288,14 +295,51 @@ public class ItemDetailActivity extends BaseActivity
 
     // ----- Remove from wardrobe -----
 
-    /** Removing can't be undone (the photo goes too), so it is asked once more. */
+    /**
+     * Removing can't be undone (the photo goes too), so it is asked once more. The outfits that have the
+     * piece keep their pictures, a record of what was worn, while the piece leaves their lists; so the
+     * question first says how many saved outfits have it and when it was worn. If that can't be read,
+     * it is asked without.
+     */
     private void confirmRemove() {
+        if (askingToRemove) return; // a second tap while the question is on its way
+        askingToRemove = true;
+        api.itemUse(item.id).enqueue(new ApiCallback<>(this) {
+            @Override
+            protected void onSuccess(@Nullable ItemUseDto use) {
+                askToRemove(removeQuestion(use));
+            }
+
+            @Override
+            protected void onError(@Nullable String code, @NonNull String message) {
+                askToRemove(getString(R.string.item_remove_body));
+            }
+        });
+    }
+
+    private void askToRemove(String question) {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.item_remove_title)
-                .setMessage(R.string.item_remove_body)
+                .setMessage(question)
                 .setNegativeButton(R.string.add_item_cancel, null)
                 .setPositiveButton(R.string.item_remove_confirm, (d, w) -> remove())
+                .setOnDismissListener(d -> askingToRemove = false)
                 .show();
+    }
+
+    /** "It's in 2 saved outfits. You wore it on 3 days, the last time on 16 October. …", or the plain question. */
+    private String removeQuestion(@Nullable ItemUseDto use) {
+        int days = use == null || use.wornOn == null ? 0 : use.wornOn.size();
+        if (use == null || (use.outfits == 0 && days == 0)) return getString(R.string.item_remove_body);
+        List<String> where = new ArrayList<>();
+        if (use.outfits > 0) {
+            where.add(getResources().getQuantityString(R.plurals.item_remove_outfits, use.outfits, use.outfits));
+        }
+        if (days > 0) {
+            String last = LocalDate.parse(use.wornOn.get(days - 1)).format(DAY);
+            where.add(getResources().getQuantityString(R.plurals.item_remove_worn, days, days, last));
+        }
+        return getString(R.string.item_remove_body_used, String.join(" ", where));
     }
 
     private void remove() {

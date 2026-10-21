@@ -9,6 +9,7 @@ import com.mixyn.app.api.dto.ForecastDto;
 import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.ItemTypeDto;
+import com.mixyn.app.api.dto.ItemUseDto;
 import com.mixyn.app.api.dto.LoginRequest;
 import com.mixyn.app.api.dto.OutfitDto;
 import com.mixyn.app.api.dto.RegisterRequest;
@@ -82,6 +83,10 @@ public interface MixynApi {
     /** "Edit photo" → Done; body is {"rotation": 0|90|180|270, "mirror": false, "scale": 50..150}. */
     @POST("api/items/{itemId}/photo")
     Call<ItemDto> editPhoto(@Path("itemId") long itemId, @Body Map<String, Object> edit);
+
+    /** Where an item is worn (saved outfits, calendar days): asked before it is removed. */
+    @GET("api/items/{itemId}/use")
+    Call<ItemUseDto> itemUse(@Path("itemId") long itemId);
 
     /** Removes the item from the wardrobe for good, picture included. */
     @DELETE("api/items/{itemId}")
