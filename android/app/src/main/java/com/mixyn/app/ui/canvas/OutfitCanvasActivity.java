@@ -1227,9 +1227,14 @@ public class OutfitCanvasActivity extends BaseActivity {
         ArrayList<WeatherTipSheet.Piece> pieces = new ArrayList<>();
         boolean lacking = false; // called for, not worn, and not in the closet either
         if (cold && !outerwear.on) {
-            ItemDto jacket = currentItem(outerwear.pager);
-            if (jacket == null) lacking = true;
-            else pieces.add(tipPiece(TIP_OUTERWEAR, getString(R.string.weather_tip_jacket), jacket));
+            ItemDto layer = currentItem(outerwear.pager);
+            if (layer == null) {
+                lacking = true;
+            } else {
+                // Named by what it is, like the accessories: "Coat" over a coat, not "Jacket".
+                String kind = layer.typeLabel != null ? layer.typeLabel : getString(Categories.label(Categories.OUTERWEAR));
+                pieces.add(tipPiece(TIP_OUTERWEAR, kind, layer));
+            }
         }
         for (String type : types) {
             if (accessorySpots.get(AccessorySpot.of(type)).on) continue; // that spot is already taken
