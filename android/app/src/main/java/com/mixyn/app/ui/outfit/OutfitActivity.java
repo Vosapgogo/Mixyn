@@ -253,10 +253,15 @@ public class OutfitActivity extends BaseActivity {
     /**
      * Back from a piece's card: a saved outfit is read again from the backend (it lists its pieces as
      * they are now); a look that isn't saved yet takes its pieces from the wardrobe again, and drops a
-     * piece that has left it, so Save doesn't send it.
+     * piece that has left it, so Save doesn't send it. An earlier version of an outfit (from a day in the
+     * calendar) isn't in the list of saved outfits: it drops a piece that has left the wardrobe too.
      */
     private void reloadPieces() {
         long userId = new SessionStore(this).getUserId();
+        if (outfit != null && outfit.replacedBy != null) {
+            dropRemovedPieces(userId);
+            return;
+        }
         if (outfit != null) {
             long id = outfit.id;
             api.outfits(userId).enqueue(new ApiCallback<>(this) {
@@ -296,6 +301,30 @@ public class OutfitActivity extends BaseActivity {
                     }
                 }
                 draftPieces = still;
+                bind();
+            }
+
+            @Override
+            protected void onError(@Nullable String code, @NonNull String message) {
+                // The card keeps showing what it had.
+            }
+        });
+    }
+
+    /** An earlier version of an outfit after a piece's card: the pieces still in the wardrobe, as they are now. */
+    private void dropRemovedPieces(long userId) {
+        api.items(userId).enqueue(new ApiCallback<>(this) {
+            @Override
+            protected void onSuccess(@Nullable List<ItemDto> wardrobe) {
+                if (wardrobe == null || outfit == null || outfit.pieces == null) return;
+                Map<Long, ItemDto> byId = new HashMap<>();
+                for (ItemDto item : wardrobe) byId.put(item.id, item);
+                List<OutfitDto.Piece> still = new ArrayList<>();
+                for (OutfitDto.Piece piece : outfit.pieces) {
+                    ItemDto now = byId.get(piece.item.id);
+                    if (now != null) still.add(new OutfitDto.Piece(piece.slot, now));
+                }
+                outfit.pieces = still;
                 bind();
             }
 
