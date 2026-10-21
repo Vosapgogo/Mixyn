@@ -15,7 +15,8 @@ Mixyn has three pieces that run on your laptop, plus one AI service in the cloud
 - **The Spring Boot backend** is the brain. The app sends it requests ("here's a photo," "give me an outfit"), and it does the work: cleans the photo, asks the AI what the item is, saves everything, and answers.
 - **PostgreSQL** is the backend's spreadsheet: one table for users, one for clothing items, one for saved outfits. The item photos themselves are files in a folder; the database just remembers where each file is.
 - **rembg** is a small open-source tool in its own Docker container. The backend hands it a photo and gets back the same photo with the background cut out.
-- **Google Gemini** (cloud API) does two "understanding" jobs: it looks at a cleaned photo and says "this is a Top, color Burgundy", and it acts as the stylist: given a text list of your items and an optional hint, it picks one top, bottom, shoes and optional outerwear.
+- **Google Gemini** (cloud API) does two "understanding" jobs: it looks at a cleaned photo and says "this is a Sweater, a Top, colors Burgundy and Cream", and it acts as the stylist: given a text list of your items and an optional hint, it picks one top, bottom and shoes plus optional layers (outerwear, a piece under the top, a bag, accessories). The same stylist answers the Stylist chat.
+- **Open-Meteo** (free, no key) finds the city at sign-up and gives the weather there, which the canvas shows and the stylist dresses for.
 
 The key rule: **the backend never trusts the AI blindly.** When Gemini picks an outfit, the backend checks that every item id it returned really exists in *your* wardrobe and sits in the right category. That check is what turns the PRD's "the AI never places an item you don't own" from a hope into a guarantee.
 
@@ -33,10 +34,10 @@ PRD ref: `prd.md > The Core Journey`.
 3. **Empty wardrobe** → `ClothesFragment` calls `GET /api/users/{id}/items` → empty list → shows the empty-closet illustration and **+ Add clothes**.
 4. **Add clothes** → central **+** opens `AddMenuSheet` → Add clothes → Android photo picker → `AddItemActivity` shows the processing state and sends `POST /api/users/{id}/items` (multipart photo).
    Backend, in one request:
-   a. `RembgClient` sends the photo to the rembg container → receives a transparent PNG.
-   b. `ImageStorage` saves the PNG to `/data/images/{uuid}.png`.
-   c. `TaggingService` sends the PNG to Gemini → receives `{category, colorName, colorHex}` JSON.
-   d. `ItemService` saves an `items` row → returns the item JSON.
+   a. `CutoutService` has `RembgClient` send the photo to the rembg container → a transparent PNG (repaired with a second model's mask when the first was unsure about much of the piece).
+   b. `ImageStorage` crops it to the piece and scales it to at most 1024 px.
+   c. `TaggingService` sends it to Gemini → `{subject, type, category, colors, …}` JSON (see Tagging Service); a photo that isn't one piece is refused here.
+   d. `ImageStorage` saves the PNG as `{uuid}.png`, and `ItemService` saves an `items` row → returns the item JSON.
    The app then shows "Background removed · 1/1 completed" and **View item**.
 5. **Item card** → `ItemDetailActivity` loads the image from `GET /images/{file}` and shows category and color. Edits are sent with `PATCH /api/items/{itemId}`.
 6. **Create outfit** → `OutfitCanvasActivity` loads all items once, groups them by category, and **picks a random outfit on the phone** (no server call needed). Each slot is a horizontal `ViewPager2`: swiping changes only that slot.
@@ -59,16 +60,16 @@ PRD ref: `prd.md > The Core Journey`.
 | Backend | **Spring Boot 4.1.1**, Java 21, Gradle | Learner's long-term stack. *Derived:* Gradle to match Android; Maven is fine if the learner prefers. | https://docs.spring.io/spring-boot/ |
 | Backend libs | Spring Web, Spring Data JPA, PostgreSQL driver, Validation | *Derived:* the minimal Spring set for REST + DB. | https://spring.io/guides/gs/accessing-data-jpa |
 | Database | **PostgreSQL 16** in Docker | Learner's choice, same as the long-term app. | https://www.postgresql.org/docs/16/ |
-| Background removal | **rembg** (`danielgatis/rembg` image) in Docker | Learner's choice: free, local, no key, no limits. | https://github.com/danielgatis/rembg |
-| Tagging + stylist | **Google Gemini API**, a current **Flash** model, via the **Google Gen AI Java SDK** (`com.google.genai:google-genai`) | Learner's choice (asked for Gemini 1.5 Flash; see note). | https://ai.google.dev/gemini-api/docs · https://github.com/googleapis/java-genai |
+| Background removal | **rembg** in Docker, from our own image (`rembg/Dockerfile`: rembg + `pillow-heif`, models u2net and isnet-general-use baked in) | Learner's choice: free, local, no key, no limits. The published `danielgatis/rembg` image has no arm64 build. | https://github.com/danielgatis/rembg |
+| Tagging + stylist | **Google Gemini API**, an ordered list of current **Flash** models (`GEMINI_MODEL`), via the **Google Gen AI Java SDK** (`com.google.genai:google-genai` 1.74.0) | Learner's choice (asked for Gemini 1.5 Flash, which was retired; see below). | https://ai.google.dev/gemini-api/docs · https://github.com/googleapis/java-genai |
 | Orchestration | **Docker Compose** | Learner's choice. | https://docs.docker.com/compose/ |
 
-**Unverified; check at the start of the build:**
-- **Gemini model name.** The learner asked for Gemini 1.5 Flash. As far as the agent knows, the 1.5 family was retired in 2025. Use the current Flash model listed at https://ai.google.dev/gemini-api/docs/models and put its id in `GEMINI_MODEL` so it's a one-line change.
-- **Gemini free-tier rate limits** (https://ai.google.dev/gemini-api/docs/rate-limits). Each upload makes 1 call and each Generate makes 1 call.
-- **Google Gen AI Java SDK**: current version, how the client picks up the API key, and the exact method names for image input and JSON-schema output.
-- **rembg HTTP server**: the exact endpoint and form-field name (believed to be `POST /api/remove`, multipart field `file`), plus the server start command.
-- ~~Spring Boot 3.x~~ → verified: start.spring.io offers only 4.x; **4.1.1** chosen by the learner.
+**Verified during the build** (these were open questions at the start):
+- **Gemini models.** The 1.5 family is retired. `GEMINI_MODEL` lists current models, best first: `gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite` (see Tagging Service for how they are raced).
+- **Gemini free tier** (https://ai.google.dev/gemini-api/docs/rate-limits): per-minute and daily limits per model; about 30 test uploads used up a day of `gemini-3.5-flash`, and single models are sometimes overloaded (`503`). An upload or a Generate is one request, or two or three on a slow hour, when a second model is asked as well.
+- **Google Gen AI Java SDK** 1.74.0: `Client.builder().apiKey(…)`, `client.models.generateContent(model, content, config)`, an image as `Part.fromBytes(bytes, "image/jpeg")`, JSON through `responseMimeType("application/json")` plus `responseSchema(…)`.
+- **rembg HTTP server:** `rembg s --host 0.0.0.0 --port 7000` in the container, `POST /api/remove` with the multipart field `file` and `model=u2net` (or `om=true` for just the mask).
+- ~~Spring Boot 3.x~~ → start.spring.io offers only 4.x; **4.1.1** chosen by the learner.
 
 ## Where It Runs and How Someone Tries It
 
@@ -78,12 +79,12 @@ Everything runs locally. No deployment (optional for the hackathon, not chosen).
 
 **Setup:**
 1. `cp .env.example .env` and put your key in `GEMINI_API_KEY=` (the `.env` file is git-ignored; never commit it).
-2. `docker compose up --build` starts `db` (Postgres, port 5432), `rembg` (port 7000) and `backend` (port 8080).
-   *During development:* `docker compose up db rembg` plus `./gradlew bootRun` in `backend/` gives faster restarts.
+2. `docker compose up --build` starts `db` (Postgres, port 5432), `rembg` (host port 7010, because macOS uses 7000 for AirPlay) and `backend` (port 8080).
+   *During development:* `docker compose up -d db rembg` plus `./gradlew bootRun` in `backend/` gives faster restarts. The two ways share the database but keep the pictures in different places (the `images` volume or `backend/data/images`), so one setup sticks to one of them. `README.md` has the full steps.
 3. Check that it's up: `curl http://localhost:8080/api/health` → `{"status":"ok"}`.
 4. Open `android/` in Android Studio, start an emulator, and press Run. The app calls `http://10.0.2.2:8080`, which is the emulator's name for your laptop.
 
-**First-run note:** rembg downloads its model (~170 MB) on the first background removal, so the first upload can take noticeably longer. Do one warm-up upload before recording.
+**First-run note:** the models (~170 MB each) are downloaded once, when the rembg image is built, so the first `docker compose up --build` takes several minutes. After every start, rembg loads its model on the first request, so the first upload is a few seconds slower: do one warm-up upload before recording.
 
 **Demo recording:** use the emulator's screen recorder (or macOS screen recording). Follow `scope.md > What "Working" Looks Like`: create an account, upload a few items (have 2+ tops, 2+ bottoms, 1–2 shoes and an outerwear photo ready in the emulator gallery, e.g. by dragging files onto the emulator), swipe on the canvas, Generate with and without a hint, then Save.
 
@@ -117,7 +118,7 @@ Original sketch (superseded where the design differs):
 
 #### Auth and Users API
 `AuthController` + `AuthService` + `User` and `Session` entities. Real email + password accounts.
-- `POST /api/auth/register` `{name, email, password, city, country, latitude, longitude}` → `201 {user, token}`. Email is trimmed, lower-cased and must be unique → `409 {"error":"email_taken"}` (the app suggests Log In). Password min 8 chars → `400`. The city must come from the autocomplete (coordinates required). The password is stored only as a **BCrypt hash** (`spring-security-crypto`'s `BCryptPasswordEncoder`; no full Spring Security).
+- `POST /api/auth/register` `{name, email, password, city, country, latitude, longitude}` → `201 {user, token}`. Email is trimmed, lower-cased and must be unique → `409 {"error":"email_taken"}` (the app suggests Log In). Password min 8 characters and at most 72 bytes (BCrypt reads no more; a Cyrillic letter is two bytes) → `400`. The city must come from the autocomplete (coordinates required). The password is stored only as a **BCrypt hash** (`spring-security-crypto`'s `BCryptPasswordEncoder`; no full Spring Security).
 - `POST /api/auth/login` `{email, password}` → `200 {user, token}` or `401 {"error":"invalid_credentials"}` (same response for unknown email and wrong password).
 - `POST /api/auth/logout` → deletes the current token → `204`.
 - `GET /api/me` → `200 {id, name, email, city, country, latitude, longitude, username, avatarUrl}` or `401`. Used on splash to confirm the stored session still works.
@@ -142,7 +143,7 @@ PRD ref: `prd.md > Account and Session`.
 `ImageStorage` writes PNGs to `${IMAGE_DIR}` (`/data/images`, a Docker volume) as `{uuid}.png`. `WebConfig` serves them at `GET /images/**`.
 
 #### Background Removal Client
-`RembgClient` uses Spring `RestClient` to send the photo to `${REMBG_URL}` and returns the PNG bytes. Timeout 60 s (to cover the first-run model download).
+`RembgClient` uses Spring `RestClient` to send the photo to `${REMBG_URL}` and returns the PNG bytes. Timeout 60 s (the first request after a start loads the model, and a repair asks for a second mask).
 PRD ref: `prd.md > Adding Clothes`.
 
 #### Backups
@@ -159,7 +160,7 @@ The wardrobe is the only part of Mixyn that git doesn't hold: the database lives
 ```
 - **Single-item check:** if `subject` is not `SINGLE_ITEM`, nothing is saved and the upload returns `400 {"error":"not_single_item"}` with a message for that case (person / several items / not clothing). `SINGLE_ITEM` means one piece is the clear subject of the photo: on its own, one of a pair, with a small detail that belongs to it (a shirt with its tie), or worn / held by a person. For the last case the answer also carries `onBody` and `box` ([ymin, xmin, ymax, xmax], 0–1000), and the stored cutout is cut down to that box. `PERSON` is a whole outfit with no single subject; `MULTIPLE_ITEMS` is pieces that belong in a wardrobe separately.
 - **AI unavailable:** if every model fails or times out, the item is **still saved** with `category = null` and no single-item check; the item card shows "Choose a category". Items without a category don't appear on the canvas until one is set.
-- **Reliability (`GeminiJson`):** `GEMINI_MODEL` is an ordered list (`gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash`). Each model gets one try with an 8 s timeout and no SDK retries; the next model is tried on error (free-tier `503 high demand`, `429 quota`) or timeout, within a 14 s total budget. Every answer is validated before use.
+- **Reliability (`GeminiJson`):** `GEMINI_MODEL` is an ordered list, the stronger flash models first (`gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite`). The models are **raced**, not tried one after the other: the first is asked; if it hasn't answered after 5 s (10 s for requests with thinking) or has failed (free-tier `503 high demand`, `429 quota`), the next is asked as well, and the first valid answer wins. Each request has 12 s and no SDK retries, all of them 20 s together; a model that failed or was outrun is tried last for ten minutes. Tagging asks for no thinking (about 3 s instead of 8–9 s); the stylist and the chat think. Every answer is validated before use.
 - The AI does **not** rotate photos (tried, then removed at the learner's request: it missed some cases); rotation is a user action on the item card.
 PRD ref: `prd.md > AI Item Details`, `prd.md > Adding Clothes`.
 
@@ -214,7 +215,7 @@ PRD ref: `prd.md > Account and Session`.
 PRD ref: `prd.md > Account and Session`, `prd.md > Screens and Layout`.
 
 #### Main Screen and Navigation
-`MainActivity` has a `BottomNavigationView` with Home, Calendar, a central **+**, Friends, and Profile. Home hosts `WardrobeFragment` with a `TabLayout`: **Clothes** (`ClothesFragment`, a grid or the empty state) and **Outfits** (`OutfitsFragment`, a two-column grid of the saved outfits' pictures or the empty state). **Calendar** opens `CalendarFragment`. **Stylist** (in place of Friends) opens the Stylist chat. **Profile** opens `ProfileFragment` (design page 19): the photo, name, @username · city, three tiles (pieces, outfits saved, days worn: the sum of the outfits' `wornDays`), the closet's palette (up to 8 colors, each as wide as the number of pieces with it, clipped to a rounded bar) and the 3 tags used most (pills outlined in the tag's color); then **City for weather** (`CityWeatherActivity`, a scrolling page after the learner's reference screenshot, in Mixyn's palette: a mocha card with the city, the date, a picture of the weather (sun, moon, cloud, partly cloudy, fog, rain, snow, storm — vector drawables), the temperature in big serif numbers, the sky and how it feels, and wind / humidity / chance of rain; a **For today** card of tips from `WeatherAdvice` — what to wear for the feel, then an umbrella or a raincoat when rain is likely (≥ 50% in an hour still to come today, with that hour; a raincoat rather than an umbrella in wind ≥ 30 km/h), a small umbrella from 30%, otherwise "no rain expected", and snow, storms, wind, UV ≥ 6, a swing of 8° or more, a hot day ≥ 28° — rules on the phone, no AI call; **Today**: 24 hour capsules, the current one in mocha; **Next 7 days**; **Change city** opens `CitySheet` with `CityPicker`), **Log out** and **Delete account** — both confirmed in a dialog and followed by `GoodbyeActivity` ("You're logged out" / "Your account is deleted", Back to start → Welcome). The pencil opens `EditProfileActivity`: photo (picked from the gallery, read by `PhotoFiles` and saved at once), name, username, city (`CityPicker`, the sign-up dropdown as a component) and a new password with the current one; checked on the phone first like sign-up, and the backend's `username_taken` / `invalid_username` / `wrong_password` land under their fields. Streaks, the morning reminder and who sees my fits are later. **+** opens `AddMenuSheet` (a BottomSheet) with Add clothes and Create outfit.
+`MainActivity` has the `MixynBottomBar` with Home, Calendar, a central **+**, Stylist and Profile. Home hosts `WardrobeFragment` with a `TabLayout`: **Clothes** (`ClothesFragment`, a grid or the empty state) and **Outfits** (`OutfitsFragment`, a two-column grid of the saved outfits' pictures or the empty state). **Calendar** opens `CalendarFragment`. **Stylist** (in place of Friends) opens the Stylist chat. **Profile** opens `ProfileFragment` (design page 19): the photo, name, @username · city, three tiles (pieces, outfits saved, days worn: the sum of the outfits' `wornDays`), the closet's palette (up to 8 colors, each as wide as the number of pieces with it, clipped to a rounded bar) and the 3 tags used most (pills outlined in the tag's color); then **City for weather** (`CityWeatherActivity`, a scrolling page after the learner's reference screenshot, in Mixyn's palette: a mocha card with the city, the date, a picture of the weather (sun, moon, cloud, partly cloudy, fog, rain, snow, storm — vector drawables), the temperature in big serif numbers, the sky and how it feels, and wind / humidity / chance of rain; a **For today** card of tips from `WeatherAdvice` — what to wear for the feel, then an umbrella or a raincoat when rain is likely (≥ 50% in an hour still to come today, with that hour; a raincoat rather than an umbrella in wind ≥ 30 km/h), a small umbrella from 30%, otherwise "no rain expected", and snow, storms, wind, UV ≥ 6, a swing of 8° or more, a hot day ≥ 28° — rules on the phone, no AI call; **Today**: 24 hour capsules, the current one in mocha; **Next 7 days**; **Change city** opens `CitySheet` with `CityPicker`), **Log out** and **Delete account** — both confirmed in a dialog and followed by `GoodbyeActivity` ("You're logged out" / "Your account is deleted", Back to start → Welcome). The pencil opens `EditProfileActivity`: photo (picked from the gallery, read by `PhotoFiles` and saved at once), name, username, city (`CityPicker`, the sign-up dropdown as a component) and a new password with the current one; checked on the phone first like sign-up, and the backend's `username_taken` / `invalid_username` / `wrong_password` land under their fields. Streaks, the morning reminder and who sees my fits are later. **+** opens `AddMenuSheet` (a BottomSheet) with Add clothes and Create outfit.
 - **Search and filters** live in Home's header (`MixynLogoHeader` with a second action): the magnifier shows a search field under the tabs (`MixynTextField`, `fieldType="search"`), the three lines open the shown tab's `FilterSheet` and carry a dot while a filter is on. `WardrobeFragment` keeps one `WardrobeFilter` per tab (the tab fragments are made anew on every switch) and tells the shown tab to redraw. Filtering is done **on the phone**: both lists are already loaded in full with everything the rules need, so there is no request and no backend change.
 - `WardrobeFilter` rules. A piece: color, type, tags, season — one hit inside a group is enough, every group with a choice must fit. An outfit: every chosen color and every chosen kind of piece must be among its clothes; one of the chosen categories and seasons is enough. "All" seasons fits any season. Search matches the piece's name (`ItemNames`) or type; an outfit matches when one of its pieces does. The sheet offers only the colors and types the loaded clothes actually have.
 PRD ref: `prd.md > Adding Clothes`, `prd.md > Screens and Layout`, `prd.md > Search and Filters`.
@@ -348,22 +349,24 @@ Mixyn/
 
 ### Google Gemini API
 - **Auth:** API key from Google AI Studio, in `.env` as `GEMINI_API_KEY`, read only by the backend.
-- **Model:** `GEMINI_MODEL` env var, set to a current Flash model (verify at https://ai.google.dev/gemini-api/docs/models).
-- **Calls** (via the Google Gen AI Java SDK `generateContent`, with JSON output via a response MIME type of `application/json` plus a response schema; exact Java method names to be verified against https://github.com/googleapis/java-genai):
-  - *Tagging:* input = PNG bytes (inline image part) + text prompt; output = `{category, colorName, colorHex}`.
-  - *Stylist:* input = text only (item list + hint); output = `{topId, bottomId, shoesId, outerwearId, hintMatched}`.
-- **Cost / limits:** a free tier with per-minute and per-day limits (verify at https://ai.google.dev/gemini-api/docs/rate-limits). A demo session makes roughly 10–20 calls.
+- **Models:** `GEMINI_MODEL` env var, an ordered list of current Flash models (https://ai.google.dev/gemini-api/docs/models), raced as described under Tagging Service.
+- **Calls** (via the Google Gen AI Java SDK `client.models.generateContent`, with JSON output via a response MIME type of `application/json` plus a response schema):
+  - *Tagging:* input = the cutout on white as a JPEG + text prompt; output = `{subject, onBody, box, front, opening, type, category, colors}`.
+  - *Stylist:* input = text only (item list, weather, hint, earlier requests); output = `{topId, bottomId, shoesId, outerwearId, underId, bagId, accessoryIds, hintMatched}`.
+  - *Stylist chat:* input = text only (item list with how often each was worn, weather, the chat so far); output = `{offTopic, reply, looks[], itemIds[]}`.
+- **Cost / limits:** a free tier with per-minute and per-day limits per model (https://ai.google.dev/gemini-api/docs/rate-limits). A demo session makes roughly 10–30 requests; on a slow hour one action can cost two or three.
 - **Docs:** https://ai.google.dev/gemini-api/docs/structured-output · https://ai.google.dev/gemini-api/docs/image-understanding
 
 ### rembg
-- **Container:** `danielgatis/rembg`, run in server mode on port 7000 (start command to verify in the README; believed to be `s --host 0.0.0.0 --port 7000`).
-- **Call:** believed to be `POST http://rembg:7000/api/remove` with multipart field `file` → `image/png` bytes. Verify early with a `curl` and one sample photo.
+- **Container:** built from `rembg/Dockerfile` and run in server mode (`rembg s --host 0.0.0.0 --port 7000`); the backend reaches it at `http://rembg:7000` inside Compose, and the host at port 7010.
+- **Call:** `POST /api/remove` with the multipart field `file` → `image/png` bytes.
 - **As verified:** built from `rembg/Dockerfile` (no arm64 build of the published image); `POST /api/remove`, multipart field `file`, plus `model=u2net`; host port **7010** (macOS uses 7000); reads JPEG, PNG and HEIC (via `pillow-heif`); ~2 s per small image once warm, ~0.8 GB memory.
-- **Cost:** free, local, no key. The u2net model is baked into the image, so there is no first-run download.
+- **Cost:** free, local, no key. The u2net and isnet-general-use models are baked into the image (about 2 GB in all), so there is no download on the first upload.
 - **Docs:** https://github.com/danielgatis/rembg#usage-as-a-server
 
 ### Open-Meteo Geocoding (city autocomplete)
-- `GET https://geocoding-api.open-meteo.com/v1/search?name=…&count=15&language=en|uk`, called only by the backend. Free, no key. The same provider can supply weather later.
+- `GET https://geocoding-api.open-meteo.com/v1/search?name=…&count=15&language=en|uk`, called only by the backend. Free, no key. The same provider supplies the weather (`https://api.open-meteo.com/v1/forecast`, see Weather).
+- Both clients give up after 4 s: the stylist asks for the weather before every look, so a hanging request must not hang the look.
 - Results need ≥ 3 characters; very short queries return nothing.
 
 ### PostgreSQL
@@ -375,7 +378,8 @@ Mixyn/
 - **Gemini tagging fails** (network, rate limit, bad JSON) → the item is saved with a blank category/color → the card asks the user to choose. The upload never fails because of tagging.
 - **Gemini stylist fails or returns invalid ids** → the backend fills the affected slots with random valid items; if the whole call failed, `message` = "The stylist is taking a break — here's a random look instead." The canvas is never left blank. *(Assumption: the PRD didn't specify the total-failure case; this follows its "never a blank canvas" rule.)*
 - **Backend not running or unreachable from the emulator** → the Android app shows "Can't reach Mixyn — is the server running?" instead of crashing. (Common cause: using `localhost` instead of `10.0.2.2`, or the missing network security config.)
-- **Slow first upload** (rembg model download) → the processing state covers it; the 90 s client timeout leaves room. Do a warm-up upload before recording.
+- **Slow first upload** (rembg loads its model after a start) → the processing state covers it; the 90 s client timeout leaves room. Do a warm-up upload before recording.
+- **Open-Meteo slow or down** → after 4 s the backend goes on without weather: the canvas hides its weather chip, the stylist works without the weather line, and city search answers `502 city_search_failed`.
 
 ## What Was Simplified and Why
 
@@ -392,8 +396,8 @@ Mixyn/
 
 **Learner decisions:**
 - **Native Android (Java + XML) + Spring Boot + PostgreSQL + Docker**, "same as my long-term app" over the fastest path, because the goal is strengthening this exact stack. Accepted tradeoff: Gradle, emulator and Spring setup eat into the 2–4 hours, so the Android UI stays basic.
-- **rembg in Docker** for background removal: free, local, no limits. Accepted tradeoff: a large first download and slower processing on a laptop.
-- **Google Gemini** for tagging and the stylist, instead of the Claude option discussed. The requested 1.5 Flash is replaced by a current Flash model, pending verification.
+- **rembg in Docker** for background removal: free, local, no limits. Accepted tradeoff: a large image (the models are baked in) and slower processing on a laptop.
+- **Google Gemini** for tagging and the stylist, instead of the Claude option discussed. The requested 1.5 Flash (retired) is replaced by a list of current Flash models.
 - **Accepted wiring:** one synchronous upload request; images on disk with paths in Postgres; email + password accounts (BCrypt) with a session token stored in SharedPreferences; everything runs locally and the demo is recorded from the emulator.
 
 **Implementation details derived by the agent** (changeable): opaque DB-stored session tokens + `AuthInterceptor` rather than Spring Security/JWT; Gradle for the backend; Retrofit/Glide/ViewPager2; the REST paths above; the random outfit on the device; "tagging failure still saves the item"; the stylist total-failure message; allowing null slots when saving.
