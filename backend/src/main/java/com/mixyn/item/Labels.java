@@ -23,7 +23,7 @@ public final class Labels {
 
     /** ["Work", "Cozy"] → "Work,Cozy"; an empty list → null. A tag that isn't in the list is refused. */
     public static String joinTags(List<String> tags) {
-        if (!ALLOWED_TAGS.containsAll(tags)) {
+        if (!allIn(ALLOWED_TAGS, tags)) {
             throw invalid("Choose tags from the list");
         }
         return tags.isEmpty() ? null : String.join(",", tags);
@@ -31,7 +31,7 @@ public final class Labels {
 
     /** Several seasons are kept in calendar order; "All", or all four together, is stored as just "All". */
     public static String joinSeasons(List<String> chosen) {
-        if (!ALLOWED_SEASONS.containsAll(chosen)) {
+        if (!allIn(ALLOWED_SEASONS, chosen)) {
             throw invalid("Choose seasons from the list");
         }
         List<String> seasons = FOUR_SEASONS.stream().filter(chosen::contains).toList();
@@ -45,6 +45,14 @@ public final class Labels {
     public static List<String> split(String commaSeparated) {
         return commaSeparated == null || commaSeparated.isBlank()
                 ? List.of() : List.of(commaSeparated.split(","));
+    }
+
+    /**
+     * Whether every value is one of the allowed ones. A null in the list ("tags": [null]) is simply not
+     * allowed; asked directly, the fixed set would answer it with an error instead.
+     */
+    private static boolean allIn(Set<String> allowed, List<String> values) {
+        return values.stream().allMatch(value -> value != null && allowed.contains(value));
     }
 
     private static ApiException invalid(String message) {
