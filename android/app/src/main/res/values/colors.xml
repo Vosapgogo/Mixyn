@@ -6,6 +6,7 @@
     <color name="mocha_light">#EFE8E1</color>      <!-- soft fills, selected chips -->
     <color name="ink">#1F1B17</color>              <!-- text, central +, dark buttons -->
     <color name="ink_muted">#8A837B</color>        <!-- secondary text, disabled tabs -->
+    <color name="ink_soft">#4E4842</color>         <!-- labels that must read clearly but stay under ink: Profile stats -->
 
     <!-- Surfaces -->
     <color name="sand_bg">#F4F1ED</color>          <!-- window background -->

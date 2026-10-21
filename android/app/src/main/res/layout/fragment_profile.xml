@@ -80,8 +80,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/profile_pieces"
-                    android:textAppearance="@style/TextAppearance.Mixyn.Body"
-                    android:textSize="@dimen/text_label" />
+                    android:textAppearance="@style/TextAppearance.Mixyn.StatLabel" />
             </LinearLayout>
 
             <LinearLayout
@@ -98,8 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/profile_outfits"
-                    android:textAppearance="@style/TextAppearance.Mixyn.Body"
-                    android:textSize="@dimen/text_label" />
+                    android:textAppearance="@style/TextAppearance.Mixyn.StatLabel" />
             </LinearLayout>
 
             <LinearLayout
@@ -116,8 +114,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/profile_days_worn"
-                    android:textAppearance="@style/TextAppearance.Mixyn.Body"
-                    android:textSize="@dimen/text_label" />
+                    android:textAppearance="@style/TextAppearance.Mixyn.StatLabel" />
             </LinearLayout>
         </LinearLayout>
 
@@ -129,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_l"
             android:text="@string/profile_palette"
-            android:textColor="@color/ink_muted"
+            android:textColor="@color/ink_soft"
             android:visibility="gone" />
 
         <LinearLayout

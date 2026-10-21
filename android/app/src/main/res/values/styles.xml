@@ -293,6 +293,12 @@
         <item name="android:textColor">@color/ink</item>
     </style>
 
+    <!-- Under a stat number: "pieces", "days worn" -->
+    <style name="TextAppearance.Mixyn.StatLabel" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:textColor">@color/ink_soft</item>
+    </style>
+
     <!-- City for weather: "23°" -->
     <style name="TextAppearance.Mixyn.Weather" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/serif</item>
