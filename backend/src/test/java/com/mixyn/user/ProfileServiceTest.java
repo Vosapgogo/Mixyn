@@ -100,6 +100,19 @@ class ProfileServiceTest {
     }
 
     @Test
+    void aPasswordTooLongForBcryptIsAnErrorNotACrash() {
+        String tooLong = "ж".repeat(72); // 72 characters, 144 bytes; BCrypt reads at most 72 bytes
+        ApiException wrong = assertThrows(ApiException.class,
+                () -> profiles.changePassword(USER, "this-phone", new PasswordChange(tooLong, "new-password")));
+        assertEquals("wrong_password", wrong.getCode());
+
+        ApiException refused = assertThrows(ApiException.class,
+                () -> profiles.changePassword(USER, "this-phone", new PasswordChange("old-password", tooLong)));
+        assertEquals("validation_failed", refused.getCode());
+        assertTrue(new BCryptPasswordEncoder().matches("old-password", user.getPasswordHash()));
+    }
+
+    @Test
     void aNewProfilePhotoReplacesTheOldFile() {
         user.setAvatarFile("old.png");
         when(storage.squareAvatar(any())).thenReturn(new byte[] {1});

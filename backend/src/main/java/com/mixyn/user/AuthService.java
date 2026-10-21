@@ -1,5 +1,6 @@
 package com.mixyn.user;
 
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
@@ -28,8 +29,26 @@ public class AuthService {
         this.sessions = sessions;
     }
 
+    /**
+     * BCrypt reads at most 72 bytes of a password. A Latin letter is one byte but a Cyrillic one is two,
+     * so a password of 72 characters can be too long; the encoder then refuses it with an error.
+     */
+    static final int MAX_PASSWORD_BYTES = 72;
+
+    static boolean tooLong(String password) {
+        return password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES;
+    }
+
+    static ApiException passwordTooLong() {
+        return new ApiException(HttpStatus.BAD_REQUEST, "validation_failed",
+                "This password is too long. Use a shorter one.");
+    }
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (tooLong(request.password())) {
+            throw passwordTooLong();
+        }
         String email = normalizeEmail(request.email());
         if (users.existsByEmail(email)) {
             throw new ApiException(HttpStatus.CONFLICT, "email_taken",
@@ -43,8 +62,9 @@ public class AuthService {
     @Transactional
     public AuthResponse login(String email, String password) {
         // Same error for an unknown email and a wrong password, so the API doesn't reveal which emails exist.
+        // A password too long to have been saved can't be anyone's.
         User user = users.findByEmail(normalizeEmail(email))
-                .filter(u -> passwordEncoder.matches(password, u.getPasswordHash()))
+                .filter(u -> !tooLong(password) && passwordEncoder.matches(password, u.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials",
                         "Email or password is incorrect"));
         return new AuthResponse(UserResponse.from(user), createSession(user));

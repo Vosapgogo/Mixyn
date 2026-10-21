@@ -68,8 +68,13 @@ public class ProfileService {
     @Transactional
     public void changePassword(Long userId, String token, PasswordChange change) {
         User user = user(userId);
-        if (!passwordEncoder.matches(change.currentPassword(), user.getPasswordHash())) {
+        boolean current = !AuthService.tooLong(change.currentPassword())
+                && passwordEncoder.matches(change.currentPassword(), user.getPasswordHash());
+        if (!current) {
             throw new ApiException(HttpStatus.FORBIDDEN, "wrong_password", "Your current password is incorrect");
+        }
+        if (AuthService.tooLong(change.newPassword())) {
+            throw AuthService.passwordTooLong();
         }
         user.setPasswordHash(passwordEncoder.encode(change.newPassword()));
         users.save(user);
