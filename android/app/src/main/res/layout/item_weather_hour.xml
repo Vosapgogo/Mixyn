@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: one hour in today's strip, a capsule: the temperature, the weather picture, the
+     chance of rain when there is one worth knowing about, and the time ("Now" for the current hour,
+     which gets the mocha capsule). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/weather_hour_width"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/space_xs"
+    android:background="@drawable/bg_weather_hour"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_m"
+    android:paddingBottom="@dimen/space_m">
+
+    <TextView
+        android:id="@+id/hour_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label" />
+
+    <ImageView
+        android:id="@+id/hour_icon"
+        android:layout_width="@dimen/weather_hour_icon_size"
+        android:layout_height="@dimen/weather_hour_icon_size"
+        android:layout_marginTop="@dimen/space_xs"
+        android:importantForAccessibility="no" />
+
+    <!-- Invisible rather than gone when the chance is low, so every capsule is the same height -->
+    <TextView
+        android:id="@+id/hour_rain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Mixyn.WeatherRain" />
+
+    <TextView
+        android:id="@+id/hour_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:textAppearance="@style/TextAppearance.Mixyn.Caption" />
+</LinearLayout>

@@ -308,8 +308,38 @@
     </style>
 
     <!-- City for weather: the date, how it feels and what to wear, as large as in the design -->
-    <style name="TextAppearance.Mixyn.WeatherLine" parent="TextAppearance.Mixyn.Body">
-        <item name="android:textSize">@dimen/text_weather_line</item>
+    <!-- City for weather, on the mocha card: the temperature, the sky, the city and the values of wind,
+         humidity and rain, and the softer date and labels under them -->
+    <style name="TextAppearance.Mixyn.WeatherCard" parent="TextAppearance.Mixyn.Weather">
+        <item name="android:textColor">@color/on_dark</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.WeatherCardLine" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/on_dark</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.WeatherCardValue" parent="TextAppearance.Mixyn.Label">
+        <item name="android:textColor">@color/on_dark</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.WeatherCardNote" parent="TextAppearance.Mixyn.Caption">
+        <item name="android:textColor">@color/mocha_light</item>
+    </style>
+
+    <!-- City for weather: a day's low next to its high, and the chance of rain under an hour or a day -->
+    <style name="TextAppearance.Mixyn.WeatherLow" parent="TextAppearance.Mixyn.Label">
+        <item name="android:textColor">@color/ink_muted</item>
+    </style>
+
+    <!-- City for weather: one tip for the day -->
+    <style name="TextAppearance.Mixyn.WeatherTip" parent="TextAppearance.Mixyn.Body">
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="TextAppearance.Mixyn.WeatherRain" parent="TextAppearance.Mixyn.Caption">
+        <item name="android:textColor">@color/weather_rain</item>
+        <item name="android:textFontWeight" tools:targetApi="28">500</item>
     </style>
 
     <!-- Profile: the user's name next to the photo -->

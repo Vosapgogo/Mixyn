@@ -400,6 +400,32 @@
     <string name="city_weather_change">Change city</string>
     <string name="action_save_city">Save city</string>
     <string name="city_saved">City saved</string>
+    <!-- The three values on today's card -->
+    <string name="weather_wind">Wind</string>
+    <string name="weather_humidity">Humidity</string>
+    <string name="weather_rain_chance">Chance of rain</string>
+    <string name="weather_wind_value">%1$d km/h</string>
+    <string name="weather_percent">%1$d%%</string>
+    <!-- The next hours and the week ahead -->
+    <string name="weather_today">Today</string>
+    <string name="weather_high_low">%1$d° / %2$d°</string>
+    <string name="weather_now_hour">Now</string>
+    <string name="weather_degrees">%1$d°</string>
+    <string name="weather_week">Next 7 days</string>
+    <!-- Tips for the day. "When" is "right now" or "from 15:00". -->
+    <string name="weather_tips_title">For today</string>
+    <string name="weather_when_now">right now</string>
+    <string name="weather_when_from">from %1$s</string>
+    <string name="weather_tip_rain">Rain is likely %1$s. Take an umbrella or wear a raincoat.</string>
+    <string name="weather_tip_rain_wind">Rain is likely %1$s, and it\'s windy: a raincoat with a hood will do better than an umbrella.</string>
+    <string name="weather_tip_rain_maybe">A chance of rain later (%1$d%%). A small umbrella in your bag won\'t hurt.</string>
+    <string name="weather_tip_storm">Thunderstorms are likely %1$s. Wear a raincoat and waterproof shoes.</string>
+    <string name="weather_tip_snow">Snow is likely %1$s. Waterproof boots and a warm hat.</string>
+    <string name="weather_tip_dry">No rain expected today, so you can leave the umbrella at home.</string>
+    <string name="weather_tip_wind">Windy, up to %1$d km/h: a windproof jacket, and a beanie rather than a wide hat.</string>
+    <string name="weather_tip_sun">Strong sun (UV %1$d): sunglasses and sunscreen.</string>
+    <string name="weather_tip_layers">From %1$d° to %2$d° today: wear layers you can take off.</string>
+    <string name="weather_tip_hot">A hot day: light colors, and water with you.</string>
 
     <!-- Shared -->
     <string name="coming_soon">Coming soon</string>

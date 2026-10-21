@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The thin line a LinearLayout draws between its rows (showDividers), the same as Widget.Mixyn.CardDivider -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/line" />
+    <size android:height="@dimen/stroke" />
+</shape>

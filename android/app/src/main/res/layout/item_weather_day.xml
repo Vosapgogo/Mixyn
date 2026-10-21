@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: one day of the week ahead: its name ("Today", "Thu"), the weather picture and in
+     words, the chance of rain when there is one worth knowing about, and the high and the low (each at
+     least two letters wide and set to the right, so the numbers of all the days line up). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/button_height"
+    android:orientation="horizontal"
+    android:paddingTop="@dimen/space_xxs"
+    android:paddingBottom="@dimen/space_xxs">
+
+    <TextView
+        android:id="@+id/day_name"
+        android:layout_width="@dimen/weather_day_name_width"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Mixyn.BodyStrong" />
+
+    <ImageView
+        android:id="@+id/day_icon"
+        android:layout_width="@dimen/weather_day_icon_size"
+        android:layout_height="@dimen/weather_day_icon_size"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/day_sky"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_s"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Mixyn.RowValue" />
+
+    <TextView
+        android:id="@+id/day_rain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_s"
+        android:textAppearance="@style/TextAppearance.Mixyn.WeatherRain" />
+
+    <TextView
+        android:id="@+id/day_high"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:minEms="2"
+        android:textAppearance="@style/TextAppearance.Mixyn.Label" />
+
+    <TextView
+        android:id="@+id/day_low"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:minEms="2"
+        android:layout_marginStart="@dimen/space_xs"
+        android:textAppearance="@style/TextAppearance.Mixyn.WeatherLow" />
+</LinearLayout>

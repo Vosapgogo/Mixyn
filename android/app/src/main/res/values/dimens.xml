@@ -12,6 +12,8 @@
 
     <!-- Screen side margin (design: 24dp) -->
     <dimen name="screen_margin">@dimen/space_l</dimen>
+    <!-- Pulls a strip that scrolls sideways out to both screen edges, past the screen margin -->
+    <dimen name="screen_margin_bleed">-24dp</dimen>
 
     <!-- Corner radii -->
     <dimen name="radius_field">16dp</dimen>
@@ -53,8 +55,16 @@
     <dimen name="canvas_head_room">80dp</dimen>
     <!-- Profile: the closet's colors as one rounded bar, and a tag pill under it -->
     <dimen name="palette_height">18dp</dimen>
-    <!-- City for weather: the sun or the cloud over the temperature -->
+    <!-- City for weather: the size a weather picture has unless its view sets one -->
     <dimen name="weather_icon_size">88dp</dimen>
+    <!-- City for weather: the picture on today's card, one hour of the strip and its picture, a day's picture
+         and the room for its name ("Today", "Wed"), the icons of wind, humidity and rain on the card -->
+    <dimen name="weather_card_icon_size">112dp</dimen>
+    <dimen name="weather_hour_width">64dp</dimen>
+    <dimen name="weather_hour_icon_size">32dp</dimen>
+    <dimen name="weather_day_icon_size">32dp</dimen>
+    <dimen name="weather_day_name_width">64dp</dimen>
+    <dimen name="weather_stat_icon_size">20dp</dimen>
     <dimen name="palette_radius">9dp</dimen>
     <dimen name="tag_pill_height">36dp</dimen>
     <!-- Stylist chat: an outfit card, the outfit drawn in it, and one piece shown -->
@@ -86,9 +96,8 @@
     <dimen name="stroke_error">1.5dp</dimen>
 
     <!-- Type scale -->
-    <!-- City for weather: today's temperature, the biggest text in the app, and the lines around it -->
-    <dimen name="text_weather">112sp</dimen>
-    <dimen name="text_weather_line">22sp</dimen>
+    <!-- City for weather: today's temperature, the biggest text in the app -->
+    <dimen name="text_weather">96sp</dimen>
     <dimen name="text_hero">64sp</dimen>
     <dimen name="text_display">44sp</dimen>
     <dimen name="text_title">36sp</dimen>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: one hour in today's strip, a capsule on the surface color -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/surface" />
+    <stroke android:width="@dimen/stroke" android:color="@color/line" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

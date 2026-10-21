@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City for weather: the card with today's weather (and the hour that is now), mocha fading into a deeper mocha -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:endColor="@color/weather_card_end"
+        android:startColor="@color/mocha" />
+    <corners android:radius="@dimen/radius_card" />
+</shape>

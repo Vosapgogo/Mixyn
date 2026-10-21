@@ -5,6 +5,7 @@ import com.mixyn.app.api.dto.CalendarDayDto;
 import com.mixyn.app.api.dto.ChatReply;
 import com.mixyn.app.api.dto.CityDto;
 import com.mixyn.app.api.dto.ColorDto;
+import com.mixyn.app.api.dto.ForecastDto;
 import com.mixyn.app.api.dto.GenerateResult;
 import com.mixyn.app.api.dto.ItemDto;
 import com.mixyn.app.api.dto.ItemTypeDto;
@@ -141,6 +142,10 @@ public interface MixynApi {
     /** Current weather in the logged-in user's city. */
     @GET("api/me/weather")
     Call<WeatherDto> weather();
+
+    /** Today in detail (wind, humidity, the next hours) and the next 7 days in the logged-in user's city. */
+    @GET("api/me/weather/forecast")
+    Call<ForecastDto> forecast();
 
     /** The fixed color palette. */
     @GET("api/item-colors")
