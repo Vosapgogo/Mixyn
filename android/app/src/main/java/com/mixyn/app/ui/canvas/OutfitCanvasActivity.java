@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -509,7 +510,10 @@ public class OutfitCanvasActivity extends BaseActivity {
         return picture;
     }
 
-    /** Shows "13° · cool" for the user's city. If the weather can't be loaded the chip just stays hidden. */
+    /**
+     * Shows "13° · cool" for the user's city. If the weather can't be loaded the chip just stays hidden.
+     * On a narrow screen, where "-2° · freezing" would be cut short to make room for Next, it shows just "-2°".
+     */
     private void loadWeather() {
         api.weather().enqueue(new ApiCallback<>(this) {
             @Override
@@ -519,6 +523,12 @@ public class OutfitCanvasActivity extends BaseActivity {
                 weatherChip.setText(getString(R.string.canvas_weather, now.temperature, now.feel));
                 weatherChip.setContentDescription(now.city + ": " + now.temperature + "°, " + now.sky);
                 weatherChip.setVisibility(View.VISIBLE);
+                whenLaidOut(weatherChip, () -> {
+                    Layout text = weatherChip.getLayout();
+                    if (text == null || text.getEllipsisCount(0) == 0) return;
+                    // After this layout pass, so the chip measures itself again and gets narrower.
+                    weatherChip.post(() -> weatherChip.setText(getString(R.string.canvas_weather_short, now.temperature)));
+                });
             }
 
             @Override

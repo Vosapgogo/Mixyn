@@ -8,12 +8,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- Header: back, the weather in the user's city, and Next -->
-    <LinearLayout
+    <!-- Header: back, the filter, the weather in the user's city, and Next. Next always keeps its
+         place at the end; on a narrow screen the weather chip gives way (see loadWeather). -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
         android:paddingStart="@dimen/space_s"
         android:paddingTop="@dimen/space_xs"
         android:paddingEnd="@dimen/screen_margin">
@@ -27,18 +26,25 @@
             android:padding="@dimen/space_s"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/ink" />
 
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <!-- The filter: only pieces of the chosen colors and types in the carousels. The dot says it is on. -->
+        <!-- The filter: only pieces of the chosen colors and types in the carousels. The dot says it is on.
+             It and the weather chip stay together right before Next. -->
         <FrameLayout
+            android:id="@+id/canvas_filter_holder"
             android:layout_width="@dimen/icon_button_size"
             android:layout_height="@dimen/icon_button_size"
-            android:layout_marginEnd="@dimen/space_xxs">
+            android:layout_marginEnd="@dimen/space_xxs"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/canvas_weather"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/canvas_back"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_goneMarginEnd="@dimen/canvas_control_gap">
 
             <ImageButton
                 android:id="@+id/canvas_filter"
@@ -68,27 +74,37 @@
             android:id="@+id/canvas_weather"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/icon_button_size"
+            android:layout_marginEnd="@dimen/canvas_control_gap"
             android:background="@drawable/bg_pill_surface"
             android:drawablePadding="@dimen/space_xs"
+            android:ellipsize="end"
             android:gravity="center_vertical"
+            android:maxLines="1"
             android:paddingStart="@dimen/space_m"
             android:paddingEnd="@dimen/screen_margin"
             android:textAppearance="@style/TextAppearance.Mixyn.Label"
             android:visibility="gone"
             app:drawableStartCompat="@drawable/ic_cloud"
-            app:drawableTint="@color/ink" />
+            app:drawableTint="@color/ink"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/canvas_next"
+            app:layout_constraintStart_toEndOf="@id/canvas_filter_holder"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/canvas_next"
             style="@style/Widget.Mixyn.Button.Dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/canvas_control_gap"
             android:minHeight="@dimen/icon_button_size"
             android:text="@string/canvas_next"
             app:icon="@drawable/ic_chevron_right"
-            app:iconGravity="textEnd" />
-    </LinearLayout>
+            app:iconGravity="textEnd"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
