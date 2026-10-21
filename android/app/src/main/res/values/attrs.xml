@@ -4,6 +4,8 @@
     <declare-styleable name="MixynTextField">
         <attr name="label" format="string" />
         <attr name="hint" format="string" />
+        <!-- The most characters the field takes; the backend's limit for that value. -->
+        <attr name="android:maxLength" />
         <attr name="fieldType" format="enum">
             <enum name="text" value="0" />
             <enum name="name" value="1" />

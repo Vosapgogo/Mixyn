@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
@@ -58,7 +59,9 @@ public class MixynTextField extends LinearLayout {
         label.setText(a.getString(R.styleable.MixynTextField_label));
         input.setHint(a.getString(R.styleable.MixynTextField_hint));
         int type = a.getInt(R.styleable.MixynTextField_fieldType, TYPE_TEXT);
+        int maxLength = a.getInt(R.styleable.MixynTextField_android_maxLength, 0);
         a.recycle();
+        if (maxLength > 0) input.setFilters(new InputFilter[] {new InputFilter.LengthFilter(maxLength)});
 
         // Each field gets its own id so Android can restore typed text after rotation.
         input.setId(View.generateViewId());
