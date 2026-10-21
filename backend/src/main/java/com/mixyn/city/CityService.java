@@ -1,10 +1,13 @@
 package com.mixyn.city;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -26,7 +29,20 @@ public class CityService {
     record GeoResponse(List<GeoResult> results) {
     }
 
-    private final RestClient client = RestClient.create("https://geocoding-api.open-meteo.com");
+    /** A city search that takes longer than this counts as failed, so the sign-up form never hangs. */
+    private static final Duration TIMEOUT = Duration.ofSeconds(4);
+
+    private final RestClient client = RestClient.builder()
+            .baseUrl("https://geocoding-api.open-meteo.com")
+            .requestFactory(withTimeout())
+            .build();
+
+    private static JdkClientHttpRequestFactory withTimeout() {
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+                HttpClient.newBuilder().connectTimeout(TIMEOUT).build());
+        factory.setReadTimeout(TIMEOUT);
+        return factory;
+    }
 
     public List<City> search(String query) {
         String q = query == null ? "" : query.trim();

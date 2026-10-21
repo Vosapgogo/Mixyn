@@ -1,5 +1,6 @@
 package com.mixyn.weather;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -73,7 +75,16 @@ public class WeatherService {
     static final int HOURS = 24;
     private static final int DAYS = 7;
 
-    private final RestClient client = RestClient.create("https://api.open-meteo.com");
+    /**
+     * Open-Meteo answers in well under a second. One that takes longer than this counts as down: the
+     * stylist asks for the weather before every look, so a hanging request would hang the look too.
+     */
+    private static final Duration TIMEOUT = Duration.ofSeconds(4);
+
+    private final RestClient client = RestClient.builder()
+            .baseUrl("https://api.open-meteo.com")
+            .requestFactory(withTimeout())
+            .build();
     private final UserRepository users;
     /**
      * Recent answers by place ("50.45,30.52"), not by user: a user who changes their city gets the new
@@ -83,6 +94,13 @@ public class WeatherService {
 
     public WeatherService(UserRepository users) {
         this.users = users;
+    }
+
+    private static JdkClientHttpRequestFactory withTimeout() {
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+                HttpClient.newBuilder().connectTimeout(TIMEOUT).build());
+        factory.setReadTimeout(TIMEOUT);
+        return factory;
     }
 
     public Optional<Weather> forUser(Long userId) {
