@@ -95,11 +95,13 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <!-- Not clipped to its padding either: a coat's collar can stand in the head room above the outfit -->
         <LinearLayout
             android:id="@+id/canvas_slots"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingTop="@dimen/canvas_head_room"
             android:paddingBottom="@dimen/space_m">
@@ -150,10 +152,12 @@
                     app:layout_constraintBottom_toTopOf="@id/canvas_slot_split"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <!-- Not clipped: a coat can be wider than its page, and its collar can stand above the frame -->
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/canvas_outerwear"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
+                    android:clipChildren="false"
                     android:contentDescription="@string/category_outerwear"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"

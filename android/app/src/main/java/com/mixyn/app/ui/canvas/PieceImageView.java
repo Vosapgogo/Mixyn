@@ -18,9 +18,11 @@ import java.util.List;
 
 /**
  * The image of one piece on the canvas. A piece is normally fitted into the middle of its frame.
- * Outerwear is "hung" instead: from a line near the top of the frame — the shoulder line of the top
- * underneath — as wide as that top and centered left to right, so a jacket and a long coat both sit on
- * the top's shoulders. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
+ * Outerwear is "hung" over the top instead: the view finds the shoulders in both photos (the corner
+ * where the slope from the neck turns into the sleeve) and puts the jacket's shoulders on the top's,
+ * always a quarter wider, a little higher and a little to the left, so every jacket and coat sits in
+ * the same place at the same size and covers the top's left sleeve. It never reaches past the bottom
+ * of the view. A dress in the top's slot is hung too, from the top of its slot, and reaches further down
  * than the view itself: over the bottom's part of the outfit, like a long coat. A hat stands on the
  * bottom edge of its view instead (the top's shoulder line), always at the same width.
  * A piece worn under the top is drawn "behind" it: in two halves, so that its collar shows
@@ -49,6 +51,17 @@ public class PieceImageView extends AppCompatImageView {
     /** The back of the neck above an opening is a narrow band: never more than this share of the height. */
     private static final float NECK_BAND_MAX = 0.2f;
     private static final float THOUSAND = 1000f;
+    /** The shoulders and the end of the sleeve are looked for in this upper share of a piece. */
+    private static final float SHOULDER_SEARCH = 0.7f;
+    /**
+     * Outerwear: its shoulders are this much wider than the top's, it sits this share of the top's height
+     * higher, and this share of the top's width further left (so its sleeve covers a T-shirt's sleeve
+     * that sticks out). The same for every piece, so swiping from one jacket to the next never makes
+     * it jump in size or place.
+     */
+    private static final float OVER_SHOULDERS = 1.25f;
+    private static final float OVER_LIFT = 0.02f;
+    private static final float OVER_SHIFT = 0.05f;
 
     private boolean hung;
     private float hangFrom;
@@ -58,6 +71,16 @@ public class PieceImageView extends AppCompatImageView {
     private boolean standing;
     /** How far down a hung image may reach, in heights of this view: more than 1 for a dress. */
     private float reach = 1f;
+    /**
+     * Outerwear hung over a top: where that top's image is, and its shoulder line and half its shoulder
+     * width, in this view's coordinates. The shoulders are null when the top's shoulders can't be found.
+     */
+    @Nullable
+    private RectF overTop;
+    @Nullable
+    private float[] overShoulders;
+    /** Only the left half of the image is drawn: an open jacket over the left side of the outfit. */
+    private boolean leftHalf;
     private boolean behind;
     @Nullable
     private RectF behindTop;
@@ -75,6 +98,12 @@ public class PieceImageView extends AppCompatImageView {
     private float[] rowStart;
     @Nullable
     private float[] rowEnd;
+    /**
+     * Where the shoulders are, also measured once per image, in shares of the image: the height of the
+     * shoulder line and half the shoulder width. The shoulder line is negative when no shoulders were found.
+     */
+    private float shoulderRow = -1f;
+    private float shoulderHalf;
     /**
      * For a piece that is see-through between its fronts but closed across the back of the neck: the
      * band above the gap, as left, right and bottom in shares of the image. Null when there is none.
@@ -105,10 +134,39 @@ public class PieceImageView extends AppCompatImageView {
     public void hangFrom(float y, float width) {
         hung = true;
         standing = false;
+        overTop = null;
         hangFrom = y;
         hangWidth = width;
         setScaleType(ScaleType.MATRIX);
         hang();
+    }
+
+    /**
+     * Hangs outerwear over a top whose image covers this rectangle (in this view's coordinates): its
+     * shoulders on the top's shoulders, see the class comment. The view's pivot moves to the middle of
+     * its shoulders, so a size from "Edit photo" grows the jacket down from the shoulders, not up over
+     * them. When either piece's shoulders can't be found, it hangs from the top's upper edge at the
+     * top's width, in the middle.
+     */
+    public void hangOver(PieceImageView top, RectF topBounds) {
+        hangFrom(topBounds.top, topBounds.width());
+        overTop = new RectF(topBounds);
+        overShoulders = top.shoulders(topBounds);
+        if (overShoulders != null) {
+            setPivotX(getWidth() / 2f - topBounds.width() * OVER_SHIFT);
+            setPivotY(overShoulders[0] - topBounds.height() * OVER_LIFT);
+        } else {
+            setPivotX(getWidth() / 2f);
+            setPivotY(topBounds.top);
+        }
+        hang();
+    }
+
+    /** Draws only the left half of the image, whatever its size and place (outerwear), or all of it. */
+    public void drawLeftHalf(boolean leftHalf) {
+        if (this.leftHalf == leftHalf) return;
+        this.leftHalf = leftHalf;
+        invalidate();
     }
 
     /**
@@ -130,6 +188,7 @@ public class PieceImageView extends AppCompatImageView {
     /** Back to the usual: the image fitted into the middle of the view (a recycled page that held a dress). */
     public void fitInside() {
         hung = false;
+        overTop = null;
         reach = 1f;
         setScaleType(ScaleType.FIT_CENTER);
     }
@@ -209,6 +268,18 @@ public class PieceImageView extends AppCompatImageView {
         return started ? path : null;
     }
 
+    /**
+     * Where this piece's shoulders are when its image covers the given rectangle: the height of the
+     * shoulder line and half the shoulder width. Null while there is no image, or when the photo has no
+     * shoulders to find.
+     */
+    @Nullable
+    public float[] shoulders(RectF bounds) {
+        measure();
+        if (shoulderRow < 0) return null;
+        return new float[] {bounds.top + shoulderRow * bounds.height(), shoulderHalf * bounds.width()};
+    }
+
     private void measure() {
         if (measured) return;
         measured = true;
@@ -216,6 +287,7 @@ public class PieceImageView extends AppCompatImageView {
         rowStart = null;
         rowEnd = null;
         neckBand = null;
+        shoulderRow = -1f;
         if (!(getDrawable() instanceof BitmapDrawable drawable) || drawable.getBitmap() == null) return;
         Bitmap bitmap = drawable.getBitmap();
         // Pixels of a hardware bitmap can't be read, so such a bitmap is copied first.
@@ -253,6 +325,67 @@ public class PieceImageView extends AppCompatImageView {
             rowEnd[row] = first == width ? 0f : (float) (last + 1) / width;
         }
         if (openFront) neckBand = findNeckBand(pixels, width, height);
+        measureShoulders(width, height);
+    }
+
+    /**
+     * Finds the shoulders from the outline: on each side, the corner where the slope from the neck
+     * turns into the sleeve. Whether the sleeves stick out (a T-shirt laid flat) or hang down (a coat),
+     * the shoulders are where the two meet. The shoulder line is halfway between the two sides' corners.
+     */
+    private void measureShoulders(int width, int height) {
+        if (rowStart == null || rowEnd == null) return;
+        int left = corner(rowStart, true, width, height);
+        int right = corner(rowEnd, false, width, height);
+        if (left < 0 || right < 0) return;
+        int rows = rowStart.length;
+        shoulderRow = ((left + right) / 2f + 0.5f) / rows;
+        shoulderHalf = (0.5f - rowStart[left] + rowEnd[right] - 0.5f) / 2f;
+    }
+
+    /**
+     * One side of a piece, going down from the neck to where that side reaches furthest out (the end of
+     * a sleeve), in the upper part of the piece. Its corner is the point furthest outside the straight
+     * line between those two ends. Returns the corner's row, or -1 when the side is too short to have one.
+     *
+     * @param edge rowStart for the left side, rowEnd for the right
+     */
+    private static int corner(float[] edge, boolean left, int width, int height) {
+        int rows = edge.length;
+        int last = Math.round(rows * SHOULDER_SEARCH);
+        int first = -1;
+        int furthest = -1;
+        float furthestOut = 0f;
+        for (int row = 0; row < last; row++) {
+            float out = left ? 0.5f - edge[row] : edge[row] - 0.5f; // distance from the middle
+            if (out <= 0f) continue; // nothing of the piece on this side of the row
+            if (first < 0) first = row;
+            if (out > furthestOut) {
+                furthestOut = out;
+                furthest = row;
+            }
+        }
+        if (first < 0 || furthest - first < 2) return -1;
+        float rowHeight = (float) height / rows;
+        float x1 = (left ? 0.5f - edge[first] : edge[first] - 0.5f) * width;
+        float y1 = (first + 0.5f) * rowHeight;
+        float x2 = furthestOut * width;
+        float y2 = (furthest + 0.5f) * rowHeight;
+        int corner = first;
+        float mostOutside = 0f;
+        for (int row = first; row <= furthest; row++) {
+            float out = left ? 0.5f - edge[row] : edge[row] - 0.5f;
+            if (out <= 0f) continue;
+            float x = out * width;
+            float y = (row + 0.5f) * rowHeight;
+            // How far outside the line between the two ends (times its length, the same for every row).
+            float outside = (x2 - x1) * (y1 - y) - (x1 - x) * (y2 - y1);
+            if (outside > mostOutside) {
+                mostOutside = outside;
+                corner = row;
+            }
+        }
+        return corner;
     }
 
     /**
@@ -360,14 +493,16 @@ public class PieceImageView extends AppCompatImageView {
             drawBehindTop(canvas);
             return;
         }
-        RectF bounds = openingLeftOut ? drawnBounds() : null;
-        Path leftOut = bounds == null ? null : openingPath(bounds);
-        if (leftOut == null) {
+        RectF bounds = openingLeftOut || leftHalf ? drawnBounds() : null;
+        Path leftOut = bounds == null || !openingLeftOut ? null : openingPath(bounds);
+        if (bounds == null || (leftOut == null && !leftHalf)) {
             super.onDraw(canvas);
             return;
         }
         canvas.save();
-        canvas.clipOutPath(leftOut);
+        // The image's own left half, wherever it is: a large coat reaches past the edges of the view.
+        if (leftHalf) canvas.clipRect(bounds.left, bounds.top, bounds.centerX(), bounds.bottom);
+        if (leftOut != null) canvas.clipOutPath(leftOut);
         super.onDraw(canvas);
         canvas.restore();
     }
@@ -397,6 +532,7 @@ public class PieceImageView extends AppCompatImageView {
     private void hang() {
         Drawable drawable = getDrawable();
         if (!hung || drawable == null) return;
+        if (overTop != null && hangOnShoulders(drawable)) return;
         float frameWidth = getWidth() - getPaddingLeft() - getPaddingRight();
         float frameHeight = getHeight() * reach - getPaddingTop() - getPaddingBottom() - hangFrom;
         float width = drawable.getIntrinsicWidth();
@@ -409,6 +545,36 @@ public class PieceImageView extends AppCompatImageView {
         matrix.postTranslate((frameWidth - width * fit) / 2f,
                 standing ? frameHeight - height * fit : hangFrom);
         setImageMatrix(matrix);
+    }
+
+    /**
+     * Outerwear over the top: its shoulder line a little above the top's, its shoulders a quarter wider
+     * and its middle a little to the left, and smaller again only if it would reach past the bottom of
+     * the view. False when either piece's shoulders are unknown.
+     */
+    private boolean hangOnShoulders(Drawable drawable) {
+        measure();
+        RectF top = overTop;
+        float[] topShoulders = overShoulders;
+        float frameWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        float width = drawable.getIntrinsicWidth();
+        float height = drawable.getIntrinsicHeight();
+        if (top == null || topShoulders == null || shoulderRow < 0 || shoulderHalf <= 0
+                || frameWidth <= 0 || width <= 0 || height <= 0) {
+            return false;
+        }
+        float line = topShoulders[0] - top.height() * OVER_LIFT;
+        float fit = OVER_SHOULDERS * topShoulders[1] / (shoulderHalf * width);
+        float below = height * (1 - shoulderRow); // the part of the photo under the shoulder line
+        float bottom = getHeight() - getPaddingBottom();
+        if (line + below * fit > bottom) fit = (bottom - line) / below;
+        if (fit <= 0) return false;
+        Matrix matrix = new Matrix();
+        matrix.setScale(fit, fit);
+        matrix.postTranslate((frameWidth - width * fit) / 2f - top.width() * OVER_SHIFT,
+                line - shoulderRow * height * fit);
+        setImageMatrix(matrix);
+        return true;
     }
 
     /**

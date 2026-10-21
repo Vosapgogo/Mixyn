@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -91,8 +90,6 @@ public class OutfitCanvasActivity extends BaseActivity {
 
     private static final float NEIGHBOR_ALPHA = 0.25f;
     private static final float NEIGHBOR_SCALE = 0.8f;
-    /** Outerwear is drawn a touch larger than the top it covers, like a jacket worn over a sweater. */
-    private static final float OUTERWEAR_SCALE = 1.08f;
     /** Shoes are drawn smaller than the slot allows, so they sit under the trousers instead of on them. */
     private static final float SHOES_SCALE = 0.7f;
     /**
@@ -279,10 +276,15 @@ public class OutfitCanvasActivity extends BaseActivity {
         bag = new Layer(findViewById(R.id.canvas_bag), false, null);
         bottomPager.setTranslationZ(Z_TUCKED_BOTTOM);
         outerwear.pager.setTranslationZ(Z_OUTERWEAR);
-        // The collar of the piece under the top is drawn a little above the frame, and a dress in the top's
-        // slot reaches down over the bottom's.
+        // The collar of the piece under the top is drawn a little above the frame, a dress in the top's
+        // slot reaches down over the bottom's, and a coat can be wider than its page and its collar can
+        // stand above the frame.
         ((ViewGroup) under.pager.getChildAt(0)).setClipChildren(false);
         ((ViewGroup) topPager.getChildAt(0)).setClipChildren(false);
+        ((ViewGroup) outerwear.pager.getChildAt(0)).setClipChildren(false);
+        // Faded while another layer is chosen, a view is normally drawn through a layer of its own size,
+        // which would cut the coat off at the frame again; its pages don't overlap, so it needs none.
+        outerwear.pager.forceHasOverlappingRendering(false);
         layers.add(under);
         layers.add(outerwear);
         layers.add(bag);
@@ -821,7 +823,7 @@ public class OutfitCanvasActivity extends BaseActivity {
      */
     private void offerLayersExcept(@Nullable ItemDto top) {
         offerExcept(under, underPieces, top, 1f, (image, item) -> placeUnder((PieceImageView) image));
-        offerExcept(outerwear, outerwearPieces, top, OUTERWEAR_SCALE, this::styleOuterwearPage);
+        offerExcept(outerwear, outerwearPieces, top, 1f, this::styleOuterwearPage);
     }
 
     /**
@@ -851,23 +853,19 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
-     * Outerwear shares one frame with the top and the bottom. It hangs from the shoulder line of the top
-     * and is as wide as the top, shoulder to shoulder (the page then makes it a touch larger); how far
-     * down it reaches follows from its photo, a short jacket to the hips, a coat over the bottom, but
-     * never past the end of the bottom. Only the left half is drawn: an open jacket over the left side
-     * of the outfit, the clothes underneath still visible on the right.
+     * Outerwear shares one frame with the top and the bottom. Every jacket's shoulders sit on the top's
+     * shoulders at the same size and place (see PieceImageView); how far down it reaches follows from
+     * its photo, a short jacket to the hips, a coat over the bottom, but never past the end of the
+     * bottom. Only the left half is drawn: an open jacket over the left side of the outfit, the clothes
+     * underneath still visible on the right.
      */
     private void styleOuterwearPage(ImageView image, ItemDto item) {
+        PieceImageView piece = (PieceImageView) image;
         // Outerwear is always worn over something, so an open jacket never shows the inside of its back.
-        ((PieceImageView) image).setOpening(item.opening);
-        ((PieceImageView) image).leaveOpeningOut(true);
-        whenLaidOut(image, () -> {
-            int width = image.getWidth();
-            int height = image.getHeight();
-            image.setPivotX(width / 2f);
-            image.setClipBounds(new Rect(0, 0, width / 2, height));
-            hang((PieceImageView) image, shoulderLine(), topWidth());
-        });
+        piece.setOpening(item.opening);
+        piece.leaveOpeningOut(true);
+        piece.drawLeftHalf(true);
+        whenLaidOut(image, () -> hangOuterwear(piece));
     }
 
     /**
@@ -897,27 +895,19 @@ public class OutfitCanvasActivity extends BaseActivity {
         return page != null && page.itemView instanceof PieceImageView piece ? piece : null;
     }
 
-    /** How far below the top of its slot the top starts: the line outerwear hangs from. */
+    /** How far below the top of its slot the top starts: the line a hat stands on. */
     private float shoulderLine() {
         RectF top = topBounds();
         return top == null ? 0f : Math.max(0f, top.top);
     }
 
-    /** How wide the top that is showing is drawn: the width outerwear takes. 0 while there is no top. */
-    private float topWidth() {
-        RectF top = topBounds();
-        return top == null ? 0f : top.width();
-    }
-
     /** Redraws the layers around the top after it changed (another top, or its image just arrived). */
     private void alignToTop() {
-        float shoulderLine = shoulderLine();
         // A hat sits right above the top, wherever its image begins, so the collar stays in sight.
-        accessorySpots.get(AccessorySpot.HEAD).pager.setTranslationY(shoulderLine);
-        float topWidth = topWidth();
+        accessorySpots.get(AccessorySpot.HEAD).pager.setTranslationY(shoulderLine());
         RecyclerView jackets = (RecyclerView) outerwear.pager.getChildAt(0);
         for (int i = 0; i < jackets.getChildCount(); i++) {
-            if (jackets.getChildAt(i) instanceof PieceImageView piece) hang(piece, shoulderLine, topWidth);
+            if (jackets.getChildAt(i) instanceof PieceImageView piece) hangOuterwear(piece);
         }
         RecyclerView underPages = (RecyclerView) under.pager.getChildAt(0);
         for (int i = 0; i < underPages.getChildCount(); i++) {
@@ -932,9 +922,17 @@ public class OutfitCanvasActivity extends BaseActivity {
         }
     }
 
-    private static void hang(PieceImageView piece, float shoulderLine, float width) {
-        piece.hangFrom(shoulderLine, width);
-        piece.setPivotY(shoulderLine); // a resized jacket grows down from the shoulders, not up over them
+    /** Hangs a jacket over the top that is showing; with no top yet, from the top of the frame. */
+    private void hangOuterwear(PieceImageView piece) {
+        PieceImageView top = topView();
+        RectF bounds = topBounds();
+        if (top != null && bounds != null) {
+            piece.hangOver(top, bounds);
+            return;
+        }
+        piece.hangFrom(0f, 0f);
+        piece.setPivotX(piece.getWidth() / 2f);
+        piece.setPivotY(0f); // a resized jacket grows down from the shoulders, not up over them
     }
 
     /**
