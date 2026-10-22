@@ -12,11 +12,12 @@ to help when you don't know what to wear.
 In the learner's words (edited for language, 2026-10-22):
 
 > I love clothes, and I wanted to build an app around them. I found a problem that almost everyone runs
-> into, again and again: you don't know what to wear. So I made an app where you upload your own clothes
-> and put outfits together from them. If you can't get a look right on your own, an assistant is right
-> there in the outfit screen and suggests how to make it better. And there is a stylist agent that helps
-> with your style as a whole: it tells you how to improve it, puts together several outfit ideas when you
-> don't know what to wear, and much more.
+> into, again and again: you don't know what to wear. It is also about mindful consumption: today people
+> forget what they already have and keep buying new clothes, because they think they have nothing to wear.
+> So I made an app where you upload your own clothes and put outfits together from them. If you can't get
+> a look right on your own, an assistant is right there in the outfit screen and suggests how to make it
+> better. And there is a stylist agent that helps with your style as a whole: it tells you how to improve
+> it, puts together several outfit ideas when you don't know what to wear, and much more.
 
 ## The Unique Kernel
 Your real wardrobe, digitized in seconds, plus an AI stylist that builds a complete look **from those exact items** — in one click on the outfit screen, or around a request like "I want to wear this oversized shirt", "build me an outfit around burgundy" or "dinner with friends in the cold". A generic outfit generator doesn't know your closet or what you're in the mood for; this one does. For bigger questions, a stylist chat knows the same closet: several outfits for an occasion, what you haven't worn for a while, what your style is and how to make it better — always with what you own, never by buying more.
