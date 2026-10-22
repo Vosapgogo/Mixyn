@@ -3,398 +3,432 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mixyn Product Requirements</title>
+<title>Mixyn PRD</title>
 <style>
 :root{
-  --bg:#f4efe7; --card:#ffffff; --ink:#2a2724; --muted:#76706a; --line:#e3dbd0;
-  --soft:#ebe4d9; --ok:#4f6b52; --ok-soft:#e3ebe0; --warn:#8a6a1c; --warn-soft:#f4ead3;
-  --cut:#8b3a2e; --cut-soft:#f3e1dc;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --bg:#faf7f4; --card:#ffffff; --ink:#1f1a17; --muted:#6b625c; --line:#e6ddd5;
+  --accent:#7a1f3d; --accent-soft:#f3e3e8; --ok:#2f6b4f; --ok-soft:#e2f0e8;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#1a1714; --card:#24201c; --ink:#efe8df; --muted:#a79e94; --line:#3a342e;
-    --soft:#2d2823; --ok:#9cc3a0; --ok-soft:#24301f; --warn:#e0c078; --warn-soft:#342b17;
-    --cut:#e39c8e; --cut-soft:#3a231f;
+    --bg:#16120f; --card:#211b18; --ink:#f1ebe6; --muted:#a89d95; --line:#3a312c;
+    --accent:#e07a9a; --accent-soft:#3a2129; --ok:#7cc7a1; --ok-soft:#1e3128;
   }
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
-main{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:900px;margin:0 auto;padding:40px 16px 80px;overflow-wrap:anywhere}
 .status{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   background:var(--ok-soft);color:var(--ok);padding:3px 10px;border-radius:99px}
-h1{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.05;margin:14px 0 6px}
-.lede{font-size:19px;color:var(--muted);margin:0 0 12px}
-.expand{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:24px 0}
-.expand b{font-family:var(--serif);font-weight:500;font-size:18px}
-h2{font-family:var(--serif);font-weight:500;font-size:26px;margin:48px 0 14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
-svg{width:100%;height:auto;display:block}
-svg text{font-family:var(--sans)}
-/* stepper */
-.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.stepper button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);
-  padding:6px 12px;border-radius:99px;cursor:pointer}
-.stepper button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.panel{display:none}
-.panel.on{display:block}
-.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 4px}
-.src{font-size:12px;color:var(--muted);margin-bottom:12px}
-.src code{background:var(--soft);padding:1px 6px;border-radius:6px}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:680px){.cols{grid-template-columns:1fr} h1{font-size:36px}}
-.label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
-ul.ac{list-style:none;padding:0;margin:0}
-ul.ac li{padding:6px 0 6px 28px;position:relative;border-bottom:1px dashed var(--line);font-size:15px}
-ul.ac li:last-child{border-bottom:0}
-ul.ac li::before{content:"";position:absolute;left:2px;top:11px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:4px}
-ul.st{margin:0;padding-left:18px;font-size:15px}
-ul.st li{margin:4px 0}
-.assume{font-size:12px;background:var(--warn-soft);color:var(--warn);padding:1px 7px;border-radius:99px;margin-right:4px}
-.navbtns{display:flex;justify-content:space-between;margin-top:16px}
-.navbtns button{font:inherit;font-size:14px;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 0}
-.navbtns button:disabled{opacity:.3;cursor:default}
-/* look & feel */
-.swatches{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
-.sw{width:88px}
-.sw i{display:block;height:54px;border-radius:10px;border:1px solid var(--line)}
-.sw span{font-size:12px;color:var(--muted)}
-.typo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
-.typo div{border:1px solid var(--line);border-radius:10px;padding:12px}
-.typo .s{font-family:var(--serif);font-size:26px}
-/* boundary */
-details{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;overflow:hidden}
-summary{cursor:pointer;padding:14px 18px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:400;font-size:20px}
-details[open] summary::after{content:"–"}
-details ul{margin:0;padding:0 22px 16px 40px}
-details li{margin:5px 0}
-.pill{font-size:12px;padding:2px 10px;border-radius:99px;font-weight:600}
-.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-cut{background:var(--cut-soft);color:var(--cut)}
-.note{font-size:14px;color:var(--muted)}
+h1{font-size:40px;line-height:1.1;margin:12px 0 16px;letter-spacing:-.02em}
+h2{font-size:24px;line-height:1.25;margin:44px 0 12px;padding-top:20px;border-top:1px solid var(--line)}
+h3{font-size:19px;margin:28px 0 8px}
+h4{font-size:16px;margin:22px 0 6px;color:var(--muted)}
+p,li{max-width:76ch}
+ul,ol{padding-left:24px}
+li{margin:4px 0}
+li.check{list-style:none;position:relative}
+li.check::before{content:"";position:absolute;left:-22px;top:.45em;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto}
+pre code{border:0;padding:0;background:none}
+blockquote{margin:12px 0;padding:12px 16px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0}
+.table{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+a{color:var(--accent)}
+.note{font-size:14px;color:var(--muted);margin-top:40px}
+@media (max-width:640px){h1{font-size:32px}}
 </style>
 </head>
 <body>
 <main>
-  <span class="status">Approved</span>
-  <h1>Mixyn</h1>
-  <p class="lede">Product requirements for an AI stylist that builds outfits from the clothes you actually own, for anyone who wants to shop less and wear more of what they have.</p>
-
-  <div class="expand">
-    <b>Scope said: “real accounts from the start” and “AI outfit generation.”</b><br>
-    Now we know exactly what they mean: a real email-and-password account whose wardrobe lives in a database, an AI that fills in only
-    category and color, a four-slot canvas you can swipe piece by piece, and a stylist that falls back gracefully
-    instead of failing.
-  </div>
-
-  <h2>The journey</h2>
-  <div class="card">
-    <svg viewBox="0 0 860 330" role="img" aria-label="Journey: Splash, then Welcome and Create Account or Log In on first visit or straight to Wardrobe on return. From Wardrobe, Add clothes leads to processing and item card, back to wardrobe. Create outfit opens the canvas with random outfit, swipe, or Generate with AI, then Save to the Outfits tab.">
-      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
-      <g font-size="13">
-      <!-- row 1 -->
-      <rect x="10" y="20" width="110" height="52" rx="10" fill="var(--soft)" stroke="var(--line)"/>
-      <text x="65" y="51" text-anchor="middle" fill="var(--ink)" font-weight="600">Splash</text>
-      <rect x="170" y="20" width="130" height="52" rx="10" fill="var(--card)" stroke="var(--line)"/>
-      <text x="235" y="44" text-anchor="middle" fill="var(--ink)" font-weight="600">Welcome</text>
-      <text x="235" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">first visit only</text>
-      <rect x="350" y="20" width="150" height="52" rx="10" fill="var(--card)" stroke="var(--line)"/>
-      <text x="425" y="44" text-anchor="middle" fill="var(--ink)" font-weight="600">Sign up / Log in</text>
-      <text x="425" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">email + password · saved to DB</text>
-      <line x1="120" y1="46" x2="166" y2="46" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <line x1="300" y1="46" x2="346" y2="46" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <!-- wardrobe hub -->
-      <rect x="330" y="130" width="190" height="70" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
-      <text x="425" y="160" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="15">Wardrobe</text>
-      <text x="425" y="180" text-anchor="middle" fill="var(--muted)" font-size="11">Clothes · Outfits tabs</text>
-      <line x1="425" y1="72" x2="425" y2="126" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <path d="M65 72 C65 165 200 165 326 165" fill="none" stroke="var(--muted)" stroke-dasharray="4 3" marker-end="url(#ar)"/>
-      <text x="120" y="150" fill="var(--muted)" font-size="11">returning user</text>
-      <!-- add clothes branch -->
-      <rect x="10" y="250" width="140" height="56" rx="10" fill="var(--card)" stroke="var(--line)"/>
-      <text x="80" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">Add clothes</text>
-      <text x="80" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">gallery photo</text>
-      <rect x="175" y="250" width="140" height="56" rx="10" fill="var(--card)" stroke="var(--line)"/>
-      <text x="245" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">Processing</text>
-      <text x="245" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">background removed</text>
-      <line x1="150" y1="278" x2="171" y2="278" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <path d="M330 190 C200 200 80 210 80 246" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <text x="150" y="220" fill="var(--muted)" font-size="11">+ menu</text>
-      <path d="M315 278 C360 278 380 240 400 204" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <text x="340" y="252" fill="var(--muted)" font-size="11">item card</text>
-      <!-- outfit branch -->
-      <rect x="560" y="120" width="160" height="90" rx="12" fill="var(--card)" stroke="var(--line)"/>
-      <text x="640" y="146" text-anchor="middle" fill="var(--ink)" font-weight="600">Outfit canvas</text>
-      <text x="640" y="166" text-anchor="middle" fill="var(--muted)" font-size="11">random start</text>
-      <text x="640" y="182" text-anchor="middle" fill="var(--muted)" font-size="11">swipe a piece</text>
-      <text x="640" y="198" text-anchor="middle" fill="var(--ink)" font-size="11" font-weight="600">Generate with AI + hint</text>
-      <line x1="520" y1="165" x2="556" y2="165" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <rect x="720" y="250" width="130" height="56" rx="10" fill="var(--ok-soft)" stroke="var(--ok)"/>
-      <text x="785" y="274" text-anchor="middle" fill="var(--ok)" font-weight="700">Save</text>
-      <text x="785" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">→ Outfits tab</text>
-      <path d="M680 210 C690 240 710 260 716 270" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
-      <path d="M720 290 C600 320 470 300 440 204" fill="none" stroke="var(--muted)" stroke-dasharray="4 3" marker-end="url(#ar)"/>
-      </g>
-    </svg>
-  </div>
-
-  <h2>Screen by screen</h2>
-  <div class="card">
-    <div class="stepper" role="tablist" id="stepper"></div>
-    <div id="panels">
-
-      <section class="panel" data-name="Account">
-        <h3>Account &amp; session</h3>
-        <div class="src">develops <code>scope.md › The POC Boundary</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li>Splash on every launch.</li>
-              <li>Welcome: logo, “Mixyn,” description, Create Account / Log In.</li>
-              <li>Create Account: Name, Email, Password, City.</li>
-              <li>Log In: Email + Password.</li>
-              <li>Welcome/success message, then the wardrobe.</li>
-              <li>Profile: name, email, city, and <b>Log out</b>.</li>
-            </ul>
-            <div class="label">States</div>
-            <ul class="st"><li>Returning user: Splash → Wardrobe, skipping Welcome.</li>
-              <li>Wrong password or email already taken: a friendly error on the form.</li>
-              <li><span class="assume">assumption</span>No connection: “Can't connect right now, try again.”</li></ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>First launch shows Splash → Welcome.</li>
-              <li>Create Account saves a real user in the database, then shows the wardrobe.</li>
-              <li>Passwords are never stored in plain text.</li>
-              <li>Log out, then Log In with email + password, brings back the same clothes and outfits.</li>
-              <li>Each user sees only their own data.</li>
-              <li>Reopening skips Welcome.</li>
-              <li>City is stored with the user.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" data-name="Add clothes">
-        <h3>Adding clothes</h3>
-        <div class="src">develops <code>scope.md › The POC Boundary</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li>Empty closet: open white wardrobe, three empty hangers, closed drawers. “Your closet is empty.”</li>
-              <li>Central <b>+</b> → Add clothes → pick from gallery.</li>
-              <li>Processing → “Background removed · 1/1 completed” → View item.</li>
-            </ul>
-            <div class="label">States</div>
-            <ul class="st"><li><span class="assume">assumption</span>Unprocessable photo: a friendly error with retry, and nothing half-saved.</li></ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>Empty state shows the illustration, copy, and + Add clothes.</li>
-              <li>+ menu offers Add clothes and Create outfit; OutfitCHECK shows disabled with “coming soon.”</li><li>Calendar and Friends tabs show disabled with “coming soon.”</li>
-              <li>Processing screen shows progress, then View item.</li>
-              <li>Item appears with its original background fully removed.</li>
-              <li>Item shows in the Clothes grid afterward and is saved to the database.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" data-name="Item card">
-        <h3>AI item details</h3>
-        <div class="src">develops <code>scope.md › The Unique Kernel</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li>Large item image on white.</li>
-              <li>Name (“Add a name…” + Edit).</li>
-              <li><b>Category</b> and <b>Color</b> filled in by the AI.</li>
-              <li>Tags and Season: optional, manual.</li>
-            </ul>
-            <div class="label">Categories</div>
-            <ul class="st"><li>Tops · Bottoms · Shoes · Outerwear</li></ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>Category is auto-filled with one of the four.</li>
-              <li>Color is auto-filled (swatch + name).</li>
-              <li>Correcting category or color sticks.</li>
-              <li>Empty name/tags/season is fine.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" data-name="Canvas">
-        <h3>Outfit canvas &amp; carousel</h3>
-        <div class="src">develops <code>scope.md › The Core Loop</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li>White canvas: Top / Bottom / Shoes stacked like a silhouette.</li>
-              <li>Outerwear overlaps the Top.</li>
-              <li>A random outfit is already loaded.</li>
-              <li>Swipe any piece: only that piece changes.</li>
-            </ul>
-            <div class="label">States</div>
-            <ul class="st"><li>Missing category: faded outline + “Add shoes to complete the look.”</li>
-              <li><span class="assume">assumption</span>If a category has only one item, swiping stays on it, with no error.</li></ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>Opening shows a random Top, Bottom, and Shoes.</li>
-              <li>Outerwear shows as an overlapping layer.</li>
-              <li>Swiping pants changes only the pants.</li>
-              <li>An empty category shows the placeholder with +.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" data-name="AI stylist">
-        <h3>AI stylist <span class="note">(the “aha” beat)</span></h3>
-        <div class="src">develops <code>scope.md › The Unique Kernel</code> · <code>What “Working” Looks Like</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li>Optional hint field: “burgundy,” “this oversized shirt.”</li>
-              <li>Generate with AI replaces the canvas with a full look.</li>
-            </ul>
-            <div class="label">States</div>
-            <ul class="st">
-              <li>No match: toast “We couldn't find anything burgundy. Here is another stylish option!” and a look anyway.</li>
-              <li>Missing category: the same placeholder as the canvas.</li>
-              <li><span class="assume">assumption</span>May include outerwear if you own some.</li>
-            </ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>An empty hint produces a full look from your own items.</li>
-              <li>A color hint favors matching items; an item hint builds around that item.</li>
-              <li>An unmatched hint shows the toast plus a fallback look.</li>
-              <li>It never uses an item you don't own.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" data-name="Save">
-        <h3>Saving outfits</h3>
-        <div class="src">develops <code>scope.md › The Core Loop</code></div>
-        <div class="cols">
-          <div>
-            <div class="label">What you see</div>
-            <ul class="st">
-              <li><b>Save</b> at the bottom of the canvas.</li>
-              <li>The outfit appears in the Outfits tab.</li>
-            </ul>
-            <div class="label">Not yet</div>
-            <ul class="st"><li>“Wear it today,” Calendar, and Collections are deferred.</li></ul>
-          </div>
-          <div>
-            <div class="label">You'll know it works when</div>
-            <ul class="ac">
-              <li>Save stores a manual or AI-generated outfit.</li>
-              <li>The Outfits tab shows its pieces.</li>
-              <li>It's still there after reopening the app and after logging out and back in.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-    </div>
-    <div class="navbtns"><button id="prev">← Previous</button><button id="next">Next →</button></div>
-  </div>
-
-  <h2>Look &amp; feel</h2>
-  <div class="card">
-    <p style="margin-top:0"><b>Japandi</b>: minimalist, clean, and functional, but warm, cozy, and calming. It should feel like a digital fashion magazine, not a heavy tech app. Think COS or Zara structure with the warmth of Pinterest minimalists.</p>
-    <div class="swatches">
-      <div class="sw"><i style="background:#efe7da"></i><span>warm sand bg</span></div>
-      <div class="sw"><i style="background:#ffffff"></i><span>white cards</span></div>
-      <div class="sw"><i style="background:#2b2926"></i><span>charcoal ink</span></div>
-      <div class="sw"><i style="background:#c19a6b"></i><span>camel*</span></div>
-      <div class="sw"><i style="background:#8f8a5c"></i><span>khaki*</span></div>
-      <div class="sw"><i style="background:#5b7291"></i><span>denim*</span></div>
-      <div class="sw"><i style="background:#a0522d"></i><span>rust*</span></div>
-    </div>
-    <p class="note">* Accents come from the clothes, not the app.</p>
-    <div class="typo">
-      <div><div class="s">Your closet is empty</div><span class="note">Serif: logo &amp; headers</span></div>
-      <div><div style="font-size:15px">Add your first piece. Snap a photo and we'll clean up the background for you.</div><span class="note">Sans-serif: UI &amp; body</span></div>
-    </div>
-  </div>
-
-  <h2>Boundary</h2>
-  <details open><summary><span class="pill p-ok">Building</span> What we're building</summary>
-    <ul>
-      <li>Splash, Welcome, and real Create Account / Log In (email + password) with a persistent session and Log out</li>
-      <li>Database storing users, clothes, and outfits, each tied to its owner</li>
-      <li>Wardrobe with Clothes and Outfits tabs, including the illustrated empty state</li>
-      <li>Gallery upload with real AI background removal</li>
-      <li>Item card with AI Category + Color (editable); optional Name, Tags, Season</li>
-      <li>Canvas: random start, per-piece swipe, outerwear layer, placeholders</li>
-      <li>AI stylist with optional hint and graceful fallback</li>
-      <li>Save → Outfits tab, persisting across sessions</li>
-      <li>Deferred tabs visible but disabled (“coming soon”); Profile has account info and Log out</li>
-      <li>Japandi styling</li>
-    </ul></details>
-  <details><summary><span class="pill p-warn">Deferred</span> Not in this proof of concept</summary>
-    <ul>
-      <li>Password reset, email verification, Google/Apple sign-in</li>
-      <li>Live weather: city is stored for later</li>
-      <li>Hats and Bags: hats need weather; bags don't show off layering</li>
-      <li>Camera capture: gallery is enough for the demo</li>
-      <li>“Wear it today,” Calendar, streaks, Collections</li>
-      <li>OutfitCHECK, Friends, sharing, ratings, leaderboard</li>
-      <li>AI auto-filling Tags, Season, Name</li>
-    </ul></details>
-  <details><summary><span class="pill p-cut">Non-goals</span> Things Mixyn won't do</summary>
-    <ul>
-      <li>No public feed or public profiles</li>
-      <li>No “one month later” time-skip demo</li>
-      <li>No shopping or recommending new clothes: you style only what you own</li>
-      <li>No production deployment requirement</li>
-    </ul></details>
-
-  <h2>Open questions</h2>
-  <div class="card">
-    <ul class="st">
-      <li><b>Outerwear in AI looks:</b> <span class="assume">assumption</span>optional, added if you own some.</li>
-      <li><b>Home tab = Wardrobe:</b> <span class="assume">assumption</span>yes.</li>
-    </ul>
-  </div>
-
-  <p class="note" style="margin-top:32px">Companion to <code>devpost/prd.md</code>. The Markdown file is the source of truth.</p>
+<span class="status">Approved</span>
+<h1>Mixyn — Product Requirements</h1>
+<p>An app for the clothes you already own: you put outfits together from your own wardrobe, an AI assistant on the outfit screen builds or improves the look, and a stylist chat helps with your style as a whole — for someone who cares about a versatile wardrobe and needs a quick decision on bad-mood mornings, and for anyone who wants to shop less and wear more of what they already own. Source: <code>scope.md &gt; The Idea</code>, <code>scope.md &gt; The Unique Kernel</code>, <code>scope.md &gt; Who It&#x27;s For</code>.</p>
+<h2>The Core Journey</h2>
+<p>Source: <code>scope.md &gt; The Core Loop</code>, <code>scope.md &gt; What &quot;Working&quot; Looks Like</code>.</p>
+<ol>
+<li><strong>Open the app.</strong> A splash/loading screen appears every time.
+</li>
+<li><strong>First visit:</strong> the Welcome screen shows the Mixyn logo and name, a short description, and <strong>Create Account</strong> / <strong>Log In</strong>.
+</li>
+<li><strong>Create Account:</strong> enter Name, Email, Password, and City → the account is created in the database → a welcome/success message → land on the main screen.
+</li>
+<li><strong>Empty wardrobe:</strong> the Clothes tab shows the empty-wardrobe illustration, "Your closet is empty," and <strong>+ Add clothes</strong>.
+</li>
+<li><strong>Add clothes:</strong> tap the central <strong>+</strong> → <strong>Add clothes</strong> → pick a photo from the gallery → processing screen shows "Background removed · 1/1 completed" → <strong>View item</strong>.
+</li>
+<li><strong>Item card:</strong> the item on a clean light background. The AI has filled in its <strong>type</strong> (which sets the category) and up to three <strong>colors</strong>; the user can correct them and optionally add a name, tags, and seasons.
+</li>
+<li>Repeat until the wardrobe has tops, bottoms, shoes (and optionally outerwear, bags and accessories).
+</li>
+<li><strong>Create outfit:</strong> tap <strong>+</strong> → <strong>Create outfit</strong>. A random outfit from the wardrobe is already on the canvas.
+</li>
+<li><strong>Mix and match:</strong> swipe left or right on any single piece to change only that piece.
+</li>
+<li><strong>Ask AI:</strong> tap the round <strong>Ask AI</strong> button on the canvas → optionally describe what you want ("burgundy", "this oversized shirt", "dinner date in the cold") → <strong>Generate look</strong> → the canvas is replaced with an AI-picked look from the user's own items.
+</li>
+<li><strong>Save:</strong> tap <strong>Next</strong> → "Your fit for today" shows the look with its pieces, colors, category and seasons → <strong>Save</strong> → the outfit appears in the <strong>Outfits</strong> tab. <strong>Wear it today</strong> saves it too and puts it on today in the <strong>Calendar</strong>.
+</li>
+<li><strong>Returning visit:</strong> splash → straight to the main screen, with wardrobe and saved outfits still there (loaded from the database).
+</li>
+<li><strong>Log out and back in:</strong> Profile → <strong>Log out</strong> → Welcome. <strong>Log In</strong> with email + password → the same wardrobe and outfits come back.
+</li>
+<li><strong>Stylist chat:</strong> <strong>Stylist</strong> in the bottom bar → ask "3 outfits for a date" or "how can I improve my style?" → the stylist answers with advice and outfit cards made of the user's clothes; a card opens on the canvas.
+</li></ol>
+<p>Success = step 11: an outfit the user likes, built from their own clothes, saved.</p>
+<h2>Screens and Layout</h2>
+<ul>
+<li><strong>Splash</strong> — loading screen on every launch.
+</li>
+<li><strong>Welcome</strong> — logo, "Mixyn," one-line description, <strong>Create Account</strong> and <strong>Log In</strong> buttons. Shown only when no session exists.
+</li>
+<li><strong>Create Account</strong> — Name, Email, Password, City. Success message after creating.
+</li>
+<li><strong>Log In</strong> — Email + Password.
+</li>
+<li><strong>Main screen (Wardrobe)</strong> — two tabs: <strong>Clothes</strong> (item grid, or the empty state) and <strong>Outfits</strong> (saved outfits). In the header, a magnifier opens <strong>search</strong> and the three lines open the <strong>filter</strong> of the tab that is showing.
+</li>
+<li><strong>Bottom navigation</strong> — Home, Calendar, large black central <strong>+</strong>, Stylist, Profile. (Friends had this place in the design; it is the next step after the PoC.)
+</li>
+<li><strong>Calendar</strong> — one month at a time; a day on which an outfit was worn shows that outfit's picture, today has a frame. The days of the neighboring months fill the first and last week on beige. A calendar icon opens a month and year picker.
+</li>
+<li><strong>Profile</strong> — the photo, name, @username · city, three tiles (pieces, outfits saved, days worn), the closet's palette and most used tags, <strong>City for weather</strong> (opens the weather page), <strong>Log out</strong> and <strong>Delete account</strong>; the pencil opens <strong>Edit profile</strong>.
+</li>
+<li><strong>Weather page</strong> — the city's weather now, advice for today, the next hours and the next 7 days.
+</li>
+<li><strong>Stylist</strong> — a chat with the AI stylist, with suggested questions to start.
+</li>
+<li><strong>+ menu</strong> — Add clothes and Create outfit.
+</li>
+<li><strong>Add clothes flow</strong> — gallery picker → processing screen → <strong>View item</strong>.
+</li>
+<li><strong>Item card</strong> — large item image; name ("Add a name…" + pencil) and <strong>Edit</strong> for the photo; Type with its category (e.g. "Blazer · Outerwear &gt;"); Tags (Casual, Night out, Streetwear, Date night, Work, Favorites, Sports, Cozy); Colors (dots + names, e.g. "Khaki, Brown"); Seasons; Open / Closed front for tops and outerwear; <strong>Remove from wardrobe</strong>.
+</li>
+<li><strong>Create outfit (canvas)</strong> — pieces stacked vertically like a silhouette: Top, Bottom, Shoes, with layers around them (a piece under the top, outerwear over its left half, a bag, accessories in their places). The header has back, a filter, the weather chip and <strong>Next</strong>; the bottom panel has the tiles <strong>Under layer</strong>, <strong>Outerwear</strong>, <strong>Bag</strong>, <strong>Accessories</strong> and the round <strong>Ask AI</strong> button. <strong>Next</strong> leads to the outfit card.
+</li>
+<li><strong>Outfit card</strong> — "Your fit for today" with the date and weather; the look on a white card with the "mixyn" mark; then, like the item card, the clothes in the outfit (names), its colors, its category and its seasons; <strong>Save</strong> and <strong>Wear it today</strong>. A saved outfit opens as the same card, with <strong>Delete outfit</strong>.
+</li></ul>
+<h2>Look and Feel</h2>
+<ul>
+<li><strong>Mood:</strong> Japandi — minimalist, clean, functional, but warm, cozy, and calming. Like a curated Instagram feed or a digital fashion magazine, not a heavy tech app.
+</li>
+<li><strong>Colors:</strong> warm beige / off-white / light sand background; clean white cards and canvas so background-removed items pop; dark charcoal / soft black for text and primary buttons (softer than pure <code>#000</code>). No brand accent color — the clothes' own earthy tones (camel, khaki, denim, rust) are the accents.
+</li>
+<li><strong>Type:</strong> elegant classic serif for the Mixyn logo and main headers (editorial, high-fashion); legible modern sans-serif for buttons, tags, and body.
+</li>
+<li><strong>References:</strong> the clean, structural UI of the COS and Zara apps + the warm, effortless feel of minimalist lifestyle creators on Pinterest/Instagram.
+</li>
+<li><strong>Signature details:</strong> the white open-wardrobe illustration with empty hangers and closed drawers; the big black central <strong>+</strong>.
+</li></ul>
+<h2>Features and Behavior</h2>
+<h3>Account and Session</h3>
+<p>Source: <code>scope.md &gt; The POC Boundary</code> ("Real accounts from the start"). Real accounts backed by a database — built from the start, not added later.</p>
+<ul>
+<li class="check">First launch with no session shows Splash → Welcome with Create Account / Log In.
+</li>
+<li class="check">Create Account takes Name, Email, Password, and City; after submitting, the account exists in the database, a welcome/success message appears, then the main screen.
+</li>
+<li class="check">Passwords are never stored or shown in plain text.
+</li>
+<li class="check">Log In with the correct email + password opens that user's own wardrobe and outfits.
+</li>
+<li class="check">Wrong email or password shows a friendly error ("Email or password is incorrect"); nothing else happens.
+</li>
+<li class="check">Creating an account with an email that already exists shows a friendly error and suggests Log In.
+</li>
+<li class="check">Closing and reopening the app goes Splash → main screen directly, skipping Welcome (session persists).
+</li>
+<li class="check">Profile → <strong>Log out</strong> asks "Log out?", ends the session and shows a goodbye screen ("You're logged out. We hope to see you again soon.") with a way back to Welcome.
+</li>
+<li class="check">Each user sees only their own clothes and outfits — never another user's.
+</li>
+<li class="check">City is stored with the user, with its coordinates, and gives the weather on the canvas and the weather page.
+</li></ul>
+<h3>Profile</h3>
+<p>Source: learner decision on 2026-10-20, after the Stylist chat (design page 19), with a cut-off on the evening of 23 October; after that only checks and the submission.</p>
+<ul>
+<li class="check">Profile shows the avatar (or a placeholder), the name, @username · city, three tiles (pieces, outfits saved, days worn), the closet's palette (the colors of the user's clothes) and the tags used most.
+</li>
+<li class="check">The pencil opens <strong>Edit profile</strong>: photo (from the gallery), name, username, city (with suggestions, as at sign-up) and a new password (with the current one). Wrong input shows an error under its field, as at sign-up; a username someone else has says so.
+</li>
+<li class="check">The avatar is kept with the account, so friends can see it once friends exist (the next step, see Possible Later Enhancements).
+</li>
+<li class="check"><strong>City for weather</strong> shows the city and today's weather there, and lets the user change the city.
+</li>
+<li class="check"><strong>Delete account</strong> asks "Delete your account?" (everything goes: clothes, outfits, calendar) and then removes the account and all its data; a goodbye screen follows, as after logging out.
+</li>
+<li class="check">Streaks, the morning outfit reminder and "who sees my fits" are later (they need the calendar streaks, notifications and friends).
+</li></ul>
+<h3>Adding Clothes</h3>
+<p>Source: <code>scope.md &gt; The POC Boundary</code> ("Upload clothes with AI background removal").</p>
+<ul>
+<li class="check">Empty Clothes tab shows the wardrobe illustration, "Your closet is empty," "Add your first piece. Snap a photo and we'll clean up the background for you," and <strong>+ Add clothes</strong>.
+</li>
+<li class="check">Central <strong>+</strong> opens a menu containing <strong>Add clothes</strong> and <strong>Create outfit</strong>.
+</li>
+<li class="check"><strong>Stylist</strong> in the bottom nav opens the Stylist chat (Friends, which had this place in the design, is the next step after the PoC).
+</li>
+<li class="check">Add clothes lets the user pick a photo from the gallery (camera not required for the PoC).
+</li>
+<li class="check">A processing screen shows progress, then "Background removed · 1/1 completed" and a <strong>View item</strong> button.
+</li>
+<li class="check">The item card shows the photo with its original background fully removed, on a clean light background.
+</li>
+<li class="check">The item appears in the Clothes tab grid afterward and is saved to the user's account in the database.
+</li>
+<li class="check">One photo is added at a time: choosing several in the gallery shows "One photo at a time" and uploads nothing.
+</li>
+<li class="check">A photo that isn't a single clothing item (a person wearing clothes, several items, not clothing) is not added; the screen explains "Only one item, please" and offers to choose another photo.
+</li></ul>
+<h3>AI Item Details</h3>
+<p>Source: <code>scope.md &gt; The Unique Kernel</code>.</p>
+<ul>
+<li class="check">After upload, the <strong>type</strong> is filled automatically, and with it the <strong>category</strong>: Top, Bottom, Shoes, Outerwear, Bag or Accessory.
+</li>
+<li class="check">After upload, up to three <strong>colors</strong> are filled automatically (dots + color names).
+</li>
+<li class="check">The user can change the type and the colors if the AI got them wrong; the change sticks.
+</li>
+<li class="check">Name, Tags, and Seasons are optional manual fields; leaving them empty is fine. Several seasons can be chosen (all four, or "All", is saved as "All").
+</li>
+<li class="check">The item card's <strong>Edit</strong> button opens "Edit photo": size (50–150%), rotate left/right 90°, mirror, Reset and Done, with a live preview; the AI does not rotate photos.
+</li>
+<li class="check">Each item has a <strong>type</strong> from a fixed list (Blazer, Jeans, Sneakers…). The AI picks it at upload; the user changes it by typing the first letters and choosing a suggestion. The type decides the big category (Top / Bottom / Shoes / Outerwear / Bag / Accessory), and the outfit canvas works by the big category, so every kind of outerwear shows up in the Outerwear layer.
+</li>
+<li class="check">An item can have up to <strong>three colors</strong> from a fixed palette, shown as dots with names ("Brown, White"). The AI picks them at upload; the user changes them with chips, like tags.
+</li></ul>
+<h3>Outfit Canvas and Carousel</h3>
+<p>Source: <code>scope.md &gt; The Core Loop</code>.</p>
+<ul>
+<li class="check">Opening Create outfit shows a random outfit from the user's wardrobe: one Top, one Bottom, one Shoes, stacked vertically.
+</li>
+<li class="check">Outerwear appears as half a jacket over the left side of the Top, so the top stays visible. It is put on with the <strong>Outerwear</strong> tile (or by the stylist); <strong>Under layer</strong>, <strong>Bag</strong> and <strong>Accessories</strong> work the same way, and a layer the closet has nothing for offers to add one.
+</li>
+<li class="check">Swiping left/right on a piece changes only that piece to another item of the same category; all other pieces stay.
+</li>
+<li class="check">If a category has no items, its slot shows a faded placeholder outline with a small <strong>+</strong> and "Add shoes to complete the look" (wording adapted to the category).
+</li>
+<li class="check">A filter on the canvas narrows each carousel to the <strong>Type</strong> and <strong>Color</strong> chosen for its category (Tops: sweater, red; Bottoms: trousers, blue); new choices add to the ones made before. A slot the filter leaves empty says "No shoes match your filter"; the filter can be cleared at any time and is gone when the canvas is closed.
+</li></ul>
+<h3>AI Stylist</h3>
+<p>Source: <code>scope.md &gt; The Unique Kernel</code>, <code>scope.md &gt; What &quot;Working&quot; Looks Like</code> (the "aha" beat).</p>
+<ul>
+<li class="check"><strong>Ask AI</strong> with an empty request replaces the canvas with a complete AI-picked look (Top, Bottom, Shoes, and layers when they suit it) using only items in the user's wardrobe.
+</li>
+<li class="check">With a hint (e.g. "burgundy"), the generated look favors items matching that color or vibe; with a specific-item hint ("this oversized shirt"), the look is built around that item.
+</li>
+<li class="check">The request can be a full description or an occasion ("job interview", "first date", "gym"), in any language; the stylist uses each item's type, tags, colors and seasons to choose.
+</li>
+<li class="check">The stylist remembers the earlier requests of the current styling session, so a follow-up like "other shoes" or "warmer" changes only what was asked; <strong>Start over</strong> forgets them.
+</li>
+<li class="check">The outfit screen shows the current weather in the user's city ("13° · cool"), and the stylist dresses for it unless the request sets another context.
+</li>
+<li class="check">If nothing fits the request, a friendly toast appears — "Nothing in your closet quite fits “burgundy”. Here is another stylish option!" — and a look from available items is shown anyway.
+</li>
+<li class="check">The AI never places an item the user doesn't own.
+</li>
+<li class="check">Missing categories show the same placeholder as the carousel.
+</li></ul>
+<h3>Saving Outfits</h3>
+<p>Source: <code>scope.md &gt; The Core Loop</code>.</p>
+<ul>
+<li class="check"><strong>Next</strong> on the canvas opens "Your fit for today": the look as on the canvas (layers included), the date and the weather.
+</li>
+<li class="check">Every outfit has a top, bottoms and shoes; the layers are optional. Without one of the three, Next says which is missing ("Add shoes to complete the look") and offers to add it, and the backend refuses to save or update it.
+</li>
+<li class="check">A dress replaces the bottoms: on the canvas it hangs over the place of the bottoms like a long coat, and the bottoms carousel starts on an empty page; swiping it still offers leggings or jeans to wear under the dress. A dress and shoes are a complete outfit.
+</li>
+<li class="check">Under the picture the card lists the clothes in the outfit by name, the outfit's colors (taken from its clothes), and lets the user choose its category (Casual, Work, Date night…) and its seasons.
+</li>
+<li class="check"><strong>Save</strong> stores the outfit (manual or AI-generated) and opens the <strong>Outfits</strong> tab, where it appears as a picture; tapping it opens its card.
+</li>
+<li class="check">On a saved outfit's card the category and seasons can be changed, and <strong>Delete outfit</strong> removes it after asking "Delete this outfit?".
+</li>
+<li class="check"><strong>Wear it today</strong> saves the outfit and puts it on today in the <strong>Calendar</strong>; on an already saved outfit it only puts it on today. A day holds one outfit: wearing another one replaces it.
+</li>
+<li class="check">The Calendar shows the month with the worn outfits on their days; tapping one opens its card.
+</li>
+<li class="check">Saved outfits and the calendar are still there after closing and reopening the app, and after logging out and back in.
+</li>
+<li class="check">Removing a piece from the wardrobe takes it out of the saved outfits that had it; the outfits stay.
+</li>
+<li class="check"><strong>Edit</strong> on a saved outfit opens the canvas with it on; after Next the user chooses <strong>Save as new</strong> (the outfit stays as it was) or <strong>Update</strong> (the same outfit gets the new look).
+</li>
+<li class="check">Days on which an outfit was already worn keep showing it as it was, also after it is updated; such a day opens the outfit "As you wore it", which can't be changed and can open the outfit as it is now. Deleting the outfit removes those days too.
+</li>
+<li class="check">The same outfit (the same pieces in the same places) can't be saved twice; the user is told and can open the one that exists.
+</li>
+<li class="check">Changing a piece's type on its card checks the saved outfits: where the piece can't be worn in its place any more and its new place is free, it moves there; if that place is taken (a T-shirt turned skirt, in an outfit with jeans), an error names the outfit and nothing changes.
+</li>
+<li class="check">In the calendar, the cells before the 1st and after the last day show the neighboring months' dates on beige and can't be tapped; the calendar icon (or the month's name) opens a picker with a year and its months, and months that haven't come yet can't be chosen.
+</li></ul>
+<h3>Stylist Chat</h3>
+<p>Source: learner decision on 2026-10-20 (a light version, with a cut-off on the evening of 22 October; otherwise a plain Stylist button that opens Ask AI).</p>
+<ul>
+<li class="check"><strong>Stylist</strong> in the bottom bar (in place of Friends, the next step after the PoC) opens a chat with the AI stylist.
+</li>
+<li class="check">The user writes a request in their own words and language: "3 outfits for a date", "what goes well with this sweater", "show all my black pieces", "which pieces suit me best", "what haven't I worn for a long time", "describe my style from my clothes", "how can I improve my style" (tips only with what they own, never buying new clothes).
+</li>
+<li class="check">The stylist answers with a short message and, where it helps, up to 3 outfit cards made only of the user's own clothes (each a complete outfit), or pictures of the matching pieces (up to 12).
+</li>
+<li class="check">An outfit card opens on the canvas, where it can be changed and saved like any look; a piece opens its item card.
+</li>
+<li class="check">The chat remembers the conversation while it is open, so follow-ups work ("make the second one warmer").
+</li>
+<li class="check">A message that isn't about clothes or style gets only: "I help only with choosing clothes and your style."
+</li>
+<li class="check">Chat history and trying outfits on the user's photo are later (see Possible Later Enhancements).
+</li></ul>
+<h3>Search and Filters</h3>
+<p>Source: learner request while checking saved outfits.</p>
+<ul>
+<li class="check">The magnifier on Home opens a search field: typing part of a piece's name (the one the user gave it, or its color and type) or of its type narrows the Clothes grid; on the Outfits tab it shows the outfits that have such a piece.
+</li>
+<li class="check">The three lines open the filter of the tab that is showing, and carry a dot while a filter is on.
+</li>
+<li class="check">Clothes are filtered by color, type (Blazer, Jeans…), tags (Work, Date night…) and season. Inside a group one hit is enough; a piece must fit every group that has a choice.
+</li>
+<li class="check">Outfits are filtered by the colors and the kinds of piece of their clothes — an outfit must have every chosen color and every chosen kind — and by their category and season, where one of the chosen ones is enough. A piece or an outfit marked for all seasons fits any season.
+</li>
+<li class="check">When nothing fits, the tab says "Nothing matches" and offers <strong>Clear filters</strong>.
+</li></ul>
+<h2>States and Boundaries</h2>
+<ul>
+<li><strong>First use</strong> — no session → Welcome; empty wardrobe → illustrated empty state.
+</li>
+<li><strong>Returning use</strong> — session exists → skip Welcome; wardrobe and outfits load from the database.
+</li>
+<li><strong>Logged out</strong> — Welcome screen; Log In restores the same account's data.
+</li>
+<li><strong>Wrong credentials / email already taken</strong> — friendly error on the form; no crash, no partial account.
+</li>
+<li><strong>Database or network unavailable</strong> — <em>Assumption:</em> a friendly "Can't connect right now, try again" message; nothing is silently lost.
+</li>
+<li><strong>Processing</strong> — background removal shows a progress/processing screen; the user isn't left on a frozen screen.
+</li>
+<li><strong>Partial wardrobe</strong> — missing categories show a placeholder slot with <strong>+</strong>, both in manual and AI modes.
+</li>
+<li><strong>Unmatched hint</strong> — friendly toast + fallback look; never a blank canvas or error.
+</li>
+<li><strong>AI mislabels an item</strong> — user corrects the type and colors on the item card.
+</li>
+<li><strong>Only one item in a category</strong> — swiping that piece does nothing; no error.
+</li>
+<li><strong>Photo can't be processed</strong> (unreadable image, background removal fails) — a friendly error on the processing screen with <strong>Try again</strong>; nothing half-saved appears in the wardrobe. If only the AI is unavailable, the piece is saved without a type, and the item card asks for one.
+</li></ul>
+<h2>Product Decisions</h2>
+<ul>
+<li><strong>Real accounts and a real database from the start</strong> — the hackathon runs a full month (Sept 22 – Oct 26, 2026), so there is time to do it properly; it matches the learner's goal of "managing data" and a daily-use app, and makes the product feel complete, not a mock.
+</li>
+<li><strong>Create Account asks Name, Email, Password, City</strong> — email + password for a real login; name personalizes; the city gives the weather.
+</li>
+<li><strong>Every item and outfit belongs to one user</strong> — data is private per account, in line with the private, friends-only vision.
+</li>
+<li><strong>AI fills the type and the colors</strong> — the minimum the core engine needs: the type places items in the carousel, the colors let the stylist answer hints. Both come from fixed lists (47 types, an 18-color palette), and the user can always correct them.
+</li>
+<li><strong>Name, Tags, Season are optional manual fields.</strong>
+</li>
+<li><strong>Categories: Tops, Bottoms, Shoes, Outerwear, Bags, Accessories</strong> — outerwear "proves the app's layering logic"; bags and accessories came in with the canvas layers during the build (learner decision).
+</li>
+<li><strong>Swipe per piece</strong> — changing pants doesn't disturb the rest of the outfit.
+</li>
+<li><strong>Graceful AI fallbacks</strong> — an unmatched hint still produces a look; a missing category shows a placeholder, not a failure.
+</li>
+<li><strong>Save and "Wear it today" both work</strong> — Save proves "the creation loop is complete and the data is stored"; Wear it today adds the day to the calendar (learner decision during the build; streaks stay out).
+</li>
+<li><strong>The outfit card mirrors the item card</strong> — instead of name chips under the look (design page 17), rows for the clothes, colors, category, seasons and delete (learner request).
+</li>
+<li><strong>Gallery upload only</strong> for the demo.
+</li>
+<li><strong>Deferred features are left out, not shown disabled</strong> — the Collections tab and OutfitCHECK were removed (learner decisions), and Friends gave its place to the Stylist chat; only the outfit card's Share button still says "Coming soon".
+</li>
+<li><strong>Japandi look</strong> — warm neutrals, white canvas, serif headers, clothes as the accent.
+</li></ul>
+<h2>What We're Building</h2>
+<ol>
+<li>Splash, Welcome, and real Create Account / Log In (email + password) backed by a database, with a persistent session and Log out.
+</li>
+<li>Database storing users, clothing items, outfits and the calendar, each tied to its owner.
+</li>
+<li>Wardrobe main screen with Clothes and Outfits tabs, including the illustrated empty state, search and filters.
+</li>
+<li>Add clothes from gallery with real AI background removal and a processing → View item flow.
+</li>
+<li>Item card with the AI-filled type and colors (editable) and optional name, tags, seasons; photo editing; remove.
+</li>
+<li>Create outfit canvas: random starting outfit, per-piece swiping, layers (under layer, outerwear, bag, accessories), missing-category placeholders, a filter, and the weather with a cold/heat tip.
+</li>
+<li>AI stylist on the canvas: one-click generation with an optional request and follow-ups, only from owned items, with the unmatched-request fallback.
+</li>
+<li>Outfit card after Next → Save → Outfits tab, persisting across sessions; a saved outfit can be labeled, edited and deleted.
+</li>
+<li>Wear it today → an outfit calendar (one outfit per day).
+</li>
+<li>Stylist chat: outfits for an occasion, pieces, the user's style and how to improve it.
+</li>
+<li>Profile with photo, username, city and weather page; change password; delete account.
+</li>
+<li>Japandi styling across all of the above.
+</li></ol>
+<h2>Deferred From the POC</h2>
+<ul>
+<li><strong>Password reset, email verification, Google/Apple sign-in</strong> — nice to have; email + password is enough to prove real accounts.
+</li>
+<li><strong>Camera capture</strong> — gallery upload is enough for the demo.
+</li>
+<li><strong>Streaks, weather and OutfitCHECK photos in the calendar</strong> — the calendar shows only the outfits worn.
+</li>
+<li><strong>Collections</strong> (Work, Casual, Date night) on saved outfits — saving to the Outfits tab proves the loop. The Home tab for them was removed from the PoC (learner decision); they are planned for later.
+</li>
+<li><strong>Friends, sharing, ratings, the monthly top</strong> — the social layer; the next step after the PoC (see Possible Later Enhancements). OutfitCHECK photos are later too.
+</li>
+<li><strong>AI auto-filling Tags, Season, and Name</strong> — manual for now.
+</li></ul>
+<h2>Possible Later Enhancements</h2>
+<ul>
+<li><strong>Collections</strong>: a Home tab that groups saved outfits into themed collections (Work, Casual, Date night).
+</li>
+<li><strong>Stylist chat, the full version</strong>: saved chat history with a list of past chats to go back to, and trying outfits on the user's own photo ("show how this outfit looks on me", with an image model). Sized on 2026-10-20 at about 2 more days, the try-on with the risk that the free Gemini key can't generate images at all.
+</li>
+<li><strong>OutfitCHECK</strong> (design pages 21–22): + → OutfitCHECK opens a camera with a self-timer (Off / 3s / 10s, "Prop up your phone and step back"); the photo of the user in their outfit gets its background removed like a clothing photo and is kept for that day of the calendar, which shows it with a camera badge (design page 18). Sized on 2026-10-20 at about 1.5 days with our own camera as on page 21, or about 1 day with the phone's camera app; posting it to friends needs Friends first.
+</li>
+<li><strong>Friends — the next step after the PoC</strong> (learner decision; shown as such in the demo). Private and friends-only, never a public feed:
+<ul>
+<li><strong>Add friends:</strong> by their exact email, as a request the friend accepts or declines; no directory of users.
+</li>
+<li><strong>Share outfits:</strong> send a saved outfit to one or more friends from the outfit card's Share button; what friends sent is on the Friends tab, opened read-only.
+</li>
+<li><strong>Rate outfits:</strong> friends give each shared outfit a score.
+</li>
+<li><strong>The month's best:</strong> at the end of every month, the <strong>top 3 outfits</strong> with the highest scores, and the friend who collected the most points — <strong>the most stylish of the month</strong>.
+</li>
+<li>Sizing: adding friends and sending outfits was estimated on 2026-10-20 at about 1–1.5 days (two tables — friendships, shared outfits — about eight endpoints with tests for the rules: not yourself, only accepted friends, only your own outfits; the Friends tab and a share sheet; no push notifications). Ratings and the monthly top are not sized yet.
+</li></ul>
+</li>
+<li>Everything else in <code>scope.md &gt; Later</code>: streaks and the morning reminder, collections, Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin.
+</li></ul>
+<h2>Non-Goals</h2>
+<ul>
+<li><strong>No public feed or public profiles</strong> — the social vision is private and friends-only (the next step after this PoC).
+</li>
+<li><strong>No "one month later" time-skip demo</strong> — cut in scope; it doesn't prove the styling engine.
+</li>
+<li><strong>No shopping or recommending new clothes</strong> — Mixyn works only with what you own (mindful consumption).
+</li>
+<li><strong>No production deployment requirement</strong> — deployment is optional for the hackathon.
+</li></ul>
+<h2>Open Questions</h2>
+<p>Resolved during the build:</p>
+<ul>
+<li><strong>Does the AI stylist include Outerwear in generated looks?</strong> Yes, when it suits the look; it may also add a piece under the top, a bag and accessories.
+</li>
+<li><strong>Home tab vs Wardrobe:</strong> "Home" in the nav is the wardrobe main screen.
+</li></ul>
+<p class="note">Companion to <code>devpost/prd.md</code>, generated from it. The Markdown file is the source of truth.</p>
 </main>
-<script>
-(function(){
-  var panels=[].slice.call(document.querySelectorAll('.panel'));
-  var bar=document.getElementById('stepper'), i=0, btns=[];
-  panels.forEach(function(p,k){
-    var b=document.createElement('button');
-    b.textContent=(k+1)+' · '+p.dataset.name; b.setAttribute('role','tab');
-    b.onclick=function(){show(k)}; bar.appendChild(b); btns.push(b);
-  });
-  var prev=document.getElementById('prev'), next=document.getElementById('next');
-  function show(k){ i=k;
-    panels.forEach(function(p,j){p.classList.toggle('on',j===k)});
-    btns.forEach(function(b,j){b.setAttribute('aria-selected',j===k)});
-    prev.disabled=k===0; next.disabled=k===panels.length-1; }
-  prev.onclick=function(){if(i>0)show(i-1)}; next.onclick=function(){if(i<panels.length-1)show(i+1)};
-  show(0);
-})();
-</script>
 </body>
 </html>
