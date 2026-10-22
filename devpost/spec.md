@@ -56,7 +56,7 @@ PRD ref: `prd.md > The Core Journey`.
 | Layer | Choice | Why (learner decision unless marked) | Docs |
 |---|---|---|---|
 | Android app | **Java + XML layouts**, Android Studio, minSdk 26, compileSdk 37, **targetSdk 36** (Android 17 blocks apps targeting 37 from reaching the laptop backend without a runtime permission) | Same as the learner's current project. | https://developer.android.com/guide |
-| Android libs | Retrofit 2 + Gson (HTTP), Glide (images), Material Components (BottomNavigationView, BottomSheet, TabLayout), ViewPager2 (per-slot swipe), Photo Picker (`ActivityResultContracts.PickVisualMedia`, no storage permission) | *Derived:* standard, well-documented Java-friendly choices. | https://square.github.io/retrofit/ · https://bumptech.github.io/glide/ · https://developer.android.com/training/data-storage/shared/photopicker |
+| Android libs | Retrofit 2 + Gson (HTTP), Glide (images), Material Components (BottomSheet, TabLayout, MaterialButton; the bottom bar is our own `MixynBottomBar`), ViewPager2 (per-slot swipe), Photo Picker (`ActivityResultContracts.PickVisualMedia`, no storage permission) | *Derived:* standard, well-documented Java-friendly choices. | https://square.github.io/retrofit/ · https://bumptech.github.io/glide/ · https://developer.android.com/training/data-storage/shared/photopicker |
 | Backend | **Spring Boot 4.1.1**, Java 21, Gradle | Learner's long-term stack. *Derived:* Gradle to match Android; Maven is fine if the learner prefers. | https://docs.spring.io/spring-boot/ |
 | Backend libs | Spring Web, Spring Data JPA, PostgreSQL driver, Validation | *Derived:* the minimal Spring set for REST + DB. | https://spring.io/guides/gs/accessing-data-jpa |
 | Database | **PostgreSQL 16** in Docker | Learner's choice, same as the long-term app. | https://www.postgresql.org/docs/16/ |
@@ -268,11 +268,11 @@ PRD ref: `prd.md > Saving Outfits`.
 
 PostgreSQL, created by JPA (`spring.jpa.hibernate.ddl-auto=update`, a PoC simplification).
 
-**users**: `id bigserial PK`, `name varchar(50)`, `email varchar(254) unique` (stored lower-case), `password_hash varchar(72)` (BCrypt), `city varchar(80)`, `country varchar(80)`, `latitude`, `longitude` (for weather later), `created_at timestamptz`.
+**users**: `id bigserial PK`, `name varchar(50)`, `email varchar(254) unique` (stored lower-case), `password_hash varchar(72)` (BCrypt), `city varchar(80)`, `country varchar(80)`, `latitude`, `longitude` (for the weather), `username varchar null` (unique when set), `avatar_file varchar null` (the profile photo), `created_at timestamptz`.
 
 **sessions**: `token varchar(64) PK`, `user_id → users.id`, `created_at timestamptz`. (No expiry in the PoC.)
 
-**items**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (e.g. `3f2a….png`), `type varchar null` (an `ItemType` code), `category varchar null` (TOP, BOTTOM, SHOES, OUTERWEAR; follows the type), `colors varchar null` (up to 3 `ItemColor` codes, comma-separated; `color_name` is a legacy fallback), `scale int null` (display size %, default 100), `name varchar null`, `tags varchar null` (comma-separated), `season varchar null`, `created_at timestamptz`.
+**items**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (e.g. `3f2a….png`), `type varchar null` (an `ItemType` code), `category varchar null` (TOP, BOTTOM, SHOES, OUTERWEAR, BAG, ACCESSORY; follows the type), `colors varchar null` (up to 3 `ItemColor` codes, comma-separated; `color_name` is a legacy fallback), `scale int null` (display size %, default 100), `name varchar null`, `tags varchar null` (comma-separated), `season varchar null`, `opening varchar null` (where an open-front piece opens, four numbers), `created_at timestamptz`.
 
 **outfits**: `id bigserial PK`, `user_id → users.id`, `image_file varchar` (the picture of the look), `tags varchar null` (the outfit's categories, comma-separated), `season varchar null`, `created_at timestamptz`.
 
@@ -404,12 +404,17 @@ Mixyn/
 
 **Learning focus (from `learner-profile.md > Desired Learning Outcome`: "seamlessly integrating AI features"):** the concept worked through here is **how to make an AI feature reliable in a backend**. The model's answer is treated as *untrusted input*: it's constrained to a JSON schema, then validated against the database (ownership + category) with a deterministic fallback. Evidence in the build: `StylistServiceTest` covers a foreign id, a wrong-category id and an empty category, and a manual check shows a hint with no match still producing a full look. The learner didn't name a specific personal uncertainty during this interview.
 
-**To verify early in the build** (not blocking approval):
-1. The current Gemini Flash model id, the free-tier limits, and the Java SDK calls for image input + JSON schema.
-2. The rembg server command, endpoint and field name (one `curl` test).
-3. The current Spring Boot 3.x version.
+**To verify early in the build** — done; the answers are under Stack ("Verified during the build"): the Gemini models and free-tier limits, the Java SDK calls, the rembg server, and Spring Boot 4.1.1 (3.x is no longer offered).
 
 **Carried from `prd.md > Open Questions`:**
 - Outerwear in AI looks → optional, the stylist may add one (resolved above).
 - Log In restores that account's wardrobe → yes (`POST /api/auth/login` with email + password).
 - Home tab = wardrobe → yes (`WardrobeFragment`).
+
+## After the PoC: Friends
+
+The next step (learner decision; see `scope.md > Next Step` and `prd.md > Possible Later Enhancements`), not built in the PoC. Private and friends-only:
+- **Friends:** a `friendships` table (requester, addressee, status: pending / accepted / declined); a friend is added by their exact email, and the other side accepts or declines.
+- **Sharing:** a `shared_outfits` table (outfit, from, to, shared at); the Share button on the outfit card sends a saved outfit to friends, and the Friends tab lists what friends sent. The rules to test: never to yourself, only to accepted friends, only your own outfits.
+- **Ratings:** a score per friend per shared outfit (`outfit_ratings`).
+- **The month's best:** the top 3 outfits of the month by their scores, and the friend whose outfits collected the most points — the most stylish of the month — both read from the month's ratings, among friends only.

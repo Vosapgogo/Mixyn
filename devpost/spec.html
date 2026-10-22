@@ -3,349 +3,540 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mixyn Technical Spec</title>
+<title>Mixyn Spec</title>
 <style>
 :root{
-  --bg:#f4efe7; --card:#ffffff; --ink:#2a2724; --muted:#76706a; --line:#e3dbd0; --soft:#ebe4d9;
-  --ok:#4f6b52; --ok-soft:#e3ebe0; --warn:#8a6a1c; --warn-soft:#f4ead3; --ai:#5b5a8f; --ai-soft:#e7e6f3;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --bg:#faf7f4; --card:#ffffff; --ink:#1f1a17; --muted:#6b625c; --line:#e6ddd5;
+  --accent:#7a1f3d; --accent-soft:#f3e3e8; --ok:#2f6b4f; --ok-soft:#e2f0e8;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#1a1714; --card:#24201c; --ink:#efe8df; --muted:#a79e94; --line:#3a342e; --soft:#2d2823;
-    --ok:#9cc3a0; --ok-soft:#24301f; --warn:#e0c078; --warn-soft:#342b17; --ai:#b3b1e6; --ai-soft:#2a2940;
+    --bg:#16120f; --card:#211b18; --ink:#f1ebe6; --muted:#a89d95; --line:#3a312c;
+    --accent:#e07a9a; --accent-soft:#3a2129; --ok:#7cc7a1; --ok-soft:#1e3128;
   }
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
-main{max-width:920px;margin:0 auto;padding:40px 16px 80px}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:900px;margin:0 auto;padding:40px 16px 80px;overflow-wrap:anywhere}
 .status{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   background:var(--ok-soft);color:var(--ok);padding:3px 10px;border-radius:99px}
-h1{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.05;margin:14px 0 6px}
-.lede{font-size:19px;color:var(--muted);margin:0 0 12px}
-h2{font-family:var(--serif);font-weight:500;font-size:26px;margin:48px 0 14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
-.plain p{margin:0 0 10px}
-.plain p:last-child{margin:0}
-.key{border-left:4px solid var(--ai);background:var(--ai-soft);padding:14px 18px;border-radius:10px;margin-top:14px}
-svg{width:100%;height:auto;display:block}
-svg text{font-family:var(--sans)}
-code,.mono{font-family:var(--mono);font-size:13px}
-code{background:var(--soft);padding:1px 6px;border-radius:6px}
-/* stepper */
-.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.stepper button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);
-  padding:6px 12px;border-radius:99px;cursor:pointer}
-.stepper button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.panel{display:none}.panel.on{display:block}
-.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 4px}
-.src{font-size:12px;color:var(--muted);margin-bottom:12px}
-.flow{list-style:none;padding:0;margin:0;counter-reset:f}
-.flow li{counter-increment:f;position:relative;padding:8px 0 8px 36px;border-bottom:1px dashed var(--line);font-size:15px}
-.flow li:last-child{border-bottom:0}
-.flow li::before{content:counter(f);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:50%;
-  background:var(--soft);font-size:12px;display:grid;place-items:center;font-weight:600}
-.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.t{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);font-family:var(--mono)}
-.t.a{background:var(--soft)} .t.b{background:var(--ok-soft);border-color:transparent} .t.g{background:var(--ai-soft);border-color:transparent}
-.navbtns{display:flex;justify-content:space-between;margin-top:16px}
-.navbtns button{font:inherit;font-size:14px;background:none;border:0;color:var(--muted);cursor:pointer}
-.navbtns button:disabled{opacity:.3;cursor:default}
-/* tables */
-.tbl{width:100%;border-collapse:collapse;font-size:14px}
-.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-.tbl th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.scroll{overflow-x:auto}
-/* details */
-details{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;overflow:hidden}
-summary{cursor:pointer;padding:14px 18px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:400;font-size:20px}
-details[open] summary::after{content:"–"}
-.dbody{padding:0 18px 16px}
-.dbody ul{margin:6px 0 0;padding-left:20px}
-.dbody li{margin:4px 0;font-size:15px}
-.pill{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:600;font-family:var(--mono)}
-.p-a{background:var(--soft)} .p-b{background:var(--ok-soft);color:var(--ok)} .p-g{background:var(--ai-soft);color:var(--ai)}
-pre{background:var(--soft);border-radius:10px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;margin:0}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:680px){.grid2{grid-template-columns:1fr} h1{font-size:36px}}
-.verify li{margin:6px 0}
-.note{font-size:14px;color:var(--muted)}
+h1{font-size:40px;line-height:1.1;margin:12px 0 16px;letter-spacing:-.02em}
+h2{font-size:24px;line-height:1.25;margin:44px 0 12px;padding-top:20px;border-top:1px solid var(--line)}
+h3{font-size:19px;margin:28px 0 8px}
+h4{font-size:16px;margin:22px 0 6px;color:var(--muted)}
+p,li{max-width:76ch}
+ul,ol{padding-left:24px}
+li{margin:4px 0}
+li.check{list-style:none;position:relative}
+li.check::before{content:"";position:absolute;left:-22px;top:.45em;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto}
+pre code{border:0;padding:0;background:none}
+blockquote{margin:12px 0;padding:12px 16px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0}
+.table{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+a{color:var(--accent)}
+.note{font-size:14px;color:var(--muted);margin-top:40px}
+@media (max-width:640px){h1{font-size:32px}}
 </style>
 </head>
 <body>
 <main>
-  <span class="status">Approved</span>
-  <h1>Mixyn</h1>
-  <p class="lede">Technical spec: how the approved PRD gets built.</p>
-
-  <h2>How it works, in plain language</h2>
-  <div class="card plain">
-    <p><b>The Android app</b> is what you see and tap. It does no AI itself, holds no secrets, and only remembers <i>who you are</i>.</p>
-    <p><b>The Spring Boot backend</b> is the brain. It cleans photos, asks the AI what each item is, saves everything, and answers the app.</p>
-    <p><b>PostgreSQL</b> is the backend's spreadsheet (users, items, outfits). The photos themselves are files in a folder.</p>
-    <p><b>rembg</b> cuts out backgrounds in its own container. <b>Gemini</b> tags items and acts as the stylist.</p>
-    <div class="key"><b>The key rule:</b> the backend never trusts the AI blindly. Every item the stylist picks is checked against <i>your</i> wardrobe and the right category before it reaches the screen.</div>
-  </div>
-
-  <h2>Architecture</h2>
-  <div class="card">
-    <svg viewBox="0 0 860 360" role="img" aria-label="Android app talks over HTTP to Spring Boot at 10.0.2.2:8080. Spring Boot reads and writes PostgreSQL and an images folder, calls the rembg container for background removal, and calls the Gemini API over HTTPS for tagging and styling. Postgres, rembg, backend and the images volume run in Docker Compose on the laptop; Gemini is in the cloud.">
-      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
-      <!-- docker boundary -->
-      <rect x="250" y="20" width="420" height="320" rx="16" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 5"/>
-      <text x="266" y="42" font-size="12" fill="var(--muted)">docker compose · your laptop</text>
-      <!-- android -->
-      <rect x="10" y="130" width="190" height="100" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
-      <text x="105" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">Android app</text>
-      <text x="105" y="182" text-anchor="middle" font-size="12" fill="var(--muted)">Java · XML · emulator</text>
-      <text x="105" y="200" text-anchor="middle" font-size="12" fill="var(--muted)">SharedPreferences: userId</text>
-      <line x1="200" y1="180" x2="306" y2="180" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-      <text x="253" y="170" text-anchor="middle" font-size="11" fill="var(--muted)">HTTP</text>
-      <text x="253" y="198" text-anchor="middle" font-size="10" fill="var(--muted)">10.0.2.2:8080</text>
-      <!-- backend -->
-      <rect x="310" y="120" width="190" height="120" rx="14" fill="var(--ok-soft)" stroke="var(--ok)" stroke-width="1.5"/>
-      <text x="405" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ok)">Spring Boot</text>
-      <text x="405" y="172" text-anchor="middle" font-size="12" fill="var(--muted)">REST API · JPA</text>
-      <text x="405" y="190" text-anchor="middle" font-size="12" fill="var(--muted)">TaggingService</text>
-      <text x="405" y="208" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">StylistService ✓ validates</text>
-      <!-- postgres -->
-      <rect x="530" y="60" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="592" y="88" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">PostgreSQL</text>
-      <text x="592" y="108" text-anchor="middle" font-size="11" fill="var(--muted)">users · items · outfits</text>
-      <!-- images -->
-      <rect x="530" y="148" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="592" y="176" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">/data/images</text>
-      <text x="592" y="196" text-anchor="middle" font-size="11" fill="var(--muted)">PNG cutouts</text>
-      <!-- rembg -->
-      <rect x="530" y="236" width="125" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="592" y="264" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">rembg</text>
-      <text x="592" y="284" text-anchor="middle" font-size="11" fill="var(--muted)">background removal</text>
-      <path d="M500 150 C515 120 515 95 526 92" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-      <line x1="500" y1="180" x2="526" y2="180" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-      <path d="M500 212 C515 240 515 265 526 268" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-      <!-- gemini -->
-      <rect x="700" y="130" width="150" height="100" rx="14" fill="var(--ai-soft)" stroke="var(--ai)" stroke-width="1.5"/>
-      <text x="775" y="160" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ai)">Gemini API</text>
-      <text x="775" y="180" text-anchor="middle" font-size="12" fill="var(--muted)">current Flash model</text>
-      <text x="775" y="198" text-anchor="middle" font-size="12" fill="var(--muted)">tagging · stylist</text>
-      <text x="775" y="216" text-anchor="middle" font-size="11" fill="var(--muted)">cloud · API key</text>
-      <path d="M500 130 C560 20 680 30 760 126" fill="none" stroke="var(--ai)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar)"/>
-      <text x="640" y="42" font-size="11" fill="var(--ai)">HTTPS · JSON schema</text>
-    </svg>
-  </div>
-
-  <h2>The core journey through the system</h2>
-  <div class="card">
-    <div class="stepper" role="tablist" id="stepper"></div>
-    <div id="panels">
-      <section class="panel" data-name="Open &amp; sign up">
-        <h3>Open the app &amp; sign up</h3>
-        <div class="src">implements <code>prd.md › Account and Session</code></div>
-        <ol class="flow">
-          <li><code>SplashActivity</code> checks <code>SessionStore</code> for a saved <code>userId</code>. If it finds one, it goes straight to the wardrobe.</li>
-          <li>With no session: <code>WelcomeActivity</code> → <code>AuthActivity</code> (name + city).</li>
-          <li><code>POST /api/users</code> inserts a row in <b>users</b> and returns <code>{id, name, city}</code>. A taken name returns <code>409</code>.</li>
-          <li>The app saves the id, shows “Welcome to Mixyn, {name}!”, then opens <code>MainActivity</code>.</li>
-        </ol>
-        <div class="tagrow"><span class="t a">ui/splash</span><span class="t a">ui/auth</span><span class="t a">session/SessionStore</span><span class="t b">user/UserController</span></div>
-      </section>
-      <section class="panel" data-name="Upload">
-        <h3>Add a piece of clothing</h3>
-        <div class="src">implements <code>prd.md › Adding Clothes</code> · <code>AI Item Details</code></div>
-        <ol class="flow">
-          <li>Central <b>+</b> → <code>AddMenuSheet</code> → Photo Picker → <code>AddItemActivity</code> shows “Removing background…”.</li>
-          <li><code>POST /api/users/{id}/items</code> sends the photo as multipart.</li>
-          <li><code>RembgClient</code> → rembg container → transparent PNG.</li>
-          <li><code>ImageStorage</code> saves <code>/data/images/{uuid}.png</code>.</li>
-          <li><code>TaggingService</code> → Gemini (image + prompt) → <code>{category, colorName, colorHex}</code>.</li>
-          <li>A row is saved in <b>items</b> and the item JSON is returned → “Background removed · 1/1 completed” → <b>View item</b>.</li>
-        </ol>
-        <div class="tagrow"><span class="t a">ui/additem</span><span class="t b">item/ItemService</span><span class="t b">ai/RembgClient</span><span class="t g">ai/TaggingService</span><span class="t b">storage/ImageStorage</span></div>
-      </section>
-      <section class="panel" data-name="Item card">
-        <h3>Item card &amp; corrections</h3>
-        <div class="src">implements <code>prd.md › AI Item Details</code></div>
-        <ol class="flow">
-          <li><code>ItemDetailActivity</code> loads the image with Glide from <code>GET /images/{file}</code>.</li>
-          <li>It shows Category, Color, Name, Tags, Season.</li>
-          <li>Each change sends <code>PATCH /api/items/{id}</code>. This is how the user fixes the AI's guess.</li>
-          <li>If tagging failed, the category is blank: “choose a category.” Uncategorized items stay off the canvas.</li>
-        </ol>
-        <div class="tagrow"><span class="t a">ui/item</span><span class="t b">item/ItemController</span></div>
-      </section>
-      <section class="panel" data-name="Canvas">
-        <h3>Outfit canvas &amp; swiping</h3>
-        <div class="src">implements <code>prd.md › Outfit Canvas and Carousel</code></div>
-        <ol class="flow">
-          <li><code>OutfitCanvasActivity</code> loads items once and groups them by category.</li>
-          <li>It picks a <b>random index per slot on the phone</b>, with no server call.</li>
-          <li>Each slot is a horizontal <code>ViewPager2</code>, so swiping one slot changes only that piece.</li>
-          <li>Outerwear overlaps the top. An empty category shows a dashed placeholder with “Add shoes to complete the look.”</li>
-        </ol>
-        <div class="tagrow"><span class="t a">ui/canvas/OutfitCanvasActivity</span><span class="t a">SlotPagerAdapter</span><span class="t a">PlaceholderView</span></div>
-      </section>
-      <section class="panel" data-name="Generate with AI">
-        <h3>Generate with AI</h3>
-        <div class="src">implements <code>prd.md › AI Stylist</code></div>
-        <ol class="flow">
-          <li><code>POST /api/users/{id}/outfits/generate {hint}</code></li>
-          <li><code>StylistService</code> builds a text list: <code>id | category | color | name | tags</code>.</li>
-          <li>Gemini returns <code>{topId, bottomId, shoesId, outerwearId, hintMatched}</code>.</li>
-          <li><b>Validate:</b> each id must be yours and in the right category. Invalid slots get a random valid item; empty categories get <code>null</code>.</li>
-          <li>If there's no match: “We couldn't find anything {hint}. Here is another stylish option!”</li>
-          <li>The app scrolls each slot to the returned item and shows the toast if needed.</li>
-        </ol>
-        <div class="tagrow"><span class="t g">outfit/StylistService</span><span class="t b">outfit/OutfitController</span><span class="t b">StylistServiceTest</span></div>
-      </section>
-      <section class="panel" data-name="Save">
-        <h3>Save the outfit</h3>
-        <div class="src">implements <code>prd.md › Saving Outfits</code></div>
-        <ol class="flow">
-          <li><b>Save</b> → <code>POST /api/users/{id}/outfits {topId, bottomId, shoesId, outerwearId, source, hint}</code>.</li>
-          <li>Ownership is checked, and a row goes into <b>outfits</b>.</li>
-          <li><code>OutfitsFragment</code> lists them via <code>GET /api/users/{id}/outfits</code>, newest first.</li>
-          <li>They're still there after reopening: Postgres lives in the <code>pgdata</code> volume.</li>
-        </ol>
-        <div class="tagrow"><span class="t a">ui/main/OutfitsFragment</span><span class="t b">outfit/OutfitController</span></div>
-      </section>
-    </div>
-    <div class="navbtns"><button id="prev">← Previous</button><button id="next">Next →</button></div>
-    <p class="note" style="margin:10px 0 0">Tags: <span class="t a">android</span> <span class="t b">backend</span> <span class="t g">backend → Gemini</span></p>
-  </div>
-
-  <h2>Stack</h2>
-  <div class="card scroll">
-    <table class="tbl">
-      <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
-      <tr><td>Android</td><td>Java + XML, Retrofit, Glide, ViewPager2, Material</td><td>Same as your current project</td></tr>
-      <tr><td>Backend</td><td>Spring Boot 3.x, Java 21, Gradle, JPA</td><td>Your long-term stack</td></tr>
-      <tr><td>Database</td><td>PostgreSQL 16 (Docker)</td><td>Same as the long-term app</td></tr>
-      <tr><td>Background removal</td><td>rembg (Docker)</td><td>Free, local, no key, no limits</td></tr>
-      <tr><td>Tagging + stylist</td><td>Gemini, current Flash, Google Gen AI Java SDK</td><td>Your choice; 1.5 Flash is likely retired</td></tr>
-      <tr><td>Run</td><td>Docker Compose + Android emulator</td><td>Everything local; record the emulator</td></tr>
-    </table>
-  </div>
-
-  <h2>Components</h2>
-  <details><summary><span class="pill p-b">backend</span> REST endpoints</summary><div class="dbody scroll">
-    <table class="tbl">
-      <tr><th>Endpoint</th><th>Does</th><th>PRD</th></tr>
-      <tr><td class="mono">POST /api/users</td><td>Create user (name + city); 409 if the name is taken</td><td>Account and Session</td></tr>
-      <tr><td class="mono">GET /api/users/by-name/{name}</td><td>Mock log in</td><td>Account and Session</td></tr>
-      <tr><td class="mono">GET /api/users/{id}</td><td>Confirm the stored session</td><td>Account and Session</td></tr>
-      <tr><td class="mono">POST /api/users/{id}/items</td><td>Upload → rembg → store → tag → save</td><td>Adding Clothes</td></tr>
-      <tr><td class="mono">GET /api/users/{id}/items</td><td>Wardrobe list</td><td>Adding Clothes</td></tr>
-      <tr><td class="mono">PATCH /api/items/{id}</td><td>Correct category/color, add name/tags/season</td><td>AI Item Details</td></tr>
-      <tr><td class="mono">GET /images/{file}</td><td>Serve the PNG cutout</td><td>Adding Clothes</td></tr>
-      <tr><td class="mono">POST /api/users/{id}/outfits/generate</td><td>AI stylist + validation</td><td>AI Stylist</td></tr>
-      <tr><td class="mono">POST /api/users/{id}/outfits</td><td>Save an outfit</td><td>Saving Outfits</td></tr>
-      <tr><td class="mono">GET /api/users/{id}/outfits</td><td>List saved outfits</td><td>Saving Outfits</td></tr>
-      <tr><td class="mono">GET /api/health</td><td>Server-up check</td><td>—</td></tr>
-    </table></div></details>
-  <details><summary><span class="pill p-g">AI</span> Gemini calls &amp; validation</summary><div class="dbody">
-    <div class="grid2">
-      <div><b>Tagging</b> (image + prompt)<pre>{ "category": "TOP|BOTTOM|SHOES|OUTERWEAR",
-  "colorName": "Khaki",
-  "colorHex": "#8F8A5C" }</pre>
-        <p class="note">On failure, the item is still saved with a blank category, and the user picks one.</p></div>
-      <div><b>Stylist</b> (text list + hint)<pre>{ "topId": 12, "bottomId": 7,
-  "shoesId": 3, "outerwearId": null,
-  "hintMatched": true }</pre>
-        <p class="note">Every id is checked for ownership and category. Bad or missing slots get a random valid item.</p></div>
-    </div></div></details>
-  <details><summary><span class="pill p-a">android</span> Screens</summary><div class="dbody"><ul>
-    <li><code>SplashActivity</code>, <code>WelcomeActivity</code>, <code>AuthActivity</code> (create / log-in modes)</li>
-    <li><code>MainActivity</code>: bottom nav (Home, Calendar⌀, +, Friends⌀, Profile⌀), where ⌀ = disabled, “Coming soon”</li>
-    <li><code>WardrobeFragment</code> with tabs <code>ClothesFragment</code> (grid or empty closet) and <code>OutfitsFragment</code></li>
-    <li><code>AddMenuSheet</code>: Add clothes, Create outfit, OutfitCHECK⌀</li>
-    <li><code>AddItemActivity</code>, <code>ItemDetailActivity</code>, <code>OutfitCanvasActivity</code></li>
-  </ul></div></details>
-  <details><summary><span class="pill p-a">design</span> Look &amp; feel in the theme</summary><div class="dbody"><ul>
-    <li>Colors: <code>sand_bg #F3EEE6</code>, <code>card_white #FFFFFF</code>, <code>ink #2B2926</code>, <code>ink_muted #7A736B</code>, <code>line #E3DBD0</code>. No brand accent.</li>
-    <li>A serif (Cormorant Garamond / Playfair Display) for the logo and titles, and a sans-serif (Inter or system) for the UI</li>
-    <li>White 12dp-radius cards, black pill buttons, a big black round +, and a vector empty-closet drawing</li>
-    <li>Layouts stay basic, and the identity comes from the theme</li>
-  </ul></div></details>
-
-  <h2>Data: where it lives</h2>
-  <div class="card scroll">
-    <table class="tbl">
-      <tr><th>Data</th><th>Lives in</th><th>After reopening</th></tr>
-      <tr><td>Who you are</td><td>SharedPreferences</td><td>Kept, so Welcome is skipped</td></tr>
-      <tr><td>Users, items, outfits</td><td>Postgres (<code>pgdata</code> volume)</td><td>Kept</td></tr>
-      <tr><td>Item photos</td><td><code>/data/images</code> (<code>images</code> volume)</td><td>Kept</td></tr>
-      <tr><td>Current canvas &amp; hint</td><td>Memory</td><td>Gone; a fresh random outfit (by design)</td></tr>
-    </table>
-  </div>
-
-  <h2>File structure</h2>
-  <div class="card"><pre>Mixyn/
-├── docker-compose.yml     # db, rembg, backend + volumes
-├── .env.example           # GEMINI_API_KEY=, GEMINI_MODEL=, DB creds
-├── README.md
-├── backend/               # Spring Boot (Gradle, Java 21)
-│   └── src/main/java/com/mixyn/
-│       ├── config/  common/  storage/
-│       ├── user/    # User, UserController
-│       ├── item/    # Item, ItemService, ItemController
-│       ├── outfit/  # Outfit, StylistService, OutfitController
-│       └── ai/      # RembgClient, TaggingService
-│   └── src/test/…/outfit/StylistServiceTest.java
-├── android/app/src/main/
-│   ├── java/com/mixyn/app/
-│   │   ├── api/  session/
-│   │   └── ui/ splash/ welcome/ auth/ main/ additem/ item/ canvas/
-│   └── res/ layout/ values/ font/ drawable/ menu/ xml/
-└── devpost/</pre></div>
-
-  <h2>Run it &amp; record it</h2>
-  <div class="card">
-    <ol class="flow">
-      <li><code>cp .env.example .env</code>, then add your Gemini key (never commit it)</li>
-      <li><code>docker compose up --build</code> starts Postgres :5432, rembg :7000, and the backend :8080</li>
-      <li><code>curl localhost:8080/api/health</code> should return <code>{"status":"ok"}</code></li>
-      <li>Open <code>android/</code> in Android Studio → emulator → Run (the app calls <code>10.0.2.2:8080</code>)</li>
-      <li>Do one warm-up upload (rembg downloads its model on the first use), then record the demo</li>
-    </ol>
-  </div>
-
-  <h2>When things break</h2>
-  <details><summary>rembg fails or the photo is unreadable</summary><div class="dbody">Nothing is saved; the processing screen shows “We couldn't process this photo” + Try again.</div></details>
-  <details><summary>Gemini tagging fails</summary><div class="dbody">The item is saved anyway with a blank category, and the card asks you to choose. The upload never fails because of tagging.</div></details>
-  <details><summary>Gemini stylist fails or returns bad ids</summary><div class="dbody">Bad slots are filled with random valid items. On total failure: “The stylist is taking a break — here's a random look instead.” The canvas is never blank.</div></details>
-  <details><summary>The emulator can't reach the backend</summary><div class="dbody">“Can't reach Mixyn — is the server running?” Check that you're using <code>10.0.2.2</code> and that the network security config is present.</div></details>
-
-  <h2>Verify early in the build</h2>
-  <div class="card"><ul class="verify">
-    <li>The current <b>Gemini Flash model id</b>, the free-tier limits, and the Java SDK calls for image input + JSON schema</li>
-    <li>The <b>rembg</b> server command, endpoint, and field name (one curl test)</li>
-    <li>The latest <b>Spring Boot 3.x</b> version</li>
-  </ul>
-  <p class="note">Learning focus: treating AI output as <i>untrusted input</i>, meaning a schema, then validation against the database, then a fallback. The evidence will be <code>StylistServiceTest</code> plus a no-match hint still producing a full look.</p></div>
-
-  <p class="note" style="margin-top:32px">Companion to <code>devpost/spec.md</code>. The Markdown file is the source of truth.</p>
+<span class="status">Approved</span>
+<h1>Mixyn — Technical Spec</h1>
+<p>Implements <code>prd.md</code> (approved). Scope: <code>scope.md &gt; The POC Boundary</code>.</p>
+<h2>How This Works, In Plain Language</h2>
+<p>Mixyn has three pieces that run on your laptop, plus one AI service in the cloud:</p>
+<ul>
+<li><strong>The Android app</strong> (Java, XML layouts) is what you see and tap: the welcome screen, your wardrobe, the outfit canvas. It doesn't do any AI itself and holds no secrets. It remembers only <em>who you are</em> (your user id and a session token) so it can skip the welcome screen next time.
+</li>
+<li><strong>The Spring Boot backend</strong> is the brain. The app sends it requests ("here's a photo," "give me an outfit"), and it does the work: cleans the photo, asks the AI what the item is, saves everything, and answers.
+</li>
+<li><strong>PostgreSQL</strong> is the backend's spreadsheet: one table for users, one for clothing items, one for saved outfits. The item photos themselves are files in a folder; the database just remembers where each file is.
+</li>
+<li><strong>rembg</strong> is a small open-source tool in its own Docker container. The backend hands it a photo and gets back the same photo with the background cut out.
+</li>
+<li><strong>Google Gemini</strong> (cloud API) does two "understanding" jobs: it looks at a cleaned photo and says "this is a Sweater, a Top, colors Burgundy and Cream", and it acts as the stylist: given a text list of your items and an optional hint, it picks one top, bottom and shoes plus optional layers (outerwear, a piece under the top, a bag, accessories). The same stylist answers the Stylist chat.
+</li>
+<li><strong>Open-Meteo</strong> (free, no key) finds the city at sign-up and gives the weather there, which the canvas shows and the stylist dresses for.
+</li></ul>
+<p>The key rule: <strong>the backend never trusts the AI blindly.</strong> When Gemini picks an outfit, the backend checks that every item id it returned really exists in <em>your</em> wardrobe and sits in the right category. That check is what turns the PRD's "the AI never places an item you don't own" from a hope into a guarantee.</p>
+<p>Why this shape: it is the same stack as your long-term app (Android + Spring Boot + Postgres + Docker), which you chose on purpose so this project strengthens those skills. Everything else is kept as simple as possible: a single request per upload (no background jobs), images on disk instead of cloud storage, and real email + password accounts with a simple session token instead of a full Spring Security/JWT setup.</p>
+<h2>The Core Journey Through the System</h2>
+<p>PRD ref: <code>prd.md &gt; The Core Journey</code>.</p>
+<ol>
+<li><strong>Open the app</strong> → <code>SplashActivity</code> checks <code>SessionStore</code> (SharedPreferences) for a saved user id + token and confirms it with <code>GET /api/me</code>.
+<ul>
+<li>Found → go to <code>MainActivity</code> (wardrobe). <em>(Returning user, PRD step 12.)</em>
+</li>
+<li>Not found → <code>WelcomeActivity</code>.
+</li></ul>
+</li>
+<li><strong>Create Account</strong> → <code>AuthActivity</code> sends <code>POST /api/auth/register {name, email, password, city}</code> → backend hashes the password with BCrypt, inserts a row into <code>users</code>, creates a session token → returns <code>{user: {id, name, email, city}, token}</code> → app saves id + token in <code>SessionStore</code>, shows the welcome message, then opens <code>MainActivity</code>.
+ <strong>Log In</strong> → <code>POST /api/auth/login {email, password}</code> → same result on success; "Email or password is incorrect" otherwise.
+ <strong>Log out</strong> → Profile → <code>POST /api/auth/logout</code> → token deleted, <code>SessionStore</code> cleared → <code>WelcomeActivity</code>. <em>(PRD step 13.)</em>
+</li>
+<li><strong>Empty wardrobe</strong> → <code>ClothesFragment</code> calls <code>GET /api/users/{id}/items</code> → empty list → shows the empty-closet illustration and <strong>+ Add clothes</strong>.
+</li>
+<li><strong>Add clothes</strong> → central <strong>+</strong> opens <code>AddMenuSheet</code> → Add clothes → Android photo picker → <code>AddItemActivity</code> shows the processing state and sends <code>POST /api/users/{id}/items</code> (multipart photo).
+ Backend, in one request:
+ a. <code>CutoutService</code> has <code>RembgClient</code> send the photo to the rembg container → a transparent PNG (repaired with a second model's mask when the first was unsure about much of the piece).
+ b. <code>ImageStorage</code> crops it to the piece and scales it to at most 1024 px.
+ c. <code>TaggingService</code> sends it to Gemini → <code>{subject, type, category, colors, …}</code> JSON (see Tagging Service); a photo that isn't one piece is refused here.
+ d. <code>ImageStorage</code> saves the PNG as <code>{uuid}.png</code>, and <code>ItemService</code> saves an <code>items</code> row → returns the item JSON.
+ The app then shows "Background removed · 1/1 completed" and <strong>View item</strong>.
+</li>
+<li><strong>Item card</strong> → <code>ItemDetailActivity</code> loads the image from <code>GET /images/{file}</code> and shows category and color. Edits are sent with <code>PATCH /api/items/{itemId}</code>.
+</li>
+<li><strong>Create outfit</strong> → <code>OutfitCanvasActivity</code> loads all items once, groups them by category, and <strong>picks a random outfit on the phone</strong> (no server call needed). Each slot is a horizontal <code>ViewPager2</code>: swiping changes only that slot.
+</li>
+<li><strong>Generate with AI</strong> → <code>POST /api/users/{id}/outfits/generate {hint}</code> → <code>StylistService</code> builds a text list of the user's items, asks Gemini for JSON ids, <strong>validates</strong> them, fills gaps, and returns <code>{top, bottom, shoes, outerwear, hintMatched, message}</code> → the app scrolls each slot to the returned item and shows a toast if <code>hintMatched</code> is false.
+</li>
+<li><strong>Next → Save</strong> → the canvas draws the outfit into a PNG and opens <code>OutfitActivity</code> ("Your fit for today") → <strong>Save</strong> sends <code>POST /api/users/{id}/outfits</code> (multipart: the picture + which item is worn where) → rows in <code>outfits</code> and <code>outfit_pieces</code> → <code>OutfitsFragment</code> lists them via <code>GET /api/users/{id}/outfits</code>. <strong>Wear it today</strong> sends the same request with today's date, which also adds a row to <code>outfit_wears</code>; <code>CalendarFragment</code> reads the month via <code>GET /api/users/{id}/calendar</code>.
+</li></ol>
+<pre><code> Android app ──HTTP (10.0.2.2:8080)──▶ Spring Boot ──▶ PostgreSQL (users, items, outfits)
+                                          │  ├──▶ /data/images (PNG files, Docker volume)
+                                          │  ├──▶ rembg container (background removal)
+                                          │  └──▶ Gemini API (tagging + stylist, HTTPS, API key)</code></pre>
+<h2>Stack</h2>
+<div class="table"><table><thead><tr><th>Layer</th><th>Choice</th><th>Why (learner decision unless marked)</th><th>Docs</th></tr></thead><tbody>
+<tr><td>Android app</td><td><strong>Java + XML layouts</strong>, Android Studio, minSdk 26, compileSdk 37, <strong>targetSdk 36</strong> (Android 17 blocks apps targeting 37 from reaching the laptop backend without a runtime permission)</td><td>Same as the learner's current project.</td><td><a href="https://developer.android.com/guide">https://developer.android.com/guide</a></td></tr>
+<tr><td>Android libs</td><td>Retrofit 2 + Gson (HTTP), Glide (images), Material Components (BottomSheet, TabLayout, MaterialButton; the bottom bar is our own <code>MixynBottomBar</code>), ViewPager2 (per-slot swipe), Photo Picker (<code>ActivityResultContracts.PickVisualMedia</code>, no storage permission)</td><td><em>Derived:</em> standard, well-documented Java-friendly choices.</td><td><a href="https://square.github.io/retrofit/">https://square.github.io/retrofit/</a> · <a href="https://bumptech.github.io/glide/">https://bumptech.github.io/glide/</a> · <a href="https://developer.android.com/training/data-storage/shared/photopicker">https://developer.android.com/training/data-storage/shared/photopicker</a></td></tr>
+<tr><td>Backend</td><td><strong>Spring Boot 4.1.1</strong>, Java 21, Gradle</td><td>Learner's long-term stack. <em>Derived:</em> Gradle to match Android; Maven is fine if the learner prefers.</td><td><a href="https://docs.spring.io/spring-boot/">https://docs.spring.io/spring-boot/</a></td></tr>
+<tr><td>Backend libs</td><td>Spring Web, Spring Data JPA, PostgreSQL driver, Validation</td><td><em>Derived:</em> the minimal Spring set for REST + DB.</td><td><a href="https://spring.io/guides/gs/accessing-data-jpa">https://spring.io/guides/gs/accessing-data-jpa</a></td></tr>
+<tr><td>Database</td><td><strong>PostgreSQL 16</strong> in Docker</td><td>Learner's choice, same as the long-term app.</td><td><a href="https://www.postgresql.org/docs/16/">https://www.postgresql.org/docs/16/</a></td></tr>
+<tr><td>Background removal</td><td><strong>rembg</strong> in Docker, from our own image (<code>rembg/Dockerfile</code>: rembg + <code>pillow-heif</code>, models u2net and isnet-general-use baked in)</td><td>Learner's choice: free, local, no key, no limits. The published <code>danielgatis/rembg</code> image has no arm64 build.</td><td><a href="https://github.com/danielgatis/rembg">https://github.com/danielgatis/rembg</a></td></tr>
+<tr><td>Tagging + stylist</td><td><strong>Google Gemini API</strong>, an ordered list of current <strong>Flash</strong> models (<code>GEMINI_MODEL</code>), via the <strong>Google Gen AI Java SDK</strong> (<code>com.google.genai:google-genai</code> 1.74.0)</td><td>Learner's choice (asked for Gemini 1.5 Flash, which was retired; see below).</td><td><a href="https://ai.google.dev/gemini-api/docs">https://ai.google.dev/gemini-api/docs</a> · <a href="https://github.com/googleapis/java-genai">https://github.com/googleapis/java-genai</a></td></tr>
+<tr><td>Orchestration</td><td><strong>Docker Compose</strong></td><td>Learner's choice.</td><td><a href="https://docs.docker.com/compose/">https://docs.docker.com/compose/</a></td></tr>
+</tbody></table></div>
+<p><strong>Verified during the build</strong> (these were open questions at the start):</p>
+<ul>
+<li><strong>Gemini models.</strong> The 1.5 family is retired. <code>GEMINI_MODEL</code> lists current models, best first: <code>gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite</code> (see Tagging Service for how they are raced).
+</li>
+<li><strong>Gemini free tier</strong> (https://ai.google.dev/gemini-api/docs/rate-limits): per-minute and daily limits per model; about 30 test uploads used up a day of <code>gemini-3.5-flash</code>, and single models are sometimes overloaded (<code>503</code>). An upload or a Generate is one request, or two or three on a slow hour, when a second model is asked as well.
+</li>
+<li><strong>Google Gen AI Java SDK</strong> 1.74.0: <code>Client.builder().apiKey(…)</code>, <code>client.models.generateContent(model, content, config)</code>, an image as <code>Part.fromBytes(bytes, &quot;image/jpeg&quot;)</code>, JSON through <code>responseMimeType(&quot;application/json&quot;)</code> plus <code>responseSchema(…)</code>.
+</li>
+<li><strong>rembg HTTP server:</strong> <code>rembg s --host 0.0.0.0 --port 7000</code> in the container, <code>POST /api/remove</code> with the multipart field <code>file</code> and <code>model=u2net</code> (or <code>om=true</code> for just the mask).
+</li>
+<li><del>Spring Boot 3.x</del> → start.spring.io offers only 4.x; <strong>4.1.1</strong> chosen by the learner.
+</li></ul>
+<h2>Where It Runs and How Someone Tries It</h2>
+<p>Everything runs locally. No deployment (optional for the hackathon, not chosen).</p>
+<p><strong>Requirements:</strong> Docker Desktop, JDK 21, Android Studio with an emulator (API 26+), and a Gemini API key from <a href="https://aistudio.google.com/apikey">https://aistudio.google.com/apikey</a>.</p>
+<p><strong>Setup:</strong></p>
+<ol>
+<li><code>cp .env.example .env</code> and put your key in <code>GEMINI_API_KEY=</code> (the <code>.env</code> file is git-ignored; never commit it).
+</li>
+<li><code>docker compose up --build</code> starts <code>db</code> (Postgres, port 5432), <code>rembg</code> (host port 7010, because macOS uses 7000 for AirPlay) and <code>backend</code> (port 8080).
+ <em>During development:</em> <code>docker compose up -d db rembg</code> plus <code>./gradlew bootRun</code> in <code>backend/</code> gives faster restarts. The two ways share the database but keep the pictures in different places (the <code>images</code> volume or <code>backend/data/images</code>), so one setup sticks to one of them. <code>README.md</code> has the full steps.
+</li>
+<li>Check that it's up: <code>curl http://localhost:8080/api/health</code> → <code>{&quot;status&quot;:&quot;ok&quot;}</code>.
+</li>
+<li>Open <code>android/</code> in Android Studio, start an emulator, and press Run. The app calls <code>http://10.0.2.2:8080</code>, which is the emulator's name for your laptop.
+</li></ol>
+<p><strong>First-run note:</strong> the models (~170 MB each) are downloaded once, when the rembg image is built, so the first <code>docker compose up --build</code> takes several minutes. After every start, rembg loads its model on the first request, so the first upload is a few seconds slower: do one warm-up upload before recording.</p>
+<p><strong>Demo recording:</strong> use the emulator's screen recorder (or macOS screen recording). Follow <code>scope.md &gt; What &quot;Working&quot; Looks Like</code>: create an account, upload a few items (have 2+ tops, 2+ bottoms, 1–2 shoes and an outerwear photo ready in the emulator gallery, e.g. by dragging files onto the emulator), swipe on the canvas, Generate with and without a hint, then Save.</p>
+<p><strong>Submission:</strong> a public GitHub repo (without <code>.env</code>, <code>learner-profile.md</code> or uploaded images) plus the demo video. Handled in <code>6-ship</code>.</p>
+<h2>Look and Feel</h2>
+<p>Carries forward <code>prd.md &gt; Look and Feel</code>. <strong>Source of truth: the learner's screen design (<code>Mixyn App Screens.pdf</code>, kept outside the repo)</strong>, supplied at the start of the build; it replaces the original sketch below where they differ.</p>
+<p>As built:</p>
+<ul>
+<li><strong>Colors</strong> (<code>res/values/colors.xml</code>): <code>mocha #7B6453</code> (primary buttons, splash, avatar), <code>ink #1F1B17</code> (text, central +, dark buttons), <code>ink_muted #8A837B</code>, <code>sand_bg #F4F1ED</code>, <code>surface #FBFAF7</code>, <code>line #E3DDD5</code>, <code>error #4F0005</code> (Pantone 4975C "Red Inferno": wrong-input border + message, and Log out).
+</li>
+<li><strong>Type:</strong> <em>Instrument Serif</em> for the logo and titles, <em>Inter</em> (sans-serif) for everything else; both OFL, bundled in <code>res/font/</code>.
+</li>
+<li><strong>Rules (learner request):</strong> all texts in <code>strings.xml</code>, all colors in <code>colors.xml</code>, one spacing scale in <code>dimens.xml</code> (4/8/12/16/24/32/48 dp), styles in <code>styles.xml</code>. Reusable components: <code>MixynBottomBar</code>, <code>MixynLogoHeader</code> ("Mixyn ☰", "Profile"), <code>MixynBackHeader</code> (← + title + subtitle), <code>MixynTextField</code> (label + field + show/hide password + error), and one button base with color variants (Primary / Outline / Dark / Soft).
+</li>
+<li><strong>Portrait only:</strong> every screen stays upright (<code>android:screenOrientation=&quot;portrait&quot;</code> in the manifest). Turning the phone would rebuild the screen and lose the look on the canvas, a stylist answer on its way or an upload in progress; saving all of that across a rotation isn't worth it for the PoC.
+</li>
+<li><strong>Removed from the design for the PoC:</strong> Continue with Apple/Google, Forgot password, Terms checkbox. The <strong>Collections</strong> tab was removed from Home (planned for later).
+</li></ul>
+<p>Original sketch (superseded where the design differs):</p>
+<ul>
+<li><strong>Colors</strong> (<code>res/values/colors.xml</code>):
+ <code>sand_bg #F3EEE6</code> (window background) · <code>card_white #FFFFFF</code> (cards, canvas) · <code>ink #2B2926</code> (text, primary buttons, central +) · <code>ink_muted #7A736B</code> (secondary text, disabled tabs) · <code>line #E3DBD0</code> (dividers, placeholder outlines).
+ No brand accent: color comes from the clothes.
+</li>
+<li><strong>Type:</strong> a serif for the logo and screen titles (e.g. <em>Cormorant Garamond</em> or <em>Playfair Display</em>) and a sans-serif for everything else (e.g. <em>Inter</em>, or the system default if time is short), bundled in <code>res/font/</code>.
+</li>
+<li><strong>Style:</strong> generous whitespace, 16dp side margins, rounded white cards (12dp radius, 1dp <code>line</code> stroke, no heavy shadows), black pill-shaped primary buttons, a large black circular central <strong>+</strong>.
+</li>
+<li><strong>Empty closet:</strong> one simple vector drawable (<code>empty_closet.xml</code>) of an open wardrobe with three hangers and two drawers, in <code>line</code>/<code>ink_muted</code> strokes.
+</li>
+<li><strong>Canvas:</strong> a white card; slot images use <code>fitCenter</code> on white so the cutouts stand out; outerwear is drawn overlapping the top slot.
+</li>
+<li><strong>Disabled "coming soon" tabs:</strong> icon + label in <code>ink_muted</code>; tapping shows a small "Coming soon" toast.
+</li>
+<li><strong>Copy tone:</strong> warm and short. Use the PRD strings as written ("Your closet is empty", "Add your first piece…", "We couldn't find anything burgundy. Here is another stylish option!").
+</li></ul>
+<h2>Components</h2>
+<h3>Backend</h3>
+<h4>Auth and Users API</h4>
+<p><code>AuthController</code> + <code>AuthService</code> + <code>User</code> and <code>Session</code> entities. Real email + password accounts.</p>
+<ul>
+<li><code>POST /api/auth/register</code> <code>{name, email, password, city, country, latitude, longitude}</code> → <code>201 {user, token}</code>. Email is trimmed, lower-cased and must be unique → <code>409 {&quot;error&quot;:&quot;email_taken&quot;}</code> (the app suggests Log In). Password min 8 characters and at most 72 bytes (BCrypt reads no more; a Cyrillic letter is two bytes) → <code>400</code>. The city must come from the autocomplete (coordinates required). The password is stored only as a <strong>BCrypt hash</strong> (<code>spring-security-crypto</code>'s <code>BCryptPasswordEncoder</code>; no full Spring Security).
+</li>
+<li><code>POST /api/auth/login</code> <code>{email, password}</code> → <code>200 {user, token}</code> or <code>401 {&quot;error&quot;:&quot;invalid_credentials&quot;}</code> (same response for unknown email and wrong password).
+</li>
+<li><code>POST /api/auth/logout</code> → deletes the current token → <code>204</code>.
+</li>
+<li><code>GET /api/me</code> → <code>200 {id, name, email, city, country, latitude, longitude, username, avatarUrl}</code> or <code>401</code>. Used on splash to confirm the stored session still works.
+</li>
+<li><strong>Profile</strong> (<code>ProfileController</code> + <code>ProfileService</code>): <code>PUT /api/me</code> <code>{name, username?, city, country, latitude, longitude}</code> → the user (a username is trimmed, loses a leading "@", is lower-cased, must match <code>[a-z0-9._]{3,30}</code> → <code>400 invalid_username</code>, and be nobody else's → <code>409 username_taken</code>); <code>PUT /api/me/password</code> <code>{currentPassword, newPassword (≥8)}</code> → <code>204</code>, <code>403 wrong_password</code>, and every other session of the user ends; <code>POST /api/me/avatar</code> (multipart <code>photo</code>) → the middle square of the photo, ≤512 px, replaces the old file (<code>ImageStorage.squareAvatar</code>); <code>DELETE /api/me</code> → <code>204</code>, and the calendar, the outfits and clothes with their pictures, the photo, the sessions and the user are gone. <code>ProfileServiceTest</code> covers these rules.
+</li>
+<li><code>GET /api/cities?q=Lvi</code> (public) → up to 8 <code>{name, region, country, latitude, longitude}</code>. <code>CityService</code> proxies the free <strong>Open-Meteo Geocoding API</strong> (no key), keeps only populated places, removes duplicates, and searches in Ukrainian when the query is Cyrillic. Failure → <code>502 city_search_failed</code>.
+</li>
+<li><strong>Token:</strong> a random 32-byte value (Base64URL) stored in <code>sessions</code>; the app sends it as <code>Authorization: Bearer &lt;token&gt;</code>.
+</li>
+<li><strong>Ownership:</strong> <code>AuthInterceptor</code> resolves the token to a user on every <code>/api/**</code> call except register/login/health (<code>401</code> if missing/unknown). For <code>/api/users/{userId}/**</code> the path id must equal the token's user, and item/outfit ids are checked against that user → otherwise <code>403</code>/<code>404</code>. This is what makes "each user sees only their own clothes" a guarantee, not a UI convention.
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; Account and Session</code>.</p>
+<h4>Items API</h4>
+<p><code>ItemController</code> + <code>ItemService</code>.</p>
+<ul>
+<li><code>POST /api/users/{userId}/items</code> (multipart field <code>photo</code>, JPEG/PNG/HEIC up to 10 MB) → <code>201 Item</code>. Steps: rembg → store PNG → tag → save. See <code>prd.md &gt; Adding Clothes</code>, <code>prd.md &gt; AI Item Details</code>.
+</li>
+<li><code>GET /api/users/{userId}/items</code> → <code>200 [Item]</code>, newest first.
+</li>
+<li><code>PATCH /api/items/{itemId}</code> <code>{type?, colors?, name?, tags?, seasons?}</code> → <code>200 Item</code>. This is how the user corrects AI results. Only present fields change; every value must come from its fixed list (<code>type</code> from <code>ItemType</code>, up to 3 <code>colors</code> from <code>ItemColor</code>, the 8 tags, the 5 seasons) or the request is <code>400 validation_failed</code>. Another user's item is <code>404</code>.
+</li>
+<li><code>POST /api/items/{itemId}/photo</code> <code>{rotation: 0|90|180|270, mirror, scale: 50..150}</code> → <code>200 Item</code> ("Edit photo" → Done). The picture is mirrored, then turned, and saved under a new file name; <code>scale</code> is only stored and applied by the app when drawing.
+</li>
+<li><code>GET /api/items/{itemId}/use</code> → <code>{outfits, wornOn: [&quot;2026-10-12&quot;, …]}</code>: how many saved outfits have the item and the calendar days whose outfit had it (earlier versions included). The confirmation of <strong>Remove from wardrobe</strong> says so ("It's in 2 saved outfits. You wore it on 3 days, the last time on 21 October.") and that those outfits' pictures will still show the piece, as a record of what was worn, while it leaves their lists of pieces.
+</li>
+<li><code>DELETE /api/items/{itemId}</code> → <code>204</code>. Removes the item and its picture for good (the card's <strong>Remove from wardrobe</strong> row, after a confirmation). Someone else's item is <code>404</code>, like the other item calls.
+</li>
+<li><code>GET /api/item-types?q=</code> → <code>[{code, label, category}]</code> (29 types, names containing <code>q</code>, prefix matches first) and <code>GET /api/item-colors</code> → <code>[{code, label, hex}]</code> (18 colors). These fixed lists live in the backend enums <code>ItemType</code> and <code>ItemColor</code>; the AI's JSON schema and the app's pickers both use them, so nobody can invent a value.
+</li>
+<li><code>Item</code> JSON: <code>{id, imageUrl, type, typeLabel, category, colors[{code,label,hex}], colorName, colorHex, scale, name, tags[], seasons[], createdAt}</code>, where <code>imageUrl</code> = <code>/images/{file}</code> and <code>colorName</code>/<code>colorHex</code> repeat the first color.
+</li></ul>
+<h4>Image Storage</h4>
+<p><code>ImageStorage</code> writes PNGs to <code>${IMAGE_DIR}</code> (<code>/data/images</code>, a Docker volume) as <code>{uuid}.png</code>. <code>WebConfig</code> serves them at <code>GET /images/**</code>.</p>
+<h4>Background Removal Client</h4>
+<p><code>RembgClient</code> uses Spring <code>RestClient</code> to send the photo to <code>${REMBG_URL}</code> and returns the PNG bytes. Timeout 60 s (the first request after a start loads the model, and a repair asks for a second mask). PRD ref: <code>prd.md &gt; Adding Clothes</code>.</p>
+<h4>Backups</h4>
+<p>The wardrobe is the only part of Mixyn that git doesn't hold: the database lives in the <code>pgdata</code> Docker volume and the item pictures in <code>backend/data/images</code>. <code>scripts/backup.sh [folder]</code> writes both into one dated archive (<code>pg_dump --clean --if-exists</code> plus the pictures), by default into "Mixyn backups" in iCloud Drive, and keeps the newest five. <code>scripts/restore.sh &lt;archive&gt;</code> puts them back after a typed confirmation: the database is replaced, pictures are only added. <code>.env</code> is deliberately not in the archive.</p>
+<h4>Cutout Service</h4>
+<p><code>CutoutService</code> turns a photo into a cutout. Normally that is rembg's own u2net cutout. It then measures how much of the piece the model was unsure about (mask values between 20 and 235, as a share of everything above 20). Under 45% the cutout is used as it is. Above that it is <strong>repaired</strong>: rembg is asked for the mask only (<code>om=true</code>) of a second model, <code>isnet-general-use</code>; the larger value per pixel is kept; <code>solidify</code> stretches the mask (≤ 20 → 0, ≥ 60 → 255, a soft ramp between) and clears every separate blob that is under 2% of the largest one or faint on average; and the cutout is rebuilt from the photo's own RGB with that mask as alpha, because rembg darkens the areas it is unsure about. If Java can't decode the photo (HEIC from another client) or the mask doesn't fit it, the first cutout stands. Both models are baked into the rembg image.</p>
+<h4>Tagging Service</h4>
+<p><code>TaggingService</code> makes one Gemini call (through <code>GeminiJson</code>) with the cutout on a white background plus a short prompt. JSON output is constrained to:</p>
+<pre><code>{ &quot;subject&quot;: &quot;SINGLE_ITEM|PERSON|MULTIPLE_ITEMS|NOT_CLOTHING&quot;, &quot;onBody&quot;: false, &quot;box&quot;: [0, 0, 1000, 1000], &quot;front&quot;: &quot;OPEN|CLOSED&quot;, &quot;opening&quot;: [380, 620, 470, 530],
+  &quot;type&quot;: &quot;BLAZER&quot;, &quot;category&quot;: &quot;TOP|BOTTOM|SHOES|OUTERWEAR|BAG|ACCESSORY&quot;, &quot;colors&quot;: [&quot;KHAKI&quot;, &quot;BROWN&quot;] }</code></pre>
+<ul>
+<li><strong>Single-item check:</strong> if <code>subject</code> is not <code>SINGLE_ITEM</code>, nothing is saved and the upload returns <code>400 {&quot;error&quot;:&quot;not_single_item&quot;}</code> with a message for that case (person / several items / not clothing). <code>SINGLE_ITEM</code> means one piece is the clear subject of the photo: on its own, one of a pair, with a small detail that belongs to it (a shirt with its tie), or worn / held by a person. For the last case the answer also carries <code>onBody</code> and <code>box</code> ([ymin, xmin, ymax, xmax], 0–1000), and the stored cutout is cut down to that box. <code>PERSON</code> is a whole outfit with no single subject; <code>MULTIPLE_ITEMS</code> is pieces that belong in a wardrobe separately.
+</li>
+<li><strong>AI unavailable:</strong> if every model fails or times out, the item is <strong>still saved</strong> with <code>category = null</code> and no single-item check; the item card shows "Choose a category". Items without a category don't appear on the canvas until one is set.
+</li>
+<li><strong>Reliability (<code>GeminiJson</code>):</strong> <code>GEMINI_MODEL</code> is an ordered list, the stronger flash models first (<code>gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite</code>). The models are <strong>raced</strong>, not tried one after the other: the first is asked; if it hasn't answered after 5 s (10 s for requests with thinking) or has failed (free-tier <code>503 high demand</code>, <code>429 quota</code>), the next is asked as well, and the first valid answer wins. Each request has 12 s and no SDK retries, all of them 20 s together; a model that failed or was outrun is tried last for ten minutes. Tagging asks for no thinking (about 3 s instead of 8–9 s); the stylist and the chat think. Every answer is validated before use.
+</li>
+<li>The AI does <strong>not</strong> rotate photos (tried, then removed at the learner's request: it missed some cases); rotation is a user action on the item card.
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; AI Item Details</code>, <code>prd.md &gt; Adding Clothes</code>.</p>
+<h4>Stylist Service</h4>
+<p><code>StylistService.generate(userId, hint)</code>:</p>
+<ol>
+<li>Load the user's categorized items and build a compact text list: <code>id | category | type | colors | name | tags | seasons</code>.
+</li>
+<li>Make one Gemini call with that list plus the hint (or "no hint"). JSON output:
+ ```json
+ { "topId": 12, "bottomId": 7, "shoesId": 3, "outerwearId": null, "underId": 9, "bagId": 21, "accessoryIds": [30, 31], "hintMatched": true }
+ ```
+</li>
+<li><strong>Validate:</strong> each id must belong to this user <em>and</em> be in the right category. Any invalid or missing slot is filled with a random item from that category; if the category is empty, the slot is <code>null</code> and the app shows the placeholder.
+</li>
+<li>If <code>hintMatched</code> is false and a hint was given, <code>message</code> = "We couldn't find anything {hint}. Here is another stylish option!"
+</li>
+<li>Return <code>{top, bottom, shoes, outerwear, under, bag, accessories, hintMatched, message, source}</code> with full <code>Item</code> objects; <code>source</code> is <code>AI</code>, or <code>RANDOM</code> when no model answered. Steps 3–4 are the pure function <code>StylistService.buildLook</code>, covered by <code>StylistServiceTest</code> (8 cases). Outerwear is kept only when the model picked a valid one; it is never added at random.
+</li></ol>
+<p>Outerwear, a bag and up to four accessories (one per type) are optional layers: the prompt tells the stylist it <em>may</em> add them, and an invalid pick is dropped, never replaced at random (this extends the PRD's assumption in <code>prd.md &gt; Open Questions</code>, which covered outerwear only). PRD ref: <code>prd.md &gt; AI Stylist</code>.</p>
+<h4>Stylist Chat Service</h4>
+<p><code>StylistChatService</code> behind <code>POST /api/users/{userId}/stylist/chat</code> <code>{message (≤500), history: [{role: user|stylist, text, looks: [LookIds], itemIds}] (≤12)}</code> → <code>{reply, offTopic, looks: [GenerateResponse] (≤3), items: [Item] (≤12)}</code>. Stateless like the one-click stylist: the phone sends the chat so far. One Gemini call (thinking on, the same model race) with a JSON schema <code>{offTopic, reply, looks[], itemIds[]}</code>; the prompt lists the wardrobe with a <strong>worn</strong> column (<code>worn</code>: times and last day, from <code>outfit_wears</code> and the pieces of the outfit as it was worn) and says what the stylist does: outfits (as many as asked, at most 3), pieces to show, describing the user's style, tips to improve it with what they own, and nothing else. <code>interpret</code> is the trust boundary: every look goes through <code>StylistService.buildLook</code> (own items, right places, complete; a dress needs no bottoms), pieces must be the user's own (once each), and an off-topic answer carries no looks or pieces. No answer from Gemini → "The stylist is taking a break." <code>StylistChatServiceTest</code> covers it.</p>
+<h4>Weather</h4>
+<p><code>WeatherService.forUser(userId)</code> reads the user's saved coordinates and asks the free <strong>Open-Meteo forecast API</strong> (no key) for the current temperature, "feels like" and weather code, then maps them to <code>{temperature, feel: freezing|cold|cool|mild|warm|hot, sky, city}</code>. Cached 15 minutes per place (the coordinates), not per user, so after Change city the new city's weather shows at once; the city's name always comes from the profile. Any failure means "no weather". <code>GET /api/me/weather</code> → that object or <code>502 weather_unavailable</code>. The stylist adds one line about the weather to its prompt when it is available. The weather page needs more, from the same answer (one call asks for the weather now, every hour and 7 days, in the place's own time zone): <code>WeatherService.outlookForUser</code> → <code>GET /api/me/weather/forecast</code> → <code>{city, temperature, feel, sky, day, wind (km/h), humidity, high, low, rainChance (%, the hours still to come today), windMax, uvIndex, hours: 24 × {time, temperature, sky, day, rainChance} from the current hour, days: 7 × {date, high, low, sky, rainChance}}</code> or <code>502 weather_unavailable</code>.</p>
+<h4>Outfits API</h4>
+<p><code>OutfitController</code>.</p>
+<ul>
+<li><code>POST /api/users/{userId}/outfits/generate</code> <code>{hint? (≤500 chars), history?: [{hint, look:{topId,bottomId,shoesId,outerwearId}}] (≤6), current?: {…ids}}</code> → stylist result (above). The backend keeps no conversation state: the app sends the session's memory each time, and it is only context for the model — the answer is validated the same way.
+</li>
+<li><code>POST /api/users/{userId}/outfits</code> — multipart with two parts: <code>picture</code> (the look as a PNG with a see-through background) and <code>outfit</code> (JSON <code>{look: {topId, bottomId, shoesId, outerwearId, underId, bagId, accessoryIds}, tags?, seasons?, wornOn?}</code>) → <code>201 Outfit</code>. <code>OutfitService.checkLook</code> is the trust boundary: every id must be an item of this user's wardrobe, wearable in the place it is given (<code>Slot.accepts</code>), and worn only once; the top, bottom and shoes are required (a <code>DRESS</code> top makes the bottom optional: <code>Item.replacesBottom</code>), the layers optional → otherwise <code>400 validation_failed</code> (a missing base piece is named: "Add shoes to complete the look."). The picture is cropped and scaled like an item photo (<code>ImageStorage.cropToItem</code>). With <code>wornOn</code> (the phone's today) the outfit is also put on that day, in the same transaction.
+</li>
+<li><code>GET /api/users/{userId}/outfits</code> → <code>200 [Outfit]</code>, newest first: <code>{id, imageUrl, pieces: [{slot, item}], tags, seasons, createdAt, lastWornOn}</code>.
+</li>
+<li><code>PATCH /api/outfits/{outfitId}</code> <code>{tags?, seasons?}</code> → <code>200 Outfit</code>; <code>DELETE /api/outfits/{outfitId}</code> → <code>204</code> (the outfit, its picture and its calendar days). Someone else's outfit is <code>404</code>.
+</li>
+<li><code>PUT /api/outfits/{outfitId}</code> — the same two parts as saving (without <code>wornOn</code>) → <code>200 Outfit</code>: "Update" after Edit. Before a worn outfit gets its new look, its days move to a copy of it as it was (<code>outfits.replaced_by</code> = the outfit now, the old picture); copies are left out of the list and the duplicate check, can't be changed (<code>409 old_version</code>) and go when the outfit is deleted. <code>wornDays</code> counts an outfit's days with those of its copies.
+</li>
+<li>Saving or updating into an outfit that exists with the same pieces in the same places → <code>409 duplicate_outfit</code> with <code>outfitId</code>.
+</li>
+<li><code>PATCH /api/items/{id}</code> with a new type calls <code>OutfitService.fitTypeChange</code> first: in a current outfit where the piece can't be worn in its place (<code>Slot.accepts(ItemType)</code>), it moves to its new type's place; if that place is taken (for accessories: by one of the same type) → <code>409 type_conflict</code> naming the outfit and the piece, with <code>outfitId</code>, and nothing changes.
+</li>
+<li><code>PUT /api/users/{userId}/calendar/{date}</code> <code>{outfitId}</code> → <code>200 {date, outfit}</code>: "Wear it today" on a saved outfit. One outfit per day (a unique constraint; a later one replaces it); a date after tomorrow by the server's clock is refused.
+</li>
+<li><code>GET /api/users/{userId}/calendar?from=&amp;to=</code> → <code>200 [{date, outfit}]</code>, only the days something was worn.
+</li>
+<li>Removing an item (<code>DELETE /api/items/{id}</code>) takes it out of the saved outfits that had it (<code>OutfitService.forgetItem</code>, same transaction); the outfits stay, with their picture as it was saved. The card of an earlier version (from the calendar) checks its pieces against the wardrobe after a piece's card, so a removed piece leaves its list too.
+</li>
+<li>The outfit's categories and seasons come from the same fixed lists as an item's (<code>Labels</code>).
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; Saving Outfits</code>.</p>
+<h4>Errors and Health</h4>
+<p><code>ApiExceptionHandler</code> maps errors to <code>{&quot;error&quot;: code, &quot;message&quot;: text}</code>: <code>401 unauthorized</code>/<code>invalid_credentials</code>, <code>403 forbidden</code>, <code>404 not_found</code>, <code>409 email_taken</code>, <code>400 invalid_image</code>, <code>502 background_removal_failed</code>. <code>GET /api/health</code> → <code>{&quot;status&quot;:&quot;ok&quot;}</code>.</p>
+<h3>Android App</h3>
+<h4>Session Store</h4>
+<p><code>SessionStore</code> wraps SharedPreferences and holds <code>userId</code>, <code>userName</code> and the session <code>token</code> (never the password). <code>ApiClient</code> adds the token as a Bearer header; a <code>401</code> clears the session and returns to Welcome. PRD ref: <code>prd.md &gt; Account and Session</code>.</p>
+<h4>API Client</h4>
+<p><code>ApiClient</code> (Retrofit, base URL <code>http://10.0.2.2:8080/</code>, 90 s read timeout for uploads) + a <code>MixynApi</code> interface + DTOs. Cleartext HTTP to <code>10.0.2.2</code> is allowed only through <code>res/xml/network_security_config.xml</code>.</p>
+<h4>Splash, Welcome and Auth Screens</h4>
+<p><code>SplashActivity</code> (logo, ~1 s, then routes on the session) → <code>WelcomeActivity</code> (logo, "Mixyn", description, Create Account / Log In) → <code>AuthActivity</code> (one layout in two modes: create = name + email + password + city; log in = email + password; friendly inline errors for wrong credentials and an already-used email, with a "Log In instead" link). After creating, <code>AccountCreatedActivity</code> shows a full "Account created" screen (design page 4a: arch art, "Welcome to Mixyn, {name}.", Snap / Mix / Relax, <strong>Let's go</strong> and <strong>I'll look around first</strong>) and then opens Main; from slice 2, <strong>Let's go</strong> opens Add clothes. PRD ref: <code>prd.md &gt; Account and Session</code>, <code>prd.md &gt; Screens and Layout</code>.</p>
+<h4>Main Screen and Navigation</h4>
+<p><code>MainActivity</code> has the <code>MixynBottomBar</code> with Home, Calendar, a central <strong>+</strong>, Stylist and Profile. Home hosts <code>WardrobeFragment</code> with a <code>TabLayout</code>: <strong>Clothes</strong> (<code>ClothesFragment</code>, a grid or the empty state) and <strong>Outfits</strong> (<code>OutfitsFragment</code>, a two-column grid of the saved outfits' pictures or the empty state). <strong>Calendar</strong> opens <code>CalendarFragment</code>. <strong>Stylist</strong> (in place of Friends) opens the Stylist chat. <strong>Profile</strong> opens <code>ProfileFragment</code> (design page 19): the photo, name, @username · city, three tiles (pieces, outfits saved, days worn: the sum of the outfits' <code>wornDays</code>), the closet's palette (up to 8 colors, each as wide as the number of pieces with it, clipped to a rounded bar) and the 3 tags used most (pills outlined in the tag's color); then <strong>City for weather</strong> (<code>CityWeatherActivity</code>, a scrolling page after the learner's reference screenshot, in Mixyn's palette: a mocha card with the city, the date, a picture of the weather (sun, moon, cloud, partly cloudy, fog, rain, snow, storm — vector drawables), the temperature in big serif numbers, the sky and how it feels, and wind / humidity / chance of rain; a <strong>For today</strong> card of tips from <code>WeatherAdvice</code> — what to wear for the feel, then an umbrella or a raincoat when rain is likely (≥ 50% in an hour still to come today, with that hour; a raincoat rather than an umbrella in wind ≥ 30 km/h), a small umbrella from 30%, otherwise "no rain expected", and snow, storms, wind, UV ≥ 6, a swing of 8° or more, a hot day ≥ 28° — rules on the phone, no AI call; <strong>Today</strong>: 24 hour capsules, the current one in mocha; <strong>Next 7 days</strong>; <strong>Change city</strong> opens <code>CitySheet</code> with <code>CityPicker</code>), <strong>Log out</strong> and <strong>Delete account</strong> — both confirmed in a dialog and followed by <code>GoodbyeActivity</code> ("You're logged out" / "Your account is deleted", Back to start → Welcome). The pencil opens <code>EditProfileActivity</code>: photo (picked from the gallery, read by <code>PhotoFiles</code> and saved at once), name, username, city (<code>CityPicker</code>, the sign-up dropdown as a component) and a new password with the current one; checked on the phone first like sign-up, and the backend's <code>username_taken</code> / <code>invalid_username</code> / <code>wrong_password</code> land under their fields. Streaks, the morning reminder and who sees my fits are later. <strong>+</strong> opens <code>AddMenuSheet</code> (a BottomSheet) with Add clothes and Create outfit.</p>
+<ul>
+<li><strong>Search and filters</strong> live in Home's header (<code>MixynLogoHeader</code> with a second action): the magnifier shows a search field under the tabs (<code>MixynTextField</code>, <code>fieldType=&quot;search&quot;</code>), the three lines open the shown tab's <code>FilterSheet</code> and carry a dot while a filter is on. <code>WardrobeFragment</code> keeps one <code>WardrobeFilter</code> per tab (the tab fragments are made anew on every switch) and tells the shown tab to redraw. Filtering is done <strong>on the phone</strong>: both lists are already loaded in full with everything the rules need, so there is no request and no backend change.
+</li>
+<li><code>WardrobeFilter</code> rules. A piece: color, type, tags, season — one hit inside a group is enough, every group with a choice must fit. An outfit: every chosen color and every chosen kind of piece must be among its clothes; one of the chosen categories and seasons is enough. "All" seasons fits any season. Search matches the piece's name (<code>ItemNames</code>) or type; an outfit matches when one of its pieces does. The sheet offers only the colors and types the loaded clothes actually have.
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; Adding Clothes</code>, <code>prd.md &gt; Screens and Layout</code>, <code>prd.md &gt; Search and Filters</code>.</p>
+<h4>Add Item Flow</h4>
+<p><code>AddItemActivity</code> launches the Photo Picker (multi-select, but picking more than one shows "One photo at a time" and uploads nothing), shrinks the photo to max 1600 px JPEG on the phone, then shows the processing state (progress indicator + "Removing background…"), then "Background removed · 1/1 completed" + <strong>View item</strong>, or an error + <strong>Try again</strong>; a <code>not_single_item</code> answer shows "Only one item, please" + <strong>Choose another photo</strong>. PRD ref: <code>prd.md &gt; Adding Clothes</code>, <code>prd.md &gt; States and Boundaries</code>.</p>
+<h4>Item Detail</h4>
+<p><code>ItemDetailActivity</code> (design pages 9–11): back arrow, the photo, the name ("Add a name…" + pencil → dialog) and an <strong>Edit</strong> pill, then a card with four rows — type + category, tags, colors (dots + names), season — and the bottom bar. Every change is sent at once and the card is redrawn from the answer.</p>
+<ul>
+<li><strong>Edit</strong> opens <code>EditPhotoSheet</code>: Size slider with −/+ (50–150%), Left 90° / Right 90° / Mirror, Reset, Done. Changes are previewed live on the photo (dashed frame) and saved only on Done.
+</li>
+<li>Choices use one reusable <code>OptionsSheet</code>: a searchable list for types (type "bl" → Blouse, Blazer), multi-select chips for tags, colors (max 3) and seasons.
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; AI Item Details</code>.</p>
+<h4>Outfit Canvas</h4>
+<p><code>OutfitCanvasActivity</code>: the pieces stand like a silhouette on the sand background — top, bottom, shoes — each slot a horizontal <code>ViewPager2</code> over that category's items, with the previous/next piece peeking in from the sides, faded and smaller. Over them lie optional <strong>layers</strong>, each its own pager, hidden until put on: outerwear, a bag, and accessories. Items without a category are not shown. (The layout started from design page 14; the layers and the bottom panel are the learner's later design.)</p>
+<ul>
+<li>Header: back, a weather chip ("13° · cool", from <code>GET /api/me/weather</code>; hidden if unavailable; when the screen is too narrow for its whole text it shows just "-2°", so <strong>Next</strong> is never cut off) and <strong>Next</strong>, which takes the look to its card (see Outfit Card). For that the canvas draws its slots and layers into a bitmap with a see-through background (<code>drawOutfit</code>: the neighbors peeking in from the sides are hidden for the drawing) and <code>OutfitPicture</code> cuts it down to the outfit and writes a PNG into the cache folder. The pieces are loaded with <code>disallowHardwareConfig()</code>, because such a drawing needs bitmaps in ordinary memory.
+</li>
+<li>Bottom panel: four equal tiles — <strong>Under layer</strong>, <strong>Outerwear</strong>, <strong>Bag</strong>, <strong>Accessories</strong>. A tile puts its layer on and enters <em>focus</em>: the slots and the other layers are faded and stop reacting, swipes change only that layer, and the panel shows <strong>Remove</strong> / <strong>Done</strong>. Accessories first opens a multi-choice sheet of the accessory types the closet has.
+</li>
+<li>Outerwear shares one frame with the top and the bottom and is drawn as its left half (<code>PieceImageView.drawLeftHalf</code>). <code>PieceImageView</code> finds a jacket's shoulders from its outline: on each side, going down from the neck to where that side reaches furthest out, the corner furthest outside the straight line between the two. <code>hangOver</code> puts them at one size and place for every jacket over every top, all in shares of the body frame's width: the shoulders 76% of it apart, 8% below the top's upper edge (where a T-shirt's and a dress's are) and 5% left of the middle — so swiping neither jackets nor tops changes its size or place, and its sleeve covers a T-shirt's spread sleeve; its length follows from its photo, never past the end of the body frame. The outerwear pager and <code>canvas_slots</code> don't clip, so a wide coat or a raised collar can reach past its page and into the head room, and the pager is faded without a layer of its own size (<code>forceHasOverlappingRendering(false)</code>), which would cut the collar off again. Shoes are drawn at 70% so they sit below the trousers.
+</li>
+<li><strong>Under layer</strong>: a fourth tile puts a thin top (<code>T_SHIRT</code>, <code>SHIRT</code>, <code>LONG_SLEEVE</code>, <code>TANK_TOP</code>; <code>underLayer: true</code> in the item) behind the top, chosen in focus like the other layers (the top stays fully visible meanwhile). The top and bottom live in one <code>ConstraintLayout</code> frame so the layer can be drawn between them: bottom → under layer → top → outerwear; without an under layer the bottom is lifted back over the top's hem. <code>PieceImageView.drawBehind</code> takes the rectangle the top's image covers and draws the under piece at the top's width in two halves — the collar half a little above the top, the hem half a little below it, meeting behind the top's middle — clipped to a middle strip. The layer never offers the piece that is the top.
+</li>
+<li><strong>Worn in one place</strong>: the top slot offers every top except the ones on as the under layer or the outerwear right now, and those layers offer everything except the top.
+</li>
+<li><strong>Open-front pieces</strong>: an item may carry <code>opening</code> — <code>[neckLeft, neckRight, hemLeft, hemRight]</code> in thousandths of the picture's width, from the tagging call (<code>front: OPEN</code>). <code>PieceImageView</code> can leave that wedge out of its drawing (<code>clipOutPath</code>): the top does so while an under layer is on, outerwear always. A piece that is see-through between its fronts is detected from its pixels instead. The item card's <strong>Open front / Closed front</strong> row (tops and outerwear only) sends <code>PATCH /api/items/{id} {openFront}</code>: false clears <code>opening</code>, true keeps a measured opening or sets a typical one. Under an open top the under piece is drawn whole, clipped to the top's own outline (first to last pixel of every row) so it shows through the opening but never beside the shoulders.
+</li>
+<li>A type can have a second slot (<code>alsoCategory</code>): a <code>CARDIGAN</code> is a top that can also be the outerwear. The outerwear layer offers every outerwear-capable piece except the one that is the top right now, and comes off if its piece becomes the top; the stylist validates the same rule.
+</li>
+<li>Accessories are placed by <code>AccessorySpot</code> (head, neck, waist, by the shoulder, by the hand; the head ends where the top begins and follows its shoulder line, so a hat never hides the collar; a hat stands on that line, always <code>canvas_hat_width</code> wide, <code>PieceImageView.standOn</code>; the outfit starts <code>canvas_head_room</code> below the header to leave it room); types that share a spot share one pager, so an outfit shows one of them. The bag hangs beside the bottom.
+</li>
+<li><strong>Ask AI</strong> is a round button at the side of the canvas. It opens <code>AskAiSheet</code>: a multi-line request (a word, an occasion or a full description) and <strong>Generate look</strong>. The canvas keeps the session's conversation (each request + the look it produced, max 6) and sends it, with the outfit currently on screen (layers included), in every request; from the second request the sheet shows "Last request…" and <strong>Start over</strong>. The result moves each slot to the chosen piece, puts the chosen layers on and the others off, and shows the stylist's message, if any, as a toast.
+</li>
+<li><strong>New look and empty slots</strong>: a new look (not Edit, not the stylist) starts on a random piece in each of the top, bottom and shoes; layers off. A base slot with no pieces hides its pager and shows <code>SlotPlaceholderView</code> (dashed outline, small +, "Add shoes to complete the look"), which opens <code>AddItemActivity</code> for a result like the dialog below; it is left out of the outfit's picture. <strong>Next</strong> first checks that the top, bottom and shoes are on; if not, a dialog names what is missing and offers <strong>Add to wardrobe</strong>.
+</li>
+<li><strong>Filter</strong>: the header's filter button opens <code>FilterSheet</code> with <code>CanvasFilter.groups</code>: a section per category the closet has (Tops, Bottoms, Shoes, Outerwear, Bags, Accessories), each with its own Type and Color group. <code>showWardrobe</code> splits the loaded wardrobe into the carousels and runs each through <code>CanvasFilter.narrow(category, …)</code> (one of that category's chosen types and one of its chosen colors, where any are chosen); the under layer isn't filtered. A slot or layer it empties is remembered in <code>filteredOut</code>: the slot's <code>SlotPlaceholderView</code> shows "No shoes match your filter" without the + and opens the filter, a layer tile shows a toast, and Next offers <strong>Clear filter</strong>. The filter is cleared when the stylist's look or a newly added piece would be hidden by it. It lives only while the canvas is open.
+</li>
+<li><strong>Dress</strong>: a <code>DRESS</code> in the top slot is hung like a long coat (<code>PieceImageView.hangLong</code>: from the top of its slot, as large as fits in the whole body frame; the top pager doesn't clip it). <code>offerBottoms</code> then gives the bottom slot an empty first page (<code>SlotPagerAdapter</code> <code>emptyFirst</code>) and moves to it; swiping on shows bottoms, drawn behind the dress (<code>layBottom</code>). Back to another top, the bottom it had before returns. The random start, the stylist (<code>buildLook</code> never adds a random bottom to a dress; the prompt says a dress replaces the bottom) and Edit leave it empty.
+</li>
+<li>Missing pieces: when a tile is tapped and the closet has nothing for that layer, a dialog says so and offers <strong>Add to wardrobe</strong> (opens <code>AddItemActivity</code> for a result: as soon as the piece is added the screen closes, the canvas reloads the wardrobe, keeps the outfit, names what the piece was recognized as and puts it on in focus) or <strong>Skip</strong>.
+</li>
+<li>Weather tip: tapping the weather chip, or Next for the first time, opens <code>WeatherTipSheet</code> when the weather calls for pieces the closet has and the outfit lacks — a jacket (the outerwear layer), beanie, scarf and gloves when it feels cool, cold or freezing; a cap, hat or headscarf when hot (or warm and sunny). Each piece is a card (design page 15), ticked to begin with; the user unticks what they don't want. <strong>Add to the outfit</strong> puts the ticked pieces on and enters focus on those layers; <strong>Not now</strong> continues. If the closet has none of them, the chip opens the missing-pieces dialog instead; Next just goes on.
+</li>
+<li>Still to come: a random starting look and empty-category placeholders (slice 5).
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; Outfit Canvas and Carousel</code>, <code>prd.md &gt; AI Stylist</code>, <code>prd.md &gt; Saving Outfits</code>.</p>
+<h4>Stylist Chat</h4>
+<p><code>StylistChatActivity</code>, opened by <strong>Stylist</strong> in the bottom bar (<code>MixynBottomBar.Tab.STYLIST</code>, in place of Friends): a back header with "New chat", the messages (<code>ChatAdapter</code>: the user's on the right on <code>bg_chat_user</code>, the stylist's on the left on <code>bg_card_white</code>, and "Putting it together…" while waiting), and a field with a round send button. Before the first message it shows what the stylist can do and six suggestion chips. A stylist answer shows its outfits as cards side by side (<code>item_chat_look</code>: top, bottom and shoes stacked, the layers as small pictures; a dress takes the bottom's room) and its pieces as pictures. A card opens the outfit on the canvas as a new look (<code>OutfitCanvasActivity.wear</code>, then Next → Save as usual); a picture opens the item card. The chat (<code>ChatMessage</code>) lives in memory while the app runs and belongs to one account; each message is sent with the last 12 messages (failed requests left out). Saved chat history and photo try-on are later.</p>
+<h4>Outfit Card</h4>
+<p><code>OutfitActivity</code> (design page 17, with the learner's rows instead of the name chips): back and share ("coming soon"), a serif title, a subtitle, the look on a white 4:5 card with the "mixyn" mark, then — like the item card — a card with one row per piece (thumbnail, name from <code>ItemNames</code>, place), and a card with the colors (dots + names, every color of the pieces once), the category and the seasons (both chosen in <code>OptionsSheet</code>).</p>
+<ul>
+<li><strong>From the canvas</strong> ("Your fit for today", today's date · weather): nothing is stored yet; the chosen category and seasons live on the screen. <strong>Save</strong> uploads the picture with the pieces and opens Home on the Outfits tab; <strong>Wear it today</strong> does the same with <code>wornOn</code> and opens the Calendar.
+</li>
+<li><strong>Edit</strong> (a saved outfit) opens <code>OutfitCanvasActivity.edit</code>: after the wardrobe loads, <code>wearSaved</code> puts the outfit on without animation; a piece the slots don't offer any more is left out, and an empty top/bottom/shoes slot shows a piece from the closet — both with a note. Next then opens the card as "Your changes" with <strong>Save as new</strong> and <strong>Update</strong>. A day of the calendar that holds an earlier version opens it as "As you wore it": read-only, with <strong>See it now</strong>. A refused save or update is told apart: <code>duplicate_outfit</code> (dialog, <strong>Open it</strong>), <code>not_found</code> while updating (dialog, <strong>Save as new</strong>).
+</li>
+<li>Every piece in the list opens its item card; coming back, the card loads its pieces again (a saved outfit from <code>GET …/outfits</code>, a new look from the wardrobe, dropping a piece that was removed).
+</li>
+<li><strong>A saved outfit</strong> ("Your outfit", "Saved 12 October · last worn…"), opened from the Outfits tab or a calendar day: changes are sent with <code>PATCH</code> and the card is redrawn from the answer; <strong>Wear it today</strong> sends <code>PUT …/calendar/{today}</code> and then reads "Worn today"; <strong>Delete outfit</strong> asks "Delete this outfit?" and then sends <code>DELETE</code>.
+</li></ul>
+<p>PRD ref: <code>prd.md &gt; Saving Outfits</code>.</p>
+<h4>Calendar</h4>
+<p><code>CalendarFragment</code> (design page 18, without streaks, weather and OutfitCHECK badges): the month title with arrows (never past the current month), M–S letters, and a seven-column grid (<code>CalendarAdapter</code>) whose weeks share the screen height. A day with an outfit shows its picture and opens its card; today has a mocha frame; the first and last week are filled up with the neighboring months' days, on beige, without outfits and not tappable. The calendar icon in the header (or the month's name) opens <code>MonthPickerSheet</code>: a year with arrows and its twelve months, future months disabled. The month is drawn at once and the outfits are filled in when <code>GET …/calendar</code> answers; it reloads whenever the tab comes back into view. PRD ref: <code>prd.md &gt; Saving Outfits</code>.</p>
+<h2>Data Model</h2>
+<p>PostgreSQL, created by JPA (<code>spring.jpa.hibernate.ddl-auto=update</code>, a PoC simplification).</p>
+<p><strong>users</strong>: <code>id bigserial PK</code>, <code>name varchar(50)</code>, <code>email varchar(254) unique</code> (stored lower-case), <code>password_hash varchar(72)</code> (BCrypt), <code>city varchar(80)</code>, <code>country varchar(80)</code>, <code>latitude</code>, <code>longitude</code> (for the weather), <code>username varchar null</code> (unique when set), <code>avatar_file varchar null</code> (the profile photo), <code>created_at timestamptz</code>.</p>
+<p><strong>sessions</strong>: <code>token varchar(64) PK</code>, <code>user_id → users.id</code>, <code>created_at timestamptz</code>. (No expiry in the PoC.)</p>
+<p><strong>items</strong>: <code>id bigserial PK</code>, <code>user_id → users.id</code>, <code>image_file varchar</code> (e.g. <code>3f2a….png</code>), <code>type varchar null</code> (an <code>ItemType</code> code), <code>category varchar null</code> (TOP, BOTTOM, SHOES, OUTERWEAR, BAG, ACCESSORY; follows the type), <code>colors varchar null</code> (up to 3 <code>ItemColor</code> codes, comma-separated; <code>color_name</code> is a legacy fallback), <code>scale int null</code> (display size %, default 100), <code>name varchar null</code>, <code>tags varchar null</code> (comma-separated), <code>season varchar null</code>, <code>opening varchar null</code> (where an open-front piece opens, four numbers), <code>created_at timestamptz</code>.</p>
+<p><strong>outfits</strong>: <code>id bigserial PK</code>, <code>user_id → users.id</code>, <code>image_file varchar</code> (the picture of the look), <code>tags varchar null</code> (the outfit's categories, comma-separated), <code>season varchar null</code>, <code>created_at timestamptz</code>.</p>
+<p><strong>outfit_pieces</strong> (the pieces of an outfit, one row each): <code>outfit_id → outfits.id</code>, <code>position int</code> (the order on the card), <code>slot varchar</code> (TOP, BOTTOM, SHOES, OUTERWEAR, UNDER, BAG, ACCESSORY), <code>item_id → items.id</code>. A table of its own instead of one column per place, because an outfit has any number of accessories and "which outfits have this item?" becomes one query.</p>
+<p>Also on <strong>outfits</strong>: <code>replaced_by bigint null</code> — set on an earlier version kept for the calendar (see Outfits API).</p>
+<p><strong>outfit_wears</strong> (the calendar): <code>id bigserial PK</code>, <code>user_id → users.id</code>, <code>outfit_id → outfits.id</code>, <code>worn_on date</code>, unique (<code>user_id</code>, <code>worn_on</code>) — one outfit per day.</p>
+<div class="table"><table><thead><tr><th>Data</th><th>Lives in</th><th>Updated by</th><th>After closing and reopening</th></tr></thead><tbody>
+<tr><td>Who you are</td><td>SharedPreferences (<code>userId</code>, <code>userName</code>, <code>token</code>)</td><td>Create Account / Log In; cleared by Log out</td><td>Still there, so Welcome is skipped</td></tr>
+<tr><td>Your account (name, email, password hash, city)</td><td>Postgres <code>users</code></td><td><code>POST /api/auth/register</code></td><td>Persists (Docker volume <code>pgdata</code>)</td></tr>
+<tr><td>Active sessions</td><td>Postgres <code>sessions</code></td><td>Log In / Register / Log out</td><td>Persist until Log out</td></tr>
+<tr><td>Item photos</td><td><code>/data/images</code> (Docker volume <code>images</code>)</td><td>Upload</td><td>Persist</td></tr>
+<tr><td>Item details</td><td>Postgres <code>items</code></td><td>Upload (AI), <code>PATCH</code> (user)</td><td>Persist</td></tr>
+<tr><td>Current canvas selection</td><td>Memory in <code>OutfitCanvasActivity</code></td><td>Swipes, Generate</td><td>Gone; a fresh random outfit next time (by design)</td></tr>
+<tr><td>The look on its way to being saved</td><td>A PNG in the app's cache folder + memory in <code>OutfitActivity</code></td><td>Next on the canvas</td><td>Gone</td></tr>
+<tr><td>Saved outfits</td><td>Postgres <code>outfits</code> + <code>outfit_pieces</code>; pictures with the item photos</td><td>Save, Wear it today; <code>PATCH</code>, <code>DELETE</code></td><td>Persist</td></tr>
+<tr><td>Outfit calendar</td><td>Postgres <code>outfit_wears</code></td><td>Wear it today</td><td>Persist</td></tr>
+<tr><td>Hint text</td><td>Memory only</td><td>Typing</td><td>Gone</td></tr>
+</tbody></table></div>
+<h2>File Structure</h2>
+<pre><code>Mixyn/
+├── docker-compose.yml          # db (postgres:16), rembg, backend; volumes pgdata + images
+├── .env.example                # GEMINI_API_KEY=, GEMINI_MODEL=, DB creds (no secrets)
+├── .gitignore                  # already ignores .env, learner-profile.md; add build dirs, images
+├── README.md                   # what Mixyn is, setup + run steps, demo link
+├── backend/
+│   ├── Dockerfile              # multi-stage Gradle build → JRE 21 image
+│   ├── build.gradle / settings.gradle
+│   └── src/
+│       ├── main/java/com/mixyn/
+│       │   ├── MixynApplication.java
+│       │   ├── config/         # WebConfig (serves /images/**), GeminiConfig (client bean), CORS off
+│       │   ├── common/         # ApiExceptionHandler, HealthController
+│       │   ├── user/           # User, Session, repositories, AuthController, AuthService, AuthInterceptor, UserDtos
+│       │   ├── item/           # Item, Category, ItemRepository, ItemService, ItemController, ItemDtos
+│       │   ├── outfit/         # Outfit, Slot, Wear, repositories, OutfitService, OutfitController, StylistService, OutfitDtos
+│       │   ├── ai/             # RembgClient, TaggingService, GeminiJson helpers, prompts
+│       │   └── storage/        # ImageStorage
+│       ├── main/resources/application.yml   # reads env: DB_*, REMBG_URL, GEMINI_*, IMAGE_DIR
+│       └── test/java/com/mixyn/
+│           └── outfit/         # StylistServiceTest, OutfitServiceTest: foreign ids, wrong place, the same piece twice
+├── android/
+│   ├── build.gradle / settings.gradle
+│   └── app/src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/mixyn/app/
+│       │   ├── api/            # ApiClient, MixynApi, dto/ (User, Item, Outfit, GenerateResult…)
+│       │   ├── session/        # SessionStore
+│       │   └── ui/
+│       │       ├── splash/     # SplashActivity
+│       │       ├── welcome/    # WelcomeActivity
+│       │       ├── auth/       # AuthActivity
+│       │       ├── main/       # MainActivity, WardrobeFragment, ClothesFragment, OutfitsFragment, CalendarFragment, ProfileFragment, AddMenuSheet, adapters
+│       │       ├── additem/    # AddItemActivity
+│       │       ├── item/       # ItemDetailActivity
+│       │       ├── canvas/     # OutfitCanvasActivity, SlotPagerAdapter, PlaceholderView
+│       │       └── outfit/     # OutfitActivity (the outfit card), OutfitPicture
+│       └── res/
+│           ├── layout/         # one XML per screen/fragment/row
+│           ├── values/         # colors.xml, themes.xml, strings.xml, dimens.xml
+│           ├── font/           # serif + sans font files
+│           ├── drawable/       # empty_closet.xml, ic_* icons, bg shapes
+│           ├── menu/           # bottom_nav.xml
+│           └── xml/            # network_security_config.xml
+└── devpost/                    # planning docs (learner-profile.md is git-ignored)</code></pre>
+<h2>External Services and Dependencies</h2>
+<h3>Google Gemini API</h3>
+<ul>
+<li><strong>Auth:</strong> API key from Google AI Studio, in <code>.env</code> as <code>GEMINI_API_KEY</code>, read only by the backend.
+</li>
+<li><strong>Models:</strong> <code>GEMINI_MODEL</code> env var, an ordered list of current Flash models (https://ai.google.dev/gemini-api/docs/models), raced as described under Tagging Service.
+</li>
+<li><strong>Calls</strong> (via the Google Gen AI Java SDK <code>client.models.generateContent</code>, with JSON output via a response MIME type of <code>application/json</code> plus a response schema):
+<ul>
+<li><em>Tagging:</em> input = the cutout on white as a JPEG + text prompt; output = <code>{subject, onBody, box, front, opening, type, category, colors}</code>.
+</li>
+<li><em>Stylist:</em> input = text only (item list, weather, hint, earlier requests); output = <code>{topId, bottomId, shoesId, outerwearId, underId, bagId, accessoryIds, hintMatched}</code>.
+</li>
+<li><em>Stylist chat:</em> input = text only (item list with how often each was worn, weather, the chat so far); output = <code>{offTopic, reply, looks[], itemIds[]}</code>.
+</li></ul>
+</li>
+<li><strong>Cost / limits:</strong> a free tier with per-minute and per-day limits per model (https://ai.google.dev/gemini-api/docs/rate-limits). A demo session makes roughly 10–30 requests; on a slow hour one action can cost two or three.
+</li>
+<li><strong>Docs:</strong> <a href="https://ai.google.dev/gemini-api/docs/structured-output">https://ai.google.dev/gemini-api/docs/structured-output</a> · <a href="https://ai.google.dev/gemini-api/docs/image-understanding">https://ai.google.dev/gemini-api/docs/image-understanding</a>
+</li></ul>
+<h3>rembg</h3>
+<ul>
+<li><strong>Container:</strong> built from <code>rembg/Dockerfile</code> and run in server mode (<code>rembg s --host 0.0.0.0 --port 7000</code>); the backend reaches it at <code>http://rembg:7000</code> inside Compose, and the host at port 7010.
+</li>
+<li><strong>Call:</strong> <code>POST /api/remove</code> with the multipart field <code>file</code> → <code>image/png</code> bytes.
+</li>
+<li><strong>As verified:</strong> built from <code>rembg/Dockerfile</code> (no arm64 build of the published image); <code>POST /api/remove</code>, multipart field <code>file</code>, plus <code>model=u2net</code>; host port <strong>7010</strong> (macOS uses 7000); reads JPEG, PNG and HEIC (via <code>pillow-heif</code>); ~2 s per small image once warm, ~0.8 GB memory.
+</li>
+<li><strong>Cost:</strong> free, local, no key. The u2net and isnet-general-use models are baked into the image (about 2 GB in all), so there is no download on the first upload.
+</li>
+<li><strong>Docs:</strong> <a href="https://github.com/danielgatis/rembg#usage-as-a-server">https://github.com/danielgatis/rembg#usage-as-a-server</a>
+</li></ul>
+<h3>Open-Meteo Geocoding (city autocomplete)</h3>
+<ul>
+<li><code>GET https://geocoding-api.open-meteo.com/v1/search?name=…&amp;count=15&amp;language=en|uk</code>, called only by the backend. Free, no key. The same provider supplies the weather (<code>https://api.open-meteo.com/v1/forecast</code>, see Weather).
+</li>
+<li>Both clients give up after 4 s: the stylist asks for the weather before every look, so a hanging request must not hang the look.
+</li>
+<li>Results need ≥ 3 characters; very short queries return nothing.
+</li></ul>
+<h3>PostgreSQL</h3>
+<ul>
+<li>The <code>postgres:16</code> image, with credentials from <code>.env</code> (<code>POSTGRES_DB=mixyn</code>, <code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>; local-only values).
+</li></ul>
+<h2>Important Failure Modes</h2>
+<ul>
+<li><strong>rembg fails, or the photo is unreadable</strong> → backend <code>502</code>/<code>400</code>, nothing saved → the processing screen shows "We couldn't process this photo" + <strong>Try again</strong> (<code>prd.md &gt; States and Boundaries</code>).
+</li>
+<li><strong>Gemini tagging fails</strong> (network, rate limit, bad JSON) → the item is saved with a blank category/color → the card asks the user to choose. The upload never fails because of tagging.
+</li>
+<li><strong>Gemini stylist fails or returns invalid ids</strong> → the backend fills the affected slots with random valid items; if the whole call failed, <code>message</code> = "The stylist is taking a break — here's a random look instead." The canvas is never left blank. <em>(Assumption: the PRD didn't specify the total-failure case; this follows its "never a blank canvas" rule.)</em>
+</li>
+<li><strong>Backend not running or unreachable from the emulator</strong> → the Android app shows "Can't reach Mixyn — is the server running?" instead of crashing. (Common cause: using <code>localhost</code> instead of <code>10.0.2.2</code>, or the missing network security config.)
+</li>
+<li><strong>Slow first upload</strong> (rembg loads its model after a start) → the processing state covers it; the 90 s client timeout leaves room. Do a warm-up upload before recording.
+</li>
+<li><strong>Open-Meteo slow or down</strong> → after 4 s the backend goes on without weather: the canvas hides its weather chip, the stylist works without the weather line, and city search answers <code>502 city_search_failed</code>.
+</li></ul>
+<h2>What Was Simplified and Why</h2>
+<ul>
+<li><strong>Real accounts, simple sessions:</strong> email + BCrypt-hashed password (learner decision in <code>prd.md &gt; Product Decisions</code>), with an opaque random token in a <code>sessions</code> table checked by one interceptor, instead of full Spring Security, JWT, token expiry, password reset or email verification.
+</li>
+<li><strong>Images on a local disk volume</strong> instead of cloud object storage. The same "path in the DB, file elsewhere" pattern moves to S3 or GCS later.
+</li>
+<li><strong>One synchronous upload request</strong> instead of a job queue. The fuller version would process asynchronously and let the app poll or receive a push.
+</li>
+<li><strong>Random outfit picked on the phone</strong>, not on the server: there's no AI involved, so there's no reason to add a round trip.
+</li>
+<li><strong>JPA auto-creates tables</strong> (<code>ddl-auto=update</code>) instead of migrations. Flyway would be the next step for the real app.
+</li>
+<li><strong>Stylist sees text, not photos</strong>: cheaper and faster, and category + color + name + tags are enough for a hint like "burgundy". Sending images to the stylist is a later enhancement.
+</li>
+<li><strong>Basic Android layouts</strong> with the Japandi identity applied through the theme (learner decision: time goes to the backend).
+</li>
+<li><strong>Everything local, no deployment</strong>: the hackathon needs a video and a repo, not a live URL.
+</li></ul>
+<h2>Decisions and Open Issues</h2>
+<p><strong>Learner decisions:</strong></p>
+<ul>
+<li><strong>Native Android (Java + XML) + Spring Boot + PostgreSQL + Docker</strong>, "same as my long-term app" over the fastest path, because the goal is strengthening this exact stack. Accepted tradeoff: Gradle, emulator and Spring setup eat into the 2–4 hours, so the Android UI stays basic.
+</li>
+<li><strong>rembg in Docker</strong> for background removal: free, local, no limits. Accepted tradeoff: a large image (the models are baked in) and slower processing on a laptop.
+</li>
+<li><strong>Google Gemini</strong> for tagging and the stylist, instead of the Claude option discussed. The requested 1.5 Flash (retired) is replaced by a list of current Flash models.
+</li>
+<li><strong>Accepted wiring:</strong> one synchronous upload request; images on disk with paths in Postgres; email + password accounts (BCrypt) with a session token stored in SharedPreferences; everything runs locally and the demo is recorded from the emulator.
+</li></ul>
+<p><strong>Implementation details derived by the agent</strong> (changeable): opaque DB-stored session tokens + <code>AuthInterceptor</code> rather than Spring Security/JWT; Gradle for the backend; Retrofit/Glide/ViewPager2; the REST paths above; the random outfit on the device; "tagging failure still saves the item"; the stylist total-failure message; allowing null slots when saving.</p>
+<p><strong>Learning focus (from <code>learner-profile.md &gt; Desired Learning Outcome</code>: "seamlessly integrating AI features"):</strong> the concept worked through here is <strong>how to make an AI feature reliable in a backend</strong>. The model's answer is treated as <em>untrusted input</em>: it's constrained to a JSON schema, then validated against the database (ownership + category) with a deterministic fallback. Evidence in the build: <code>StylistServiceTest</code> covers a foreign id, a wrong-category id and an empty category, and a manual check shows a hint with no match still producing a full look. The learner didn't name a specific personal uncertainty during this interview.</p>
+<p><strong>To verify early in the build</strong> — done; the answers are under Stack ("Verified during the build"): the Gemini models and free-tier limits, the Java SDK calls, the rembg server, and Spring Boot 4.1.1 (3.x is no longer offered).</p>
+<p><strong>Carried from <code>prd.md &gt; Open Questions</code>:</strong></p>
+<ul>
+<li>Outerwear in AI looks → optional, the stylist may add one (resolved above).
+</li>
+<li>Log In restores that account's wardrobe → yes (<code>POST /api/auth/login</code> with email + password).
+</li>
+<li>Home tab = wardrobe → yes (<code>WardrobeFragment</code>).
+</li></ul>
+<h2>After the PoC: Friends</h2>
+<p>The next step (learner decision; see <code>scope.md &gt; Next Step</code> and <code>prd.md &gt; Possible Later Enhancements</code>), not built in the PoC. Private and friends-only:</p>
+<ul>
+<li><strong>Friends:</strong> a <code>friendships</code> table (requester, addressee, status: pending / accepted / declined); a friend is added by their exact email, and the other side accepts or declines.
+</li>
+<li><strong>Sharing:</strong> a <code>shared_outfits</code> table (outfit, from, to, shared at); the Share button on the outfit card sends a saved outfit to friends, and the Friends tab lists what friends sent. The rules to test: never to yourself, only to accepted friends, only your own outfits.
+</li>
+<li><strong>Ratings:</strong> a score per friend per shared outfit (<code>outfit_ratings</code>).
+</li>
+<li><strong>The month's best:</strong> the top 3 outfits of the month by their scores, and the friend whose outfits collected the most points — the most stylish of the month — both read from the month's ratings, among friends only.
+</li></ul>
+<p class="note">Companion to <code>devpost/spec.md</code>, generated from it. The Markdown file is the source of truth.</p>
 </main>
-<script>
-(function(){
-  var panels=[].slice.call(document.querySelectorAll('.panel'));
-  var bar=document.getElementById('stepper'), i=0, btns=[];
-  panels.forEach(function(p,k){
-    var b=document.createElement('button');
-    b.innerHTML=(k+1)+' · '+p.dataset.name; b.setAttribute('role','tab');
-    b.onclick=function(){show(k)}; bar.appendChild(b); btns.push(b);
-  });
-  var prev=document.getElementById('prev'), next=document.getElementById('next');
-  function show(k){ i=k;
-    panels.forEach(function(p,j){p.classList.toggle('on',j===k)});
-    btns.forEach(function(b,j){b.setAttribute('aria-selected',j===k)});
-    prev.disabled=k===0; next.disabled=k===panels.length-1; }
-  prev.onclick=function(){if(i>0)show(i-1)}; next.onclick=function(){if(i<panels.length-1)show(i+1)};
-  show(0);
-})();
-</script>
 </body>
 </html>
