@@ -863,11 +863,11 @@ public class OutfitCanvasActivity extends BaseActivity {
     }
 
     /**
-     * Outerwear shares one frame with the top and the bottom. Every jacket's shoulders sit on the top's
-     * shoulders at the same size and place (see PieceImageView); how far down it reaches follows from
-     * its photo, a short jacket to the hips, a coat over the bottom, but never past the end of the
-     * bottom. Only the left half is drawn: an open jacket over the left side of the outfit, the clothes
-     * underneath still visible on the right.
+     * Outerwear shares one frame with the top and the bottom. A jacket is the same size in the same place
+     * over every top (see PieceImageView); how far down it reaches follows from its photo, a short jacket
+     * to the hips, a coat over the bottom, but never past the end of the bottom. Only the left half is
+     * drawn: an open jacket over the left side of the outfit, the clothes underneath still visible on the
+     * right.
      */
     private void styleOuterwearPage(ImageView image, ItemDto item) {
         PieceImageView piece = (PieceImageView) image;
@@ -932,17 +932,10 @@ public class OutfitCanvasActivity extends BaseActivity {
         }
     }
 
-    /** Hangs a jacket over the top that is showing; with no top yet, from the top of the frame. */
+    /** Hangs a jacket over the top that is showing; with no top yet, as if the top began at the frame's top. */
     private void hangOuterwear(PieceImageView piece) {
-        PieceImageView top = topView();
         RectF bounds = topBounds();
-        if (top != null && bounds != null) {
-            piece.hangOver(top, bounds);
-            return;
-        }
-        piece.hangFrom(0f, 0f);
-        piece.setPivotX(piece.getWidth() / 2f);
-        piece.setPivotY(0f); // a resized jacket grows down from the shoulders, not up over them
+        piece.hangOver(bounds == null ? 0f : bounds.top);
     }
 
     /**
