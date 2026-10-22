@@ -51,6 +51,9 @@ details[open] summary::after{content:"–"}
 .now .pill{background:var(--ok-soft);color:var(--ok)}
 .later .pill{background:var(--later-soft);color:var(--later)}
 .cut .pill{background:var(--cut-soft);color:var(--cut)}
+.next .pill{background:var(--accent-soft);color:var(--accent)}
+.idea{font-size:17px}
+.idea p{margin:0 0 10px}
 details ul{margin:0;padding:0 22px 16px 40px}
 details li{margin:4px 0}
 .note{font-size:14px;color:var(--muted)}
@@ -60,18 +63,28 @@ details li{margin:4px 0}
 <main>
   <span class="status">Approved</span>
   <h1>Mixyn</h1>
-  <p class="lede">An AI stylist that builds outfits from the clothes you actually own.</p>
+  <p class="lede">An app for the clothes you already own: put outfits together from your own wardrobe, with an AI stylist to help when you don't know what to wear.</p>
+
+  <h2>The idea</h2>
+  <div class="card idea">
+    <p>I love clothes, and I wanted to build an app around them. I found a problem that almost everyone runs into, again and again: you don't know what to wear.</p>
+    <p>So I made an app where you upload your own clothes and put outfits together from them. If you can't get a look right on your own, an assistant is right there in the outfit screen and suggests how to make it better.</p>
+    <p style="margin:0">And there is a stylist agent that helps with your style as a whole: it tells you how to improve it, puts together several outfit ideas when you don't know what to wear, and much more.</p>
+    <p class="note" style="margin:12px 0 0">In the learner's words, edited for language (22 October 2026).</p>
+  </div>
 
   <h2>The unique kernel</h2>
   <div class="card kernel">
     Your real wardrobe, digitized in seconds, plus an AI stylist that builds a complete look
-    <strong>from those exact items</strong>: in one click, or around a hint like
-    <em>“this oversized shirt”</em> or <em>“burgundy.”</em>
+    <strong>from those exact items</strong>: in one click on the outfit screen, or around a request like
+    <em>“this oversized shirt,”</em> <em>“burgundy”</em> or <em>“dinner with friends in the cold.”</em>
+    For bigger questions, a stylist chat knows the same closet: outfits for an occasion, what you haven't worn
+    for a while, what your style is and how to make it better, always with what you own.
   </div>
 
   <h2>The core loop: three fallbacks on a stuck morning</h2>
   <div class="card">
-    <svg viewBox="0 0 800 300" role="img" aria-label="Core loop: your wardrobe feeds the Carousel. A random outfit loads; if it clicks you wear it. Otherwise swipe to mix and match; if still stuck, Generate with AI with an optional hint. All paths end at: I'll wear that.">
+    <svg viewBox="0 0 800 300" role="img" aria-label="Core loop: your wardrobe feeds the outfit canvas. A random outfit loads; if it clicks you wear it. Otherwise swipe pieces and add layers; if still stuck, Ask AI on the same screen, with an optional request. All paths end at Save or Wear it today.">
       <defs>
         <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
           <path d="M0 0L10 5L0 10z" fill="var(--muted)"/>
@@ -80,18 +93,18 @@ details li{margin:4px 0}
       <!-- wardrobe -->
       <rect x="10" y="110" width="140" height="80" rx="12" fill="var(--bg)" stroke="var(--line)" stroke-width="1.5"/>
       <text x="80" y="143" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Your wardrobe</text>
-      <text x="80" y="166" text-anchor="middle" font-size="12" fill="var(--muted)">uploaded + bg removed</text>
+      <text x="80" y="166" text-anchor="middle" font-size="12" fill="var(--muted)">uploaded + AI-tagged</text>
       <line x1="150" y1="150" x2="195" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a)"/>
       <!-- steps -->
       <rect x="200" y="20" width="250" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
       <text x="220" y="48" font-size="15" font-weight="600" fill="var(--ink)">1 · Random outfit loads</text>
       <text x="220" y="68" font-size="12" fill="var(--muted)">sometimes it just clicks</text>
       <rect x="200" y="118" width="250" height="64" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="220" y="146" font-size="15" font-weight="600" fill="var(--ink)">2 · Swipe to mix &amp; match</text>
-      <text x="220" y="166" font-size="12" fill="var(--muted)">tops · bottoms · shoes</text>
+      <text x="220" y="146" font-size="15" font-weight="600" fill="var(--ink)">2 · Swipe and add layers</text>
+      <text x="220" y="166" font-size="12" fill="var(--muted)">top · bottoms · shoes · outerwear · bag</text>
       <rect x="200" y="216" width="250" height="64" rx="12" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
-      <text x="220" y="244" font-size="15" font-weight="600" fill="var(--accent)">3 · Generate with AI</text>
-      <text x="220" y="264" font-size="12" fill="var(--muted)">one click, optional hint</text>
+      <text x="220" y="244" font-size="15" font-weight="600" fill="var(--accent)">3 · Ask AI</text>
+      <text x="220" y="264" font-size="12" fill="var(--muted)">on the canvas, optional request</text>
       <!-- down arrows labelled not yet -->
       <line x1="325" y1="84" x2="325" y2="114" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a)"/>
       <text x="333" y="104" font-size="11" fill="var(--muted)">not quite</text>
@@ -103,7 +116,7 @@ details li{margin:4px 0}
       <path d="M450 248 C540 248 540 150 600 150" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a)"/>
       <rect x="605" y="110" width="185" height="80" rx="12" fill="var(--ok-soft)" stroke="var(--ok)" stroke-width="1.5"/>
       <text x="697" y="146" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ok)">“Okay, I'll wear that.”</text>
-      <text x="697" y="168" text-anchor="middle" font-size="12" fill="var(--muted)">decision made</text>
+      <text x="697" y="168" text-anchor="middle" font-size="12" fill="var(--muted)">Save · Wear it today</text>
     </svg>
   </div>
 
@@ -125,40 +138,57 @@ details li{margin:4px 0}
     </div>
   </div>
 
-  <h2>What “working” looks like: the 1-minute demo</h2>
+  <h2>What “working” looks like: the demo</h2>
   <ol class="steps">
     <li>Sign up with a real account. The wardrobe lives in a database and is still there after logging out and back in.</li>
-    <li>Upload a few real clothing photos. The background is removed automatically and each photo becomes a clean digital item.</li>
-    <li>In the Carousel, swipe through tops, bottoms, and shoes to build an outfit by hand.</li>
-    <li class="aha">Hit <strong>Generate with AI</strong>, optionally with a hint. A complete look appears, built only from your uploaded items. <span class="tag">the aha beat</span></li>
+    <li>Upload a few real clothing photos. The background is removed automatically, and the AI names each piece: its type and colors.</li>
+    <li>Create outfit: a random look is already on the canvas. Swipe tops, bottoms, and shoes to build an outfit by hand, and add a layer.</li>
+    <li class="aha">Tap <strong>Ask AI</strong>, optionally with a request. A complete look appears, built only from your uploaded items. <span class="tag">the aha beat</span></li>
+    <li>Save it, or <strong>Wear it today</strong>, and find it in the Outfits tab and the Calendar.</li>
+    <li>Ask the Stylist chat for “3 outfits for a date” or “how can I improve my style?”.</li>
   </ol>
 
-  <h2>Boundary: now, later, cut</h2>
+  <h2>Boundary: now, next, later, cut</h2>
   <details class="now" open>
-    <summary><span class="pill">Now</span> In the proof of concept</summary>
+    <summary><span class="pill">Now</span> In the proof of concept, as built</summary>
     <ul>
-      <li><strong>Real accounts from the start:</strong> sign-up and log-in (email + password), with profile, clothes, and outfits stored in a real database</li>
-      <li>Upload clothes with AI background removal</li>
-      <li>Outfit Carousel for tops, bottoms, and shoes, starting from a random combination</li>
-      <li>AI outfit generation from your own items: one click, plus an optional hint field</li>
+      <li><strong>Real accounts from the start:</strong> sign-up and log-in (email + password), with profile, clothes, and outfits stored in a real database; a profile with a photo, a username and a city, a new password, and deleting the account</li>
+      <li>Upload clothes with AI background removal; the AI picks the type and up to three colors, and turns away photos that aren't one piece</li>
+      <li>An item card to correct and enrich each piece</li>
+      <li>Outfit canvas for tops, bottoms, and shoes, starting from a random combination, plus layers: under layer, outerwear, bag, accessories</li>
+      <li>AI outfit generation from your own items, right on the canvas: one click, plus an optional request, with follow-ups</li>
+      <li>A Stylist chat: outfits for an occasion, pieces from the closet, your style and how to improve it</li>
+      <li>Saved outfits, editing them, <strong>Wear it today</strong> and a calendar of what was worn</li>
+      <li>Current weather for your city: on the canvas, in the stylist's choices, in a cold/heat tip, and on a weather page</li>
+      <li>Search and filters for clothes and outfits</li>
+    </ul>
+  </details>
+  <details class="next" open>
+    <summary><span class="pill">Next</span> The next step: friends</summary>
+    <ul>
+      <li><strong>Add friends:</strong> a private circle, never a public feed</li>
+      <li><strong>Share outfits</strong> with friends and see the ones they share</li>
+      <li><strong>Rate</strong> friends' outfits</li>
+      <li><strong>At the end of every month:</strong> the top 3 outfits with the highest scores, and the friend who collected the most points, the most stylish of the month</li>
     </ul>
   </details>
   <details class="later">
     <summary><span class="pill">Later</span> Worth doing, just not now</summary>
     <ul>
-      <li>Live weather by city, plus the cold-weather jacket/hat overlay</li>
-      <li>AI auto-tagging of material and season (category and color are in the PoC)</li>
-      <li>Accessories step and themed collections (“office,” “date”)</li>
-      <li>Social: friends, sharing, OutfitCHECK photos, star ratings, monthly leaderboard</li>
-      <li>Outfit calendar and daily streak</li>
+      <li>The morning outfit reminder and a daily streak in the calendar</li>
+      <li>OutfitCHECK: a photo of yourself in the day's outfit, kept in the calendar and shared with friends</li>
+      <li>Themed collections of saved outfits (“office,” “date”)</li>
+      <li>The full Stylist chat: saved chat history, and trying outfits on your own photo</li>
+      <li>AI auto-tagging of material and season (type and colors are in the PoC)</li>
+      <li>Planning outfits for the days ahead with the forecast</li>
       <li>Pitch extras: Group Vibes, Wardrobe Swap, Travel Mode, Cost-per-Wear, Avatar Mannequin</li>
     </ul>
   </details>
   <details class="cut">
     <summary><span class="pill">Cut</span> Out of the demo, with reasons</summary>
     <ul>
-      <li><strong>“One month later” time skip:</strong> depends on the calendar, social features, and fake history, and none of it proves the styling engine.</li>
-      <li><strong>Social and weather in the PoC:</strong> “they can be built later once the core styling engine works.”</li>
+      <li><strong>“One month later” time skip:</strong> depends on the calendar history, social features, and fake data, and none of it proves the styling engine.</li>
+      <li><strong>Social in the PoC:</strong> “it can be built later once the core styling engine works.” It is the next step. (Weather was cut too at first; it came back during the build.)</li>
     </ul>
   </details>
 
